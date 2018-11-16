@@ -1,0 +1,17 @@
+
+version: '3.7'
+
+services:
+#  bluesky-sim:
+#    build: ./bluesky
+#    volumes:
+#      - ./bluesky:/usr/src/app
+#    ports:
+#      - 9000:9000
+#      - 9001:9001
+  bluebird:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 5001:80

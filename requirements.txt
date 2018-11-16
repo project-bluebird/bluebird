@@ -1,0 +1,10 @@
+
+Flask==1.0.2
+flask_restful==0.3.6
+markdown==3.0.1
+
+# Required by BlueSky. Versions unknown
+matplotlib
+numpy
+msgpack
+zmq
