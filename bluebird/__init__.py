@@ -4,6 +4,7 @@ from bluebird.cache import CommandCache, StreamCache
 APP = None
 API = None
 CLIENT = None
+LOGGER = None
 
 CMD_CACHE = CommandCache()
 STM_CACHE = StreamCache()
@@ -16,9 +17,10 @@ from bluebird import settings
 def init():
     print("BlueBird init")
 
-    global API, APP
+    global API, APP, LOGGER
     APP = api.app
     API = api.api
+    LOGGER = APP.logger
 
     global CLIENT
     CLIENT = client.ApiClient()
@@ -31,5 +33,9 @@ def client_connect():
 
 
 def run_app():
+
+    # Starts the Flask app
     APP.run(host='0.0.0.0', port=80, debug=True)
+
+    # Called when the Flask app exists
     CLIENT.close()
