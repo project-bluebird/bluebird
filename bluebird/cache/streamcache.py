@@ -7,6 +7,9 @@ class StreamCache(object):
 
     def getacdata(self, acid):
 
+        if acid == 'ALL':
+            return self.data
+
         if acid in self.data and before(self.data[acid]['_validto'] + default_lifetime):
             return dict(self.data[acid])
 
