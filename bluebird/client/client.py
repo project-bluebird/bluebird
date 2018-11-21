@@ -3,7 +3,7 @@ import sys
 import msgpack
 import zmq
 
-from bluebird import STM_CACHE
+import bluebird as bb
 from bluebird.client.timer import Timer
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
@@ -25,8 +25,11 @@ class ApiClient(Client):
         self.timer.stop()
 
     def stream(self, name, data, sender_id):
-        # print(data, file=sys.stderr)
-        STM_CACHE.fill(data)
+        #bb.LOGGER.info(data)
+
+        # Fill the stream cache with the sim data
+        bb.STM_CACHE.fill(data)
+        
         self.stream_received.emit(name, data, sender_id)
 
     def send_stackcmd(self, data=None, target=b'*'):
@@ -57,7 +60,7 @@ class ApiClient(Client):
                 route.reverse()
                 pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
 
-                # print('EventData: ' + str(pydata), file=sys.stderr)
+                print('Event: ' + str(eventname), file=sys.stderr)
 
                 # Print the data, filtering out unwanted messages
                 if isinstance(pydata, dict) and \

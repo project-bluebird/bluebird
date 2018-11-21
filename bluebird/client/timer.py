@@ -3,6 +3,8 @@ from time import sleep
 
 
 class Timer(Thread):
+    """ Simple timer. Calls the given method periodically """
+    
     def __init__(self, method, tickrate):
         Thread.__init__(self)
 

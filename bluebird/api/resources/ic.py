@@ -1,11 +1,11 @@
 from flask_restful import Resource
 
-import bluebird
+import bluebird as bb
 
 
 class Ic(Resource):
     def get(self, filename='IC'):
-        bluebird.CLIENT.send_stackcmd('IC ' + filename)
+        bb.CLIENT.send_stackcmd('IC ' + filename)
 
-        # TODO Get return status
+        # TODO Get return status. Can hook this up to a 'SIMRESET' signal?
         return 'Ok?'

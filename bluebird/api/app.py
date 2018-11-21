@@ -1,9 +1,8 @@
-import os
-
-import markdown
 from flask import Flask
 from flask_restful import Api
 
+import bluebird.api.resources as res
+import bluebird.api.static as static
 from bluebird import settings
 
 
@@ -18,23 +17,13 @@ api = BlueBirdApi(app, prefix='/api/v' + str(settings.API_VERSION))
 
 # region Resources
 
-from .resources import Pos
-from .resources import Ic
-
-api.add_resource(Pos, '/pos/<acid>')
-api.add_resource(Ic, '/ic/<filename>')
-
+api.add_resource(res.Pos, '/pos/<acid>')
+api.add_resource(res.Ic, '/ic/<filename>')
 
 # endregion
 
 # region Static routes
 
-def index():
-    """ Serves README.md """
-    with open(os.path.dirname(app.root_path) + '/../README.md', 'r') as readme_md:
-        return markdown.markdown(readme_md.read())
-
-
-app.add_url_rule('/', 'index', index)
+app.add_url_rule('/', 'index', static.index)
 
 # endregion

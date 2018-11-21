@@ -1,7 +1,7 @@
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird
+import bluebird as bb
 from bluebird.utils import errprint
 
 
@@ -11,7 +11,7 @@ class Pos(Resource):
         # TODO Handle timeouts
 
         errprint('POS {}'.format(acid))
-        data = bluebird.STM_CACHE.getacdata(acid)
+        data = bb.STM_CACHE.getacdata(acid)
 
         if data is None:
             return 'No data'
