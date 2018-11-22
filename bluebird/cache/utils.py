@@ -1,6 +1,9 @@
+""" DateTime Utility functions """
+
 import datetime
 
 default_lifetime = datetime.timedelta(seconds=10)
+
 
 def now():
     return datetime.datetime.utcnow()

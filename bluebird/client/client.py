@@ -13,6 +13,8 @@ ACTNODE_TOPICS = [b'ACDATA', b'ROUTEDATA']
 
 
 class ApiClient(Client):
+    """ BlueSky simulation client """
+
     def __init__(self, actnode_topics=b''):
         super(ApiClient, self).__init__(ACTNODE_TOPICS)
 
@@ -25,22 +27,19 @@ class ApiClient(Client):
         self.timer.stop()
 
     def stream(self, name, data, sender_id):
-        #bb.LOGGER.info(data)
 
         # Fill the stream cache with the sim data
         bb.STM_CACHE.fill(data)
-        
+
         self.stream_received.emit(name, data, sender_id)
 
     def send_stackcmd(self, data=None, target=b'*'):
         self.send_event(b'STACKCMD', data, target)
 
     def send_event(self, name, data=None, target=None):
-        print('ApiClient send_event!', file=sys.stderr)
         super().send_event(name, data, target)
 
     def event(self, name, data, sender_id):
-        # print('ApiClient event!', file=sys.stderr)
         super().event(name, data, sender_id)
 
     def receive(self, timeout=0):

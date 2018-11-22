@@ -1,17 +1,19 @@
 
-![Design](images/BlueBirdInitialProto.png)
+<img src="images/BlueBirdInitialProto.png" height="650px">
 
 ## Module layout
 
 ```
 bluebird
-  - api 		# Flask server & API definitions
-  - cache 		# Cache objects used to store sim info from the stream
-  - client		# BlueSky client class
-  - utils 		# Utility functions
-  __init__.py	# Main initialisation for the app
-  settings.py	# Common app settings
-run.py			# Entry point
+  - api				# Flask server & API definitions
+    - resources		# API Resource endpoints. One file per function.
+    - static		# Static routes. Currently serves README.md only
+  - cache 			# Cache objects used to store sim info from the stream
+  - client			# BlueSky client class
+  - utils 			# Utility functions
+  __init__.py		# Main initialisation for the app
+  settings.py		# Common app settings
+run.py				# Entry point
 ```
 
 ## Notes

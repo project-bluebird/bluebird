@@ -4,6 +4,8 @@ import bluebird as bb
 
 
 class Ic(Resource):
+    """ BlueSky IC (initial condition) command """
+
     def get(self, filename='IC'):
         bb.CLIENT.send_stackcmd('IC ' + filename)
 

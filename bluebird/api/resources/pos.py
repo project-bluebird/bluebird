@@ -6,9 +6,10 @@ from bluebird.utils import errprint
 
 
 class Pos(Resource):
+    """ BlueSky POS (position) command """
+
     def get(self, acid):
         # TODO Check acid valid
-        # TODO Handle timeouts
 
         errprint('POS {}'.format(acid))
         data = bb.STM_CACHE.getacdata(acid)
@@ -16,10 +17,10 @@ class Pos(Resource):
         if data is None:
             return 'No data'
 
-        del data['_validto']
+        if '_validto' in data:
+            del data['_validto']
+        else:
+            for item in data:
+                del item['_validto']
 
         return jsonify(data)
-
-
-parser = reqparse.RequestParser()
-parser.add_argument('pos')
