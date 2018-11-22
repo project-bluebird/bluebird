@@ -9,6 +9,8 @@ See [here](docs/InitialProto.md).
 
 ## Usage
 
+### Running
+
 Connects to a running BlueSky simulation
 
 ```bash
@@ -16,7 +18,9 @@ Connects to a running BlueSky simulation
 > docker-compose up
 ```
 
-Currently available commands are `IC` and `POS`. Example:
+### Commands
+
+Currently available commands are `IC`, `POS`, and `CRE`. Example:
 
 - `GET` `localhost:5001/api/v1/pos/1234` - Get POS info on aircraft `1234`
 
