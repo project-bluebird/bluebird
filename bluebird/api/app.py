@@ -21,7 +21,7 @@ api = BlueBirdApi(app, prefix='/api/v' + str(settings.API_VERSION))
 # region Resources
 
 api.add_resource(res.Pos, '/pos/<acid>')
-api.add_resource(res.Ic, '/ic/<filename>')
+api.add_resource(res.Ic, '/ic')
 api.add_resource(res.Cre, '/cre')
 
 # endregion
