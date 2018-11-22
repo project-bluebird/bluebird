@@ -14,18 +14,8 @@ parser.add_argument('alt', type=str, location='json', required=True)
 parser.add_argument('spd', type=str, location='json', required=True)
 
 
-# Example JSON:
-# {
-# 	"acid": "test1234",
-# 	"type": "B744",
-# 	"lat": "0",
-# 	"lon": "0",
-# 	"hdg": "0",
-# 	"alt": "FL250",
-# 	"spd": "250"
-# }
-
 class Cre(Resource):
+    """ BlueSky CRE (create aircraft) command """
 
     def post(self):
         args = parser.parse_args()

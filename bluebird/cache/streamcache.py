@@ -2,16 +2,18 @@ from bluebird.cache.utils import *
 
 
 class StreamCache(object):
+    """ Holds the most recent state of the simulation """
+
     def __init__(self):
-        self.data = {}
+        self.acdata = {}
 
     def getacdata(self, acid):
 
         if acid == 'ALL':
-            return self.data
+            return self.acdata
 
-        if acid in self.data and before(self.data[acid]['_validto'] + default_lifetime):
-            return dict(self.data[acid])
+        if acid in self.acdata and before(self.acdata[acid]['_validto'] + default_lifetime):
+            return dict(self.acdata[acid])
 
         # TODO Handle missing aircraft data
         return
@@ -23,7 +25,7 @@ class StreamCache(object):
             # Can definitely tidy this up a bit
             for i in range(len(data['id'])):
                 acid = data['id'][i]
-                self.data[acid] = {
+                self.acdata[acid] = {
                     'alt': data['alt'][i],
                     'lat': data['lat'][i],
                     'lon': data['lon'][i],
@@ -32,8 +34,6 @@ class StreamCache(object):
                     '_validto': now()
                 }
 
-                # errprint(self.data[acid])
-
     # TODO Call this when sim reset
     def clear(self):
-        self.data = {}
+        self.acdata = {}
