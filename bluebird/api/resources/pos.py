@@ -8,7 +8,7 @@ class Pos(Resource):
     """ BlueSky POS (position) command """
 
     def get(self, acid):
-        data = bb.STM_CACHE.getacdata(acid)
+        data = bb.CACHES['acdata'].get(acid)
 
         if data is None:
             return 'No data', 404

@@ -1,5 +1,3 @@
-""" Date/Time Utility functions """
-
 import datetime
 import time
 

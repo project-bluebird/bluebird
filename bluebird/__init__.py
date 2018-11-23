@@ -1,16 +1,11 @@
-from bluebird.utils import errprint
+from bluebird.cache import AcDataCache
 
 # Singletons
 APP = None
 API = None
 CLIENT = None
-LOGGER = None
 TIMERS = []
-
-from bluebird.cache import CommandCache, StreamCache
-
-CMD_CACHE = CommandCache()
-STM_CACHE = StreamCache()
+CACHES = {}
 
 import bluebird.api
 import bluebird.client
@@ -24,6 +19,9 @@ def init():
     APP = api.app
     API = api.api
     LOGGER = APP.logger
+
+    global CACHES
+    CACHES['acdata'] = AcDataCache()
 
     global CLIENT
     CLIENT = client.ApiClient()

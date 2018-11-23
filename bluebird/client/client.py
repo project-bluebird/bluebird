@@ -34,7 +34,7 @@ class ApiClient(Client):
     def stream(self, name, data, sender_id):
 
         # Fill the stream cache with the sim data
-        bb.STM_CACHE.fill(data)
+        bb.CACHES['acdata'].fill(data)
 
         self.stream_received.emit(name, data, sender_id)
 
@@ -66,7 +66,7 @@ class ApiClient(Client):
                 pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
 
                 print('EVT :: {} :: {}'.format(eventname, pydata), file=sys.stderr)
-                
+
                 if eventname == b'NODESCHANGED':
                     self.servers.update(pydata)
                     self.nodes_changed.emit(pydata)
