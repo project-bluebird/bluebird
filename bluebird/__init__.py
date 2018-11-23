@@ -1,10 +1,13 @@
-from bluebird.cache import CommandCache, StreamCache
+from bluebird.utils import errprint
 
 # Singletons
 APP = None
 API = None
 CLIENT = None
 LOGGER = None
+TIMERS = []
+
+from bluebird.cache import CommandCache, StreamCache
 
 CMD_CACHE = CommandCache()
 STM_CACHE = StreamCache()
@@ -33,9 +36,9 @@ def client_connect():
 
 
 def run_app():
-
     # Starts the Flask app
     APP.run(host='0.0.0.0', port=80, debug=True)
 
     # Called when the Flask app exists
-    CLIENT.close()
+    for item in TIMERS:
+        item.stop()

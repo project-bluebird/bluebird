@@ -4,25 +4,30 @@ import msgpack
 import zmq
 
 import bluebird as bb
-from bluebird.client.timer import Timer
+from bluebird.utils import Timer
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
-# TODO Figure out what we need here
-ACTNODE_TOPICS = [b'ACDATA', b'ROUTEDATA']
+# TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
+ACTNODE_TOPICS = [b'ACDATA']
+
+# Same rate as GuiClient polls for its data
+POLL_RATE = 50  # Hz
 
 
 class ApiClient(Client):
     """ BlueSky simulation client """
 
-    def __init__(self, actnode_topics=b''):
+    def __init__(self):
         super(ApiClient, self).__init__(ACTNODE_TOPICS)
 
-        self.timer = Timer(self.receive, 1)
+        # Continually poll for the sim state
+        self.timer = Timer(self.receive, int(1 / POLL_RATE))
         self.timer.start()
-        self.subscribe(b'SIMINFO')
 
-    def close(self):
+        bb.TIMERS.append(self.timer)
+
+    def stop(self):
         # TODO Send quit signal properly
         self.timer.stop()
 
@@ -42,6 +47,7 @@ class ApiClient(Client):
     def event(self, name, data, sender_id):
         super().event(name, data, sender_id)
 
+    # TODO This is the same as the base method except for debugging code. Can remove when unused.
     def receive(self, timeout=0):
         try:
             socks = dict(self.poller.poll(timeout))
