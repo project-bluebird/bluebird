@@ -2,27 +2,17 @@ from flask import jsonify
 from flask_restful import Resource
 
 import bluebird as bb
-from bluebird.utils import errprint
 
 
 class Pos(Resource):
     """ BlueSky POS (position) command """
 
     def get(self, acid):
-        # TODO Check acid valid
-
-        acid = acid.upper()
-        errprint('POS {}'.format(acid))
-
         data = bb.STM_CACHE.getacdata(acid)
 
         if data is None:
-            return 'No data'
+            return 'No data', 404
 
-        if '_validto' in data:
-            del data['_validto']
-        else:
-            for item in data:
-                del item['_validto']
-
-        return jsonify(data)
+        resp = jsonify(data)
+        resp.status_code = 200
+        return resp

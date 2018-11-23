@@ -65,14 +65,8 @@ class ApiClient(Client):
                 route.reverse()
                 pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
 
-                print('Event: ' + str(eventname), file=sys.stderr)
-
-                # Print the data, filtering out unwanted messages
-                if isinstance(pydata, dict) and \
-                        'text' in pydata and \
-                        pydata['text'] != '':
-                    print(pydata['text'], file=sys.stderr)
-
+                print('EVT :: {} :: {}'.format(eventname, pydata), file=sys.stderr)
+                
                 if eventname == b'NODESCHANGED':
                     self.servers.update(pydata)
                     self.nodes_changed.emit(pydata)

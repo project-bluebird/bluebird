@@ -9,14 +9,13 @@ class StreamCache(object):
 
     def getacdata(self, acid):
 
-        if acid == 'ALL':
+        if acid.upper() == 'ALL':
             return self.acdata
 
         if acid in self.acdata and before(self.acdata[acid]['_validto'] + default_lifetime):
             return dict(self.acdata[acid])
 
         # TODO Handle missing aircraft data
-        return
 
     def fill(self, data):
 

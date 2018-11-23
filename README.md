@@ -22,7 +22,7 @@ Connects to a running BlueSky simulation
 
 Currently available commands are `IC`, `POS`, and `CRE`. Example:
 
-- `GET` `localhost:5001/api/v1/pos/1234` - Get POS info on aircraft `1234`
+- `GET` `localhost:5001/api/v1/pos/<acid/all>` - Get POS info on aircraft `<acid>`, or for `<all>`
 
 - `POST` `localhost:5001/api/v1/ic` - Reset the sim to the start of a scenario. If not passed any data, will reset the current scenario. Can also pass the following JSON to load a file (path relative to the BlueSky sim):
 ```json

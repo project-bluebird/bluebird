@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse
 
 import bluebird as bb
-from bluebird.utils.errprint import errprint
 
 # TODO Tidy this (can we define as a dict?)
 parser = reqparse.RequestParser()
@@ -20,6 +19,8 @@ class Cre(Resource):
     def post(self):
         args = parser.parse_args()
         cmd = 'CRE {acid} {type} {lat} {lon} {hdg} {alt} {spd}'.format(**args)
-        errprint(cmd)
 
         bb.CLIENT.send_stackcmd(cmd)
+
+        # TODO Get return status. Can check for the created aircraft? What does BlueSky return on an error?
+        return 'Ok?', 418

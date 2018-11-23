@@ -22,4 +22,4 @@ class Ic(Resource):
         bb.CLIENT.send_stackcmd('IC ' + cmd)
 
         # TODO Get return status. Can hook this up to a 'SIMRESET' signal?
-        return 'Ok?'
+        return 'Ok?', 418
