@@ -1,6 +1,6 @@
 from bluebird.utils.timeutils import now
 
-from .cache import Cache
+from .cache import Cache, VALID_TO
 
 
 # TODO Call clear when sim reset
@@ -12,8 +12,10 @@ class AcDataCache(Cache):
 
     def get(self, acid):
 
+        acid = acid.upper()
+
         # If requested, just return the complete acdata
-        if acid.upper() == 'ALL':
+        if acid == 'ALL':
             return self.store
 
         return super(AcDataCache, self).get(acid)
@@ -31,5 +33,5 @@ class AcDataCache(Cache):
                     'lon': data['lon'][i],
                     'gs': data['gs'][i],
                     'vs': data['vs'][i],
-                    '_validto': now()
+                    VALID_TO: now()
                 }

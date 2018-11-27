@@ -20,9 +20,15 @@ api = BlueBirdApi(app, prefix='/api/v' + str(settings.API_VERSION))
 
 # region Resources
 
+# TODO Parser inheritance for common arguments
+# See: https://flask-restful.readthedocs.io/en/0.3.5/reqparse.html#parser-inheritance
+# TODO Input sanitisation for all endpoints
+# TODO Allow units to be specified
+
 api.add_resource(res.Pos, '/pos/<acid>')
 api.add_resource(res.Ic, '/ic')
 api.add_resource(res.Cre, '/cre')
+api.add_resource(res.Alt, '/alt')
 
 # endregion
 

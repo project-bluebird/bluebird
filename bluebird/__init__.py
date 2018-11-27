@@ -28,6 +28,7 @@ def init():
 
 
 def client_connect():
+    # TODO Add timeout to this
     CLIENT.connect(hostname=settings.BS_HOST,
                    event_port=settings.BS_EVENT_PORT,
                    stream_port=settings.BS_STREAM_PORT)

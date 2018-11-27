@@ -5,11 +5,12 @@ import zmq
 
 import bluebird as bb
 from bluebird.utils import Timer
+from bluebird.utils.debug import errprint
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
 # TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
-ACTNODE_TOPICS = [b'ACDATA']
+ACTNODE_TOPICS = [b'ACDATA', b'SIMINFO']
 
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
@@ -33,8 +34,13 @@ class ApiClient(Client):
 
     def stream(self, name, data, sender_id):
 
-        # Fill the stream cache with the sim data
-        bb.CACHES['acdata'].fill(data)
+        # Fill the cache with the aircraft data
+        if name == b'ACDATA':
+            bb.CACHES['acdata'].fill(data)
+
+        elif name == b'SIMINFO':
+            # TODO Figure out what data is provided here
+            errprint('SIMINFO {}'.format(data))
 
         self.stream_received.emit(name, data, sender_id)
 
@@ -75,7 +81,10 @@ class ApiClient(Client):
                     nodes_myserver = next(iter(pydata.values())).get('nodes')
                     if not self.act and nodes_myserver:
                         self.actnode(nodes_myserver[0])
+
+                # TODO Handle simulation exit before client
                 elif eventname == b'QUIT':
+                    errprint('Received sim exit')
                     self.signal_quit.emit()
                 else:
                     self.event(eventname, pydata, self.sender_id)
@@ -86,6 +95,7 @@ class ApiClient(Client):
                 strmname = msg[0][:-5]
                 sender_id = msg[0][-5:]
                 pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
+
                 self.stream(strmname, pydata, sender_id)
 
             # If we are in discovery mode, parse this message
