@@ -2,8 +2,9 @@
 version: '3.7'
 
 services:
-#  bluesky-sim:
+#  bluesky:
 #    build: ./bluesky
+#    command: BlueSky.py --headless
 #    volumes:
 #      - ./bluesky:/usr/src/app
 #    ports:

@@ -1,5 +1,6 @@
 from bluebird.cache import AcDataCache
 
+# TODO Remove these - not very pythonic!
 # Singletons
 APP = None
 API = None
@@ -39,5 +40,9 @@ def run_app():
     APP.run(host='0.0.0.0', port=80, debug=True)
 
     # Called when the Flask app exists
+    stop()
+
+
+def stop():
     for item in TIMERS:
         item.stop()
