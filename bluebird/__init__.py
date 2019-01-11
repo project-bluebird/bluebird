@@ -29,18 +29,20 @@ def init():
 
 
 def client_connect():
-    # TODO Add timeout to this
-    CLIENT.connect(hostname=settings.BS_HOST,
-                   event_port=settings.BS_EVENT_PORT,
-                   stream_port=settings.BS_STREAM_PORT)
+    try:
+        CLIENT.connect(hostname=settings.BS_HOST,
+                       event_port=settings.BS_EVENT_PORT,
+                       stream_port=settings.BS_STREAM_PORT,
+                       timeout=1)
+        return True
+    except TimeoutError:
+        CLIENT.stop()
+        return False
 
 
 def run_app():
-    # Starts the Flask app
+    print('Starting Flask app')
     APP.run(host='0.0.0.0', port=80, debug=True)
-
-    # Called when the Flask app exists
-    stop()
 
 
 def stop():

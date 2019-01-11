@@ -1,6 +1,4 @@
 
-import sys
-
 import bluebird as bb
 
 if __name__ == '__main__':
@@ -9,12 +7,12 @@ if __name__ == '__main__':
     bb.init()
 
     # Connect the BlueSky client
-    try:
-        bb.client_connect()
-    except TimeoutError as e:
-        print('Failed to connect to BlueSky server: {}'.format(e))
-        bb.stop()
-        sys.exit(0)
+    connected = bb.client_connect()
 
-    # Run the Flask app
-    bb.run_app()
+    if connected:
+        # Run the Flask app
+        bb.run_app()
+    else:
+        print('Failed to connect to BlueSky server, exiting')
+
+    bb.stop()

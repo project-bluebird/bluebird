@@ -1,5 +1,3 @@
-import signal
-
 import msgpack
 import zmq
 
@@ -7,7 +5,6 @@ import bluebird as bb
 from bluebird.utils import Timer
 from bluebird.utils.debug import errprint
 from bluesky.network.client import Client
-from bluesky.network.common import get_hexid
 from bluesky.network.npcodec import decode_ndarray
 
 # TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
@@ -28,41 +25,6 @@ class ApiClient(Client):
         self.timer.start()
 
         bb.TIMERS.append(self.timer)
-
-    # Redefine this here so we can handle connection timeouts properly
-    def connect(self, hostname='localhost', event_port=0, stream_port=0, protocol='tcp'):
-        conbase = '{}://{}'.format(protocol, hostname)
-        econ = conbase + (':{}'.format(event_port) if event_port else '')
-        scon = conbase + (':{}'.format(stream_port) if stream_port else '')
-        self.event_io.setsockopt(zmq.IDENTITY, self.client_id)
-        self.event_io.connect(econ)
-        self.send_event(b'REGISTER')
-
-        # Don't like this, but works for now!
-
-        timeout_duration = 5  # Seconds
-
-        def handler(signum, frame):
-            raise TimeoutError()
-
-        # Declare a signal and start the alarm. After timeout_duration, a TimeoutError will be raised
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(timeout_duration)
-
-        try:
-            self.event_io.linger = timeout_duration
-            self.host_id = self.event_io.recv_multipart()[0]
-        except TimeoutError as e:
-            self.event_io.close()
-            raise type(e)('Call to connect timed out after {} seconds'.format(timeout_duration))
-        finally:
-            signal.alarm(0)
-
-        print('Client {} connected to host {}'.format(get_hexid(self.client_id), get_hexid(self.host_id)))
-        self.stream_in.connect(scon)
-
-        self.poller.register(self.event_io, zmq.POLLIN)
-        self.poller.register(self.stream_in, zmq.POLLIN)
 
     def stop(self):
         # TODO Send quit signal properly
