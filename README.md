@@ -9,6 +9,19 @@ See [here](docs/InitialProto.md).
 
 ## Usage
 
+Using docker, run BlueSky and BlueBird with the provided script:
+
+```bash
+> ./run-docker.sh
+```
+
+Can also run locally if you have a BlueSky simulation running:
+
+```bash
+> ./install.sh
+> python ./run.py # Can also pass --bluesky_host=1.2.3.4 if you have BlueSky running somewhere else
+```
+
 ### Running
 
 Connects to a running BlueSky simulation
