@@ -1,3 +1,7 @@
+"""
+Contains the class for storing aircraft data which is streamed from the simulation
+"""
+
 from bluebird.utils.timeutils import now
 
 from .cache import Cache, VALID_TO
@@ -5,33 +9,36 @@ from .cache import Cache, VALID_TO
 
 # TODO Call clear when sim reset
 class AcDataCache(Cache):
-    """ Holds the most recent aircraft data """
+	"""
+	Holds the most recent aircraft data
+	"""
 
-    def __init__(self, *args, **kwargs):
-        super(AcDataCache, self).__init__(*args, **kwargs)
+	def get(self, key):
+		"""
+		Get data for an aircraft
+		:param key: An aircraft identifier
+		:return: Aircraft information
+		"""
 
-    def get(self, acid):
+		acid = key.upper()
 
-        acid = acid.upper()
+		# If requested, just return the complete aircraft data
+		if acid == 'ALL':
+			return self.store
 
-        # If requested, just return the complete acdata
-        if acid == 'ALL':
-            return self.store
+		return super(AcDataCache, self).get(acid)
 
-        return super(AcDataCache, self).get(acid)
+	def fill(self, data):
 
-    def fill(self, data):
+		if isinstance(data, dict) and 'id' in data:
 
-        if isinstance(data, dict) and 'id' in data:
-
-            # TODO Can definitely tidy this up
-            for i in range(len(data['id'])):
-                acid = data['id'][i]
-                self.store[acid] = {
-                    'alt': data['alt'][i],
-                    'lat': data['lat'][i],
-                    'lon': data['lon'][i],
-                    'gs': data['gs'][i],
-                    'vs': data['vs'][i],
-                    VALID_TO: now()
-                }
+			# TODO Can definitely tidy this up
+			for idx in range(len(data['id'])):
+				acid = data['id'][idx]
+				self.store[acid] = {
+								'alt': data['alt'][idx],
+								'lat': data['lat'][idx],
+								'lon': data['lon'][idx],
+								'gs': data['gs'][idx],
+								'vs': data['vs'][idx],
+								VALID_TO: now()}

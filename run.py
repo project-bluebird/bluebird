@@ -1,18 +1,21 @@
+"""
+Entry point for the BlueBird app
+"""
 
-import bluebird as bb
+from bluebird import BlueBird, settings
 
 if __name__ == '__main__':
 
-    # Initialise the various modules
-    bb.init()
+	# Change any settings if required, can also parse from CLI args
+	# settings.BS_HOST = '0.0.0.0'
 
-    # Connect the BlueSky client
-    connected = bb.client_connect()
+	# Connect the BlueSky client
+	connected = BlueBird.client_connect()
 
-    if connected:
-        # Run the Flask app
-        bb.run_app()
-    else:
-        print('Failed to connect to BlueSky server, exiting')
+	if connected:
+		# Run the Flask app. Blocks here until it exits
+		BlueBird.run_app()
+	else:
+		print('Failed to connect to BlueSky server, exiting')
 
-    bb.stop()
+	BlueBird.stop()

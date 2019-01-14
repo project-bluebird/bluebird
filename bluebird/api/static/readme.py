@@ -1,11 +1,18 @@
+"""
+Serves the repositories README.md file as the default index page
+"""
+
 import os
 
 import markdown
 
-import bluebird as bb
 
+def readme(root_path):
+	"""
+	Serves README.md
 
-def index():
-    """ Serves README.md """
-    with open(os.path.dirname(bb.APP.root_path) + '/../README.md', 'r') as readme_md:
-        return markdown.markdown(readme_md.read())
+	:return: HTML string of the repositories README.md file
+	"""
+
+	with open(os.path.dirname(root_path) + '/../README.md', 'r') as readme_md:
+		return markdown.markdown(readme_md.read())
