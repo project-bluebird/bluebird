@@ -25,11 +25,12 @@ class BlueBird:
 							hostname=settings.BS_HOST,
 							event_port=settings.BS_EVENT_PORT,
 							stream_port=settings.BS_STREAM_PORT,
-							timeout=1)
+							timeout=5)
 
 			return True
 
 		except TimeoutError:
+			print('Failed to connect to BlueSky server on {}, exiting'.format(settings.BS_HOST))
 			CLIENT_SIM.stop()
 			return False
 

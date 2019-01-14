@@ -14,4 +14,5 @@ RUN mv bluesky/bluesky/* bluesky/ && \
 
 ENV FLASK_ENV=development
 
-CMD [ "python", "./run.py" ]
+# BS_HOST is set if run through docker-compose. Otherwise need to set manually
+CMD python ./run.py --bluesky_host=$BS_HOST

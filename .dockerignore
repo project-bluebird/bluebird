@@ -22,6 +22,7 @@ __pycache__/
 # Custom
 
 docs/
+venv/
 
 # Ignore all BlueSky content other than the code
 bluesky/

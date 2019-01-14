@@ -2,17 +2,19 @@
 version: '3.7'
 
 services:
-#  bluesky:
-#    build: ./bluesky
-#    command: BlueSky.py --headless
-#    volumes:
-#      - ./bluesky:/usr/src/app
-#    ports:
-#      - 9000:9000
-#      - 9001:9001
+  bluesky:
+    image: bluesky:latest
+    volumes:
+      - ./bluesky:/usr/src/app
+    expose:
+      - 9000
+      - 9001
   bluebird:
     build: .
     volumes:
       - .:/usr/src/app
     ports:
-      - 5001:80
+      - 5001:5001
+    environment:
+      - BS_HOST=bluesky
+
