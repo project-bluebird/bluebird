@@ -1,0 +1,28 @@
+
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitattributes
+.gitignore
+.gitmodules
+
+# JetBrains
+.idea
+
+# Python
+__pycache__/
+.pylintrc
+
+# Custom
+
+docs/
+
+# Ignore all BlueSky content other than the code
+bluesky/
+!bluesky/bluesky/

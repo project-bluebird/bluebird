@@ -8,8 +8,10 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# TODO Add .dockerignore for stuff we don't need
 COPY . .
+RUN mv bluesky/bluesky/* bluesky/ && \
+	rm -r bluesky/bluesky
 
-CMD [ "export", "FLASK_ENV=development" ]
+ENV FLASK_ENV=development
+
 CMD [ "python", "./run.py" ]
