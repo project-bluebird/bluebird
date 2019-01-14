@@ -45,3 +45,11 @@ Currently available commands are `IC`, `POS`, and `CRE`. Example:
 ```
 
 Note: If sending a JSON body, the following HTTP header must be sent: `Content-Type: application/json`
+
+## Development
+
+Pylint can be run with the included rc file:
+
+```bash
+> pylint --rcfile .pylintrc bluebird # Can also pass paths to individual modules or packages
+```
