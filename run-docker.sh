@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Build the BlueSky image from the submodule
+git submodule init
 git submodule update
 docker build ./bluesky --tag=bluesky
 
