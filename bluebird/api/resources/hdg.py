@@ -1,27 +1,26 @@
 """
-Provides logic for the ALT (altitude) API endpoint
+Provides logic for the HDG (heading) API endpoint
 """
 
 from flask_restful import Resource
 
 from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
 
-REQ_ARGS = ['alt']
-OPT_ARGS = ['vspd']
-PARSER = generate_arg_parser(REQ_ARGS, OPT_ARGS)
+REQ_ARGS = ['hdg']
+PARSER = generate_arg_parser(REQ_ARGS)
 
 
-class Alt(Resource):
+class Hdg(Resource):
 	"""
-	BlueSky ALT (altitude) command
+	Contains logic for the HDG endpoint
 	"""
 
 	@staticmethod
 	def post():
 		"""
 		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to alter its altitude.
+		to alter its heading.
 		:return: :class:`~flask.Response`
 		"""
 
-		return process_ac_cmd('ALT', PARSER, REQ_ARGS, OPT_ARGS)
+		return process_ac_cmd('HDG', PARSER, REQ_ARGS)
