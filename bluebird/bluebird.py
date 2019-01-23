@@ -20,6 +20,8 @@ class BlueBird:
 		:return: True if a connection was established with the client, false otherwise.
 		"""
 
+		CLIENT_SIM.start()
+
 		try:
 			CLIENT_SIM.connect(
 							hostname=settings.BS_HOST,

@@ -28,8 +28,9 @@ class ApiClient(Client):
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
-		self.timer.start()
 
+	def start(self):
+		self.timer.start()
 		TIMERS.append(self.timer)
 
 	def stop(self):
