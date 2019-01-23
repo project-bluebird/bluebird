@@ -2,9 +2,7 @@
 Contains the class for storing aircraft data which is streamed from the simulation
 """
 
-from bluebird.utils.timeutils import now
-
-from .cache import Cache, VALID_TO
+from .cache import Cache, generate_extras
 
 
 # TODO Call clear when sim reset
@@ -35,10 +33,8 @@ class AcDataCache(Cache):
 			# TODO Can definitely tidy this up
 			for idx in range(len(data['id'])):
 				acid = data['id'][idx]
-				self.store[acid] = {
-								'alt': data['alt'][idx],
-								'lat': data['lat'][idx],
-								'lon': data['lon'][idx],
-								'gs': data['gs'][idx],
-								'vs': data['vs'][idx],
-								VALID_TO: now()}
+
+				ac_data = {'alt': data['alt'][idx], 'lat': data['lat'][idx], 'lon': data['lon'][idx],
+				           'gs': data['gs'][idx], 'vs': data['vs'][idx]}
+
+				self.store[acid] = {**ac_data, **generate_extras()}

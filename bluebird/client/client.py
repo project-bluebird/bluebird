@@ -30,12 +30,17 @@ class ApiClient(Client):
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
 
 	def start(self):
+		"""
+		Start the client
+		:return:
+		"""
+
 		self.timer.start()
 		TIMERS.append(self.timer)
 
 	def stop(self):
 		"""
-		Stop the client and disconnect.
+		Stop the client and disconnect
 		"""
 
 		# TODO Send quit signal properly
