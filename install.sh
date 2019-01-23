@@ -16,10 +16,43 @@ else
     exit 1
 fi
 
-if [ $# -eq 1 ]; then
-    venvname=$1
-else
-    venvname="venv"
+# Translate long options to short
+# See https://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options
+for arg
+do
+    delim=""
+    case "$arg" in
+       --dev) args="${args}-d ";;
+       # pass through anything else
+       *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+           args="${args}${delim}${arg}${delim} ";;
+    esac
+done
+
+# Reset the translated args
+eval set -- $args
+
+# Parse the options
+dev=false
+while getopts ":d" opt; do
+    case $opt in
+        d)
+	    printf "Development installation\n"
+	    dev=true
+	    ;;
+	\?)
+	    echo "Invalid option: -$OPTARG" >&2
+	    exit 1
+	    ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+venvname="venv"
+if [ $# -gt 0 ]; then
+   printf "Virtual environment name: $1\n"
+   venvname=$1
 fi
 
 if [ -e $venvname ]; then
@@ -38,7 +71,7 @@ fi
 # Create a virtual environment.
 printf "Creating virtual environment: $venvname\n"
 pip3 install --upgrade virtualenv
-virtualenv -p python3 $venvname
+virtualenv -p python3.6 $venvname
 
 printf "Activating virtual environment\n"
 source $venvname/bin/activate
@@ -46,9 +79,19 @@ source $venvname/bin/activate
 printf "Installing dependencies\n"
 pip3 install -r requirements.txt
 
-status=$?
-if [[ $status != 0 ]]; then
+if [[ "$?" != 0 ]]; then
     printf "Failed to install dependencies.\n"
+    exit 1
+fi
+
+# Install dev dependencies if specified
+if [ "$dev" = true ]; then
+    printf "Installing dev-dependencies\n"
+    pip3 install -r requirements-dev.txt
+fi
+
+if [[ "$?" != 0 ]]; then
+    printf "Failed to install dev-dependencies\n"
     exit 1
 fi
 
@@ -56,4 +99,3 @@ printf "Installation successful\n"
 printf "To run BlueBird locally:\n"
 printf "> source $venvname/bin/activate\n"
 printf "> python ./run.py\n"
-
