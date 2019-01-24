@@ -1,34 +1,50 @@
 
 # BlueBird
 
-Server to communicate with NATS air traffic simulator and BlueSky
+BlueBird is a web API for air traffic simulators.
+
+Currently supports:
+
+- [BlueSky](https://github.com/alan-turing-institute/bluesky)
+
+Future:
+
+- NATS Machine College 😊
+
 
 ## Initial Prototype
 
 See [here](docs/InitialProto.md).
 
+
 ## Usage
 
-### Running
+### Running locally
 
-Using docker, run BlueSky and BlueBird with the provided script:
+To run locally, first start a BlueSky simulation, then:
+
+```bash
+> ./install.sh [--dev] [<venv_name>]
+> python ./run.py [--bluesky_host=<address>]
+```
+
+Note: If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
+
+### Running with Docker
+
+BlueBird can also be run through Docker. Easiest way is to run the provided script:
 
 ```bash
 > ./run-docker.sh
 ```
 
-Can also run locally if you have a BlueSky simulation running:
-
-```bash
-> ./install.sh
-> python ./run.py # Can also pass --bluesky_host=1.2.3.4 if you have BlueSky running somewhere else
-```
+This first creates a BlueSky image using the git submodule, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see `docker-compose.yml`).
 
 ### Commands
 
-Currently available commands are `IC`, `POS`, and `CRE`. Example:
+- `GET /api/v1/pos`
 
-- `GET` `localhost:5001/api/v1/pos/<acid/all>` - Get POS info on aircraft `<acid>`, or for `<all>`
+
 
 - `POST` `localhost:5001/api/v1/ic` - Reset the sim to the start of a scenario. If not passed any data, will reset the current scenario. Can also pass the following JSON to load a file (path relative to the BlueSky sim):
 ```json

@@ -35,9 +35,8 @@ def client():
 	bluebird_api.FLASK_APP.config['TESTING'] = True
 	test_client = bluebird_api.FLASK_APP.test_client()
 
-	assert len({len(x) for x in
-	            TEST_DATA.values()}) == 1, 'Expected TEST_DATA to contain property arrays of ' \
-	                                       'the same length.'
+	assert len({len(x) for x in TEST_DATA.values()}) == 1,\
+		'Expected TEST_DATA to contain property arrays of the same length.'
 
 	AC_DATA.fill(TEST_DATA)
 
