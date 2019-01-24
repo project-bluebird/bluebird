@@ -32,7 +32,7 @@ class BlueBird:
 			return True
 
 		except TimeoutError:
-			print('Failed to connect to BlueSky server on {}, exiting'.format(settings.BS_HOST))
+			print('Failed to connect to BlueSky server at {}, exiting'.format(settings.BS_HOST))
 			CLIENT_SIM.stop()
 			return False
 

@@ -38,40 +38,53 @@ BlueBird can also be run through Docker. Easiest way is to run the provided scri
 > ./run-docker.sh
 ```
 
-This first creates a BlueSky image using the git submodule, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see `docker-compose.yml`).
+This first creates a BlueSky image using the git sub-module, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see [docker-compose.yml](docker-compose.yml)).
 
-### Commands
+### API Endpoints
 
-- `GET /api/v1/pos`
+See [here](API.md).
 
-
-
-- `POST` `localhost:5001/api/v1/ic` - Reset the sim to the start of a scenario. If not passed any data, will reset the current scenario. Can also pass the following JSON to load a file (path relative to the BlueSky sim):
-```json
-{
-  "filename": "scenario/8.SCN"
-}
-```
-
-- `POST` `localhost:5001/api/v1/cre` - Create an aircraft. Must provide the following JSON body:
-```json
-{
-  "acid": "test1234",
-  "type": "B744",
-  "lat": "0",
-  "lon": "0",
-  "hdg": "0",
-  "alt": "FL250",
-  "spd": "250"
-}
-```
-
-Note: If sending a JSON body, the following HTTP header must be sent: `Content-Type: application/json`
 
 ## Development
 
-Pylint can be run with the included rc file:
+### Installation
+
+To install development packages, pass the `--dev` option to the install script. Or if you have already created a virtual environment:
 
 ```bash
-> pylint --rcfile .pylintrc bluebird # Can also pass paths to individual modules or packages
+> pip install -r requirements-dev.txt
+```
+
+### Testing
+
+The unit test suite can be run with:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit
+```
+
+You can also pass paths to individual modules or tests:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit/test_api_commands.py::test_pos_command
+```
+
+TODO: Integration tests using BlueSky
+
+### Code Style
+
+Linting can be run with the included `.pylintrc` file:
+
+```bash
+> pylint --rcfile .pylintrc ./bluebird
+```
+
+You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
+
+```bash
+pylint [<optional-arguments>] ./bluebird|| pylint-exit $?
+if [ $? -ne 0 ]; then
+  echo "An error occurred while running pylint." >&2
+  exit 1
+fi
 ```
