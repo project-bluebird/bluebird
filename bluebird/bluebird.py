@@ -23,11 +23,8 @@ class BlueBird:
 		CLIENT_SIM.start()
 
 		try:
-			CLIENT_SIM.connect(
-							hostname=settings.BS_HOST,
-							event_port=settings.BS_EVENT_PORT,
-							stream_port=settings.BS_STREAM_PORT,
-							timeout=5)
+			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
+			                   stream_port=settings.BS_STREAM_PORT, timeout=5)
 
 			return True
 
