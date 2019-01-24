@@ -82,7 +82,7 @@ Linting can be run with the included `.pylintrc` file:
 You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
 
 ```bash
-pylint [<optional-arguments>] ./bluebird|| pylint-exit $?
+pylint [<optional-arguments>] ./bluebird || pylint-exit $?
 if [ $? -ne 0 ]; then
   echo "An error occurred while running pylint." >&2
   exit 1
