@@ -56,6 +56,8 @@ def check_acid(string, assert_exists=True):
 
 
 # TODO Allow units to be defined?
+# TODO The parser has already been seeded with the required and optional arguments, can we infer
+# them here?
 def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 	"""
 	Generates a command string using the provided parser and arguments, then sends it to the
@@ -75,7 +77,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 	if resp is not None:
 		return resp
 
-	cmd_str = '{} {}'.format(cmd, acid)
+	cmd_str = '{}'.format(cmd)
 
 	for arg in req_args:
 		cmd_str += ' {{{}}}'.format(arg)
