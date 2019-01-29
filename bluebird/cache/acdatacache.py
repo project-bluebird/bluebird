@@ -2,7 +2,7 @@
 Contains the class for storing aircraft data which is streamed from the simulation
 """
 
-from .cache import Cache, generate_extras
+from .base import Cache, generate_extras
 
 
 # TODO Call clear when sim reset
@@ -24,7 +24,7 @@ class AcDataCache(Cache):
 		if acid == 'ALL':
 			return self.store
 
-		return super(AcDataCache, self).get(acid)
+		return super().get(acid)
 
 	def fill(self, data):
 

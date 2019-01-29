@@ -11,16 +11,18 @@ from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
 
 
-def generate_arg_parser(req_args, opt_args=None):
+def generate_arg_parser(_req_args, opt_args=None):
 	"""
 	Generates a flask_restful argument parser from the provided required and optional arguments. The
 	'acid' (aircraft ID) is always added as the first required parameter.
-	:param req_args: Array of required arguments
+	:param _req_args: Array of required arguments
 	:param opt_args: Array of optional arguments
 	:return:
 	"""
 
+	req_args = _req_args.copy()
 	req_args.insert(0, 'acid')
+
 	parser = reqparse.RequestParser()
 
 	for arg in req_args:
