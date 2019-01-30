@@ -3,6 +3,7 @@ version: '3.7'
 
 services:
   bluesky:
+    # Change this to turinginst/bluesky:1.0 when published
     image: bluesky:latest
     volumes:
       - ./bluesky:/usr/src/app
