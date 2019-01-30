@@ -92,12 +92,11 @@ def test_process_ac_cmd(patch_client_sim):
 	opt_args = ['opt1', 'opt2']
 
 	parser = generate_arg_parser(req_args, opt_args)
-
-	# Check that the correct response is returned and check the mock is validated
+	json = {'acid': acid, 'req1': 1, 'req2': 2, 'opt1': 3, 'opt2': 4}
 
 	app = Flask(__name__)
-	with app.test_request_context('/',
-	                              json={'acid': acid, 'req1': 1, 'req2': 2, 'opt1': 3, 'opt2': 4}):
+
+	with app.test_request_context('/', json=json):
 		resp = process_ac_cmd(cmd, parser, req_args, opt_args, assert_exists=False)
 
 	assert resp is not None, ''
@@ -106,7 +105,9 @@ def test_process_ac_cmd(patch_client_sim):
 	expected = '{} {} {} {} {} {}'.format(cmd, acid, 1, 2, 3, 4)
 	assert bluebird.client.CLIENT_SIM.last_stack_cmd == expected, ''  # pylint: disable=no-member
 
-	with app.test_request_context('/', json={'acid': acid, 'req1': 1, 'req2': 2, 'opt2': 5}):
+	json = {'acid': acid, 'req1': 1, 'req2': 2, 'opt2': 5}
+
+	with app.test_request_context('/', json=json):
 		resp = process_ac_cmd(cmd, parser, req_args, opt_args, assert_exists=False)
 
 	assert resp is not None, ''
