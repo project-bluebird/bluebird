@@ -64,7 +64,7 @@ class ApiClient(Client):
 
 		self.stream_received.emit(name, data, sender_id)
 
-	def send_stackcmd(self, data=None, target=b'*'):
+	def send_stack_cmd(self, data=None, target=b'*'):
 		"""
 		Send a command to the BlueSky simulation command stack
 		:param data:

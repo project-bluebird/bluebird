@@ -5,9 +5,8 @@ Contains utility functions for the API resources
 from flask import jsonify
 from flask_restful import reqparse
 
+import bluebird.client
 from bluebird.cache import AC_DATA
-from bluebird.client import CLIENT_SIM
-from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
 
 
@@ -72,14 +71,14 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 	:return:
 	"""
 
-	parsed = parser.parse_args()
+	parsed = parser.parse_args(strict=True)
 	acid = parsed['acid']
 
 	resp = check_acid(acid, assert_exists)
 	if resp is not None:
 		return resp
 
-	cmd_str = '{}'.format(cmd)
+	cmd_str = '{} {}'.format(cmd, acid)
 
 	for arg in req_args:
 		cmd_str += ' {{{}}}'.format(arg)
@@ -91,8 +90,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	errprint('CMD: {}'.format(cmd_str))
-	CLIENT_SIM.send_stackcmd(cmd_str)
+	bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
 	# TODO Get return status. Can check for the created aircraft? What does BlueSky
 	# return on an error?

@@ -1,5 +1,5 @@
 """
-Package for unit tests
+BlueBird unit test package
 """
 
 from bluebird import settings

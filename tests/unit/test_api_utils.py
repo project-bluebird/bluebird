@@ -5,7 +5,8 @@ Tests functionality of the bluebird.api.resources.utils module
 from flask import Flask
 from flask_restful.reqparse import RequestParser
 
-from bluebird.api.resources.utils import check_acid, generate_arg_parser
+import bluebird.client
+from bluebird.api.resources.utils import check_acid, generate_arg_parser, process_ac_cmd
 from . import TEST_ACIDS
 
 
@@ -74,3 +75,42 @@ def test_check_acid():
 		test_acid = TEST_ACIDS[0]
 		resp = check_acid(test_acid, assert_exists=True)
 		assert resp is None, 'Expected None from an existing aircraft with (assert_exists=True)'
+
+
+def test_process_ac_cmd(patch_client_sim):
+	# pylint: disable=unused-argument
+
+	"""
+	Tests that process_ac_cmd performs correctly
+	:param patch_client_sim:
+	:return:
+	"""
+
+	cmd = 'TST'
+	acid = 'TST1001'
+	req_args = ['req1', 'req2']
+	opt_args = ['opt1', 'opt2']
+
+	parser = generate_arg_parser(req_args, opt_args)
+
+	# Check that the correct response is returned and check the mock is validated
+
+	app = Flask(__name__)
+	with app.test_request_context('/',
+	                              json={'acid': acid, 'req1': 1, 'req2': 2, 'opt1': 3, 'opt2': 4}):
+		resp = process_ac_cmd(cmd, parser, req_args, opt_args, assert_exists=False)
+
+	assert resp is not None, ''
+	assert resp.status == '200 OK'
+
+	expected = '{} {} {} {} {} {}'.format(cmd, acid, 1, 2, 3, 4)
+	assert bluebird.client.CLIENT_SIM.last_stack_cmd == expected, ''  # pylint: disable=no-member
+
+	with app.test_request_context('/', json={'acid': acid, 'req1': 1, 'req2': 2, 'opt2': 5}):
+		resp = process_ac_cmd(cmd, parser, req_args, opt_args, assert_exists=False)
+
+	assert resp is not None, ''
+	assert resp.status == '200 OK'
+
+	expected = '{} {} {} {} {}'.format(cmd, acid, 1, 2, 5)
+	assert bluebird.client.CLIENT_SIM.last_stack_cmd == expected, ''  # pylint: disable=no-member

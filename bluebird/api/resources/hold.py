@@ -20,7 +20,7 @@ class Hold(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
-		CLIENT_SIM.send_stackcmd('HOLD')
+		CLIENT_SIM.send_stack_cmd('HOLD')
 
 		# TODO Handle response from simulation
 		resp = jsonify('Ok?')
