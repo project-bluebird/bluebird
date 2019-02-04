@@ -10,6 +10,10 @@ services:
     expose:
       - 9000
       - 9001
+# Uncomment to also publish the BlueSky ports externally
+#    ports:
+#      - 9000:9000
+#      - 9001:9001
   bluebird:
     build: .
     volumes:
