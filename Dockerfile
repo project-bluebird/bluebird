@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 RUN mv bluesky/bluesky/* bluesky/ && \
-	rm -r bluesky/bluesky
+    rm -r bluesky/bluesky && \
+    find . -type d -name '__pycache__' -prune -exec rm -r {} \;
 
 ENV FLASK_ENV=development
 
