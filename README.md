@@ -25,7 +25,8 @@ To run locally, first start a BlueSky simulation, then:
 
 ```bash
 > ./install.sh [--dev] [<venv_name>]
-> python ./run.py [--bluesky_host=<address>]
+> source <venv_name>/bin/activate
+(venv) > python ./run.py [--bluesky_host=<address>]
 ```
 
 Note: If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
