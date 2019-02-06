@@ -1,25 +1,26 @@
-from flask_restful import Resource, reqparse
+"""
+Provides logic for the CRE (create aircraft) API endpoint
+"""
 
-import bluebird as bb
-from bluebird.utils.errprint import errprint
+from flask_restful import Resource
 
-# TODO Tidy this (can we define as a dict?)
-parser = reqparse.RequestParser()
-parser.add_argument('acid', type=str, location='json', required=True)
-parser.add_argument('type', type=str, location='json', required=True)
-parser.add_argument('lat', type=str, location='json', required=True)
-parser.add_argument('lon', type=str, location='json', required=True)
-parser.add_argument('hdg', type=str, location='json', required=True)
-parser.add_argument('alt', type=str, location='json', required=True)
-parser.add_argument('spd', type=str, location='json', required=True)
+from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
+
+REQ_ARGS = ['type', 'lat', 'lon', 'hdg', 'alt', 'spd']
+PARSER = generate_arg_parser(REQ_ARGS)
 
 
 class Cre(Resource):
-    """ BlueSky CRE (create aircraft) command """
+	"""
+	BlueSky CRE (create aircraft) command
+	"""
 
-    def post(self):
-        args = parser.parse_args()
-        cmd = 'CRE {acid} {type} {lat} {lon} {hdg} {alt} {spd}'.format(**args)
-        errprint(cmd)
+	@staticmethod
+	def post():
+		"""
+		Logic for POST events. If the request contains valid aircraft information, then a request is
+		sent to the simulator to create it.
+		:return: :class:`~flask.Response`
+		"""
 
-        bb.CLIENT.send_stackcmd(cmd)
+		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False)

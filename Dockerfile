@@ -1,12 +1,21 @@
 
-FROM python:3
+FROM python:3.6
+
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["export", "FLASK_ENV=development"]
-CMD [ "python", "./run.py" ]
+COPY . .
+RUN mv bluesky/bluesky/* bluesky/ && \
+    rm -r bluesky/bluesky && \
+    find . -type d -name '__pycache__' -prune -exec rm -r {} \;
+
+ENV FLASK_ENV=development
+
+# BS_HOST is set if run through docker-compose. Otherwise need to set manually
+CMD python ./run.py --bluesky_host=$BS_HOST

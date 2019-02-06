@@ -1,1 +1,7 @@
-from .errprint import errprint
+"""
+Contains utility functions for BlueBird
+"""
+
+from .timer import Timer
+
+TIMERS = []

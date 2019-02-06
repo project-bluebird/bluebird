@@ -1,0 +1,7 @@
+
+# In addition to requirements.txt, the following are required for development and testing
+
+# PyTest 4 is also available, can we upgrade to that?
+pytest == 4.1.*
+pylint == 2.2.*
+pylint-exit == 1.0.*

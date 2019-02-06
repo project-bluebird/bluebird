@@ -2,10 +2,15 @@
 version: '3.7'
 
 services:
-#  bluesky-sim:
-#    build: ./bluesky
-#    volumes:
-#      - ./bluesky:/usr/src/app
+  bluesky:
+    # Change this to turinginst/bluesky:1.0 when published
+    image: bluesky:latest
+    volumes:
+      - ./bluesky:/usr/src/app
+    expose:
+      - 9000
+      - 9001
+# Uncomment to also publish the BlueSky ports externally
 #    ports:
 #      - 9000:9000
 #      - 9001:9001
@@ -14,4 +19,6 @@ services:
     volumes:
       - .:/usr/src/app
     ports:
-      - 5001:80
+      - 5001:5001
+    environment:
+      - BS_HOST=bluesky

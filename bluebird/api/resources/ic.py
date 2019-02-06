@@ -1,25 +1,35 @@
+"""
+Provides logic for the IC (initial condition) API endpoint
+"""
+
+from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird as bb
-from bluebird.utils.errprint import errprint
+from bluebird.client import CLIENT_SIM
 
-parser = reqparse.RequestParser()
-parser.add_argument('filename', type=str, location='json', required=False)
+PARSER = reqparse.RequestParser()
+PARSER.add_argument('filename', type=str, location='json', required=False)
 
 
 class Ic(Resource):
-    """ BlueSky IC (initial condition) command """
+	"""
+	BlueSky IC (initial condition) command
+	"""
 
-    def post(self):
-        args = parser.parse_args()
-        errprint(args)
+	@staticmethod
+	def post():
+		"""
+		Logic for POST events. If the request contains a valid scenario filename, then that is
+		loaded. Otherwise the currently running scenario is reset.
+		:return: :class:`~flask.Response`
+		"""
 
-        if args['filename'] is not None:
-            cmd = args['filename']
-        else:
-            cmd = 'IC'
+		filename = PARSER.parse_args()['filename']
 
-        bb.CLIENT.send_stackcmd('IC ' + cmd)
+		cmd = 'IC ' + ('IC' if filename is None else filename)
+		CLIENT_SIM.send_stack_cmd(cmd)
 
-        # TODO Get return status. Can hook this up to a 'SIMRESET' signal?
-        return 'Ok?'
+		# TODO Get return status. Can hook this up to a 'SIMRESET' signal?
+		resp = jsonify('Ok?')
+		resp.status_code = 418
+		return resp

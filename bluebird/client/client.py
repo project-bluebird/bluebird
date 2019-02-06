@@ -1,99 +1,131 @@
-import sys
+"""
+Contains the BlueSky client class for our API
+"""
 
 import msgpack
 import zmq
 
-import bluebird as bb
-from bluebird.client.timer import Timer
+from bluebird.cache import AC_DATA
+from bluebird.utils import TIMERS, Timer
+from bluebird.utils.debug import errprint
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
-# TODO Figure out what we need here
-ACTNODE_TOPICS = [b'ACDATA', b'ROUTEDATA']
+# TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
+ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']  # Also available: ROUTEDATA
+
+# Same rate as GuiClient polls for its data
+POLL_RATE = 50  # Hz
 
 
 class ApiClient(Client):
-    """ BlueSky simulation client """
+	"""
+	Client class for the BlueSky simulator
+	"""
 
-    def __init__(self, actnode_topics=b''):
-        super(ApiClient, self).__init__(ACTNODE_TOPICS)
+	def __init__(self):
+		super(ApiClient, self).__init__(ACTIVE_NODE_TOPICS)
 
-        self.timer = Timer(self.receive, 1)
-        self.timer.start()
-        self.subscribe(b'SIMINFO')
+		# Continually poll for the sim state
+		self.timer = Timer(self.receive, int(1 / POLL_RATE))
 
-    def close(self):
-        # TODO Send quit signal properly
-        self.timer.stop()
+	def start(self):
+		"""
+		Start the client
+		:return:
+		"""
 
-    def stream(self, name, data, sender_id):
+		self.timer.start()
+		TIMERS.append(self.timer)
 
-        # Fill the stream cache with the sim data
-        bb.STM_CACHE.fill(data)
+	def stop(self):
+		"""
+		Stop the client and disconnect
+		"""
 
-        self.stream_received.emit(name, data, sender_id)
+		# TODO Send quit signal properly
+		self.timer.stop()
 
-    def send_stackcmd(self, data=None, target=b'*'):
-        self.send_event(b'STACKCMD', data, target)
+	def stream(self, name, data, sender_id):
+		"""
+		Method called to process data received on a stream
+		:param name:
+		:param data:
+		:param sender_id:
+		"""
 
-    def send_event(self, name, data=None, target=None):
-        super().send_event(name, data, target)
+		# Fill the cache with the aircraft data
+		if name == b'ACDATA':
+			AC_DATA.fill(data)
 
-    def event(self, name, data, sender_id):
-        super().event(name, data, sender_id)
+		elif name == b'SIMINFO':
+			# TODO Figure out what data is provided here
+			errprint('SIMINFO {}'.format(data))
 
-    def receive(self, timeout=0):
-        try:
-            socks = dict(self.poller.poll(timeout))
-            if socks.get(self.event_io) == zmq.POLLIN:
+		self.stream_received.emit(name, data, sender_id)
 
-                msg = self.event_io.recv_multipart()
+	def send_stack_cmd(self, data=None, target=b'*'):
+		"""
+		Send a command to the BlueSky simulation command stack
+		:param data:
+		:param target:
+		"""
 
-                # Remove send-to-all flag if present
-                if msg[0] == b'*':
-                    msg.pop(0)
+		self.send_event(b'STACKCMD', data, target)
 
-                route, eventname, data = msg[:-2], msg[-2], msg[-1]
+	# TODO This is the same as the base method except for debugging code. Can remove when unused.
+	def receive(self, timeout=0):
+		try:
+			socks = dict(self.poller.poll(timeout))
+			if socks.get(self.event_io) == zmq.POLLIN:
 
-                self.sender_id = route[0]
-                route.reverse()
-                pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
+				msg = self.event_io.recv_multipart()
 
-                print('Event: ' + str(eventname), file=sys.stderr)
+				# Remove send-to-all flag if present
+				if msg[0] == b'*':
+					msg.pop(0)
 
-                # Print the data, filtering out unwanted messages
-                if isinstance(pydata, dict) and \
-                        'text' in pydata and \
-                        pydata['text'] != '':
-                    print(pydata['text'], file=sys.stderr)
+				route, eventname, data = msg[:-2], msg[-2], msg[-1]
 
-                if eventname == b'NODESCHANGED':
-                    self.servers.update(pydata)
-                    self.nodes_changed.emit(pydata)
+				self.sender_id = route[0]
+				route.reverse()
+				pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
 
-                    # If this is the first known node, select it as active node
-                    nodes_myserver = next(iter(pydata.values())).get('nodes')
-                    if not self.act and nodes_myserver:
-                        self.actnode(nodes_myserver[0])
-                elif eventname == b'QUIT':
-                    self.signal_quit.emit()
-                else:
-                    self.event(eventname, pydata, self.sender_id)
+				errprint('EVT :: {} :: {}'.format(eventname, pydata))
 
-            if socks.get(self.stream_in) == zmq.POLLIN:
-                msg = self.stream_in.recv_multipart()
+				if eventname == b'NODESCHANGED':
+					self.servers.update(pydata)
+					self.nodes_changed.emit(pydata)
 
-                strmname = msg[0][:-5]
-                sender_id = msg[0][-5:]
-                pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
-                self.stream(strmname, pydata, sender_id)
+					# If this is the first known node, select it as active node
+					nodes_myserver = next(iter(pydata.values())).get('nodes')
+					if not self.act and nodes_myserver:
+						self.actnode(nodes_myserver[0])
 
-            # If we are in discovery mode, parse this message
-            if self.discovery and socks.get(self.discovery.handle.fileno()):
-                dmsg = self.discovery.recv_reqreply()
-                if dmsg.conn_id != self.client_id and dmsg.is_server:
-                    self.server_discovered.emit(dmsg.conn_ip, dmsg.ports)
+				# TODO Handle simulation exit before client
+				elif eventname == b'QUIT':
+					errprint('Received sim exit')
+					self.signal_quit.emit()
+				else:
+					self.event(eventname, pydata, self.sender_id)
 
-        except zmq.ZMQError:
-            print('!!! zmq.ZMQError', file=sys.stderr)
-            return False
+			if socks.get(self.stream_in) == zmq.POLLIN:
+				msg = self.stream_in.recv_multipart()
+
+				strmname = msg[0][:-5]
+				sender_id = msg[0][-5:]
+				pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
+
+				self.stream(strmname, pydata, sender_id)
+
+			# If we are in discovery mode, parse this message
+			if self.discovery and socks.get(self.discovery.handle.fileno()):
+				dmsg = self.discovery.recv_reqreply()
+				if dmsg.conn_id != self.client_id and dmsg.is_server:
+					self.server_discovered.emit(dmsg.conn_ip, dmsg.ports)
+
+			return True
+
+		except zmq.ZMQError as exc:
+			errprint(exc)
+			return False

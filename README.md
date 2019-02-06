@@ -1,47 +1,90 @@
 
 # BlueBird
 
-Server to communicate with NATS air traffic simulator and BlueSky
+BlueBird is a web API for air traffic simulators.
+
+Currently supports:
+
+- [BlueSky](https://github.com/alan-turing-institute/bluesky)
+
+Future:
+
+- NATS Machine College 😊
+
 
 ## Initial Prototype
 
 See [here](docs/InitialProto.md).
 
+
 ## Usage
 
-### Running
+### Running locally
 
-Connects to a running BlueSky simulation
+To run locally, first start a BlueSky simulation, then:
 
 ```bash
-> docker-compose build
-> docker-compose up
+> ./install.sh [--dev] [<venv_name>]
+> python ./run.py [--bluesky_host=<address>]
 ```
 
-### Commands
+Note: If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
 
-Currently available commands are `IC`, `POS`, and `CRE`. Example:
+### Running with Docker
 
-- `GET` `localhost:5001/api/v1/pos/1234` - Get POS info on aircraft `1234`
+BlueBird can also be run through Docker. Easiest way is to run the provided script:
 
-- `POST` `localhost:5001/api/v1/ic` - Reset the sim to the start of a scenario. If not passed any data, will reset the current scenario. Can also pass the following JSON to load a file (path relative to the BlueSky sim):
-```json
-{
-  "filename": "scenario/8.SCN"
-}
+```bash
+> ./run-docker.sh
 ```
 
-- `POST` `localhost:5001/api/v1/cre` - Create an aircraft. Must provide the following JSON body:
-```json
-{
-  "acid": "test1234",
-  "type": "B744",
-  "lat": "0",
-  "lon": "0",
-  "hdg": "0",
-  "alt": "FL250",
-  "spd": "250"
-}
+This first creates a BlueSky image using the git sub-module, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see [docker-compose.yml](docker-compose.yml)).
+
+### API Endpoints
+
+See [here](API.md).
+
+
+## Development
+
+### Installation
+
+To install development packages, pass the `--dev` option to the install script. Or if you have already created a virtual environment:
+
+```bash
+> pip install -r requirements-dev.txt
 ```
 
-Note: If sending a JSON body, the following HTTP header must be sent: `Content-Type: application/json`
+### Testing
+
+The unit test suite can be run with:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit
+```
+
+You can also pass paths to individual modules or tests:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit/test_api_commands.py::test_pos_command
+```
+
+TODO: Integration tests using BlueSky
+
+### Code Style
+
+Linting can be run with the included `.pylintrc` file:
+
+```bash
+> pylint --rcfile .pylintrc ./bluebird
+```
+
+You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
+
+```bash
+pylint [<optional-arguments>] ./bluebird || pylint-exit $?
+if [ $? -ne 0 ]; then
+  echo "An error occurred while running pylint." >&2
+  exit 1
+fi
+```

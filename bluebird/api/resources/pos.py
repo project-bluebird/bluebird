@@ -1,28 +1,37 @@
+"""
+Provides logic for the POST (position) API endpoint
+"""
+
 from flask import jsonify
 from flask_restful import Resource
 
-import bluebird as bb
-from bluebird.utils import errprint
+from bluebird.api.resources.utils import check_acid, generate_arg_parser
+from bluebird.cache import AC_DATA
+
+REQ_ARGS = []
+PARSER = generate_arg_parser(REQ_ARGS)
 
 
 class Pos(Resource):
-    """ BlueSky POS (position) command """
+	"""
+	BlueSky POS (position) command
+	"""
 
-    def get(self, acid):
-        # TODO Check acid valid
+	@staticmethod
+	def get():
+		"""
+		Logic for GET events. If the request contains an identifier to an existing aircraft,
+		then information about that aircraft is returned. Otherwise returns a 404.
+		:return: :class:`~flask.Response`
+		"""
 
-        acid = acid.upper()
-        errprint('POS {}'.format(acid))
+		parsed = PARSER.parse_args()
+		acid = parsed['acid']
 
-        data = bb.STM_CACHE.getacdata(acid)
+		resp = check_acid(acid)
+		if resp is not None:
+			return resp
 
-        if data is None:
-            return 'No data'
-
-        if '_validto' in data:
-            del data['_validto']
-        else:
-            for item in data:
-                del item['_validto']
-
-        return jsonify(data)
+		resp = jsonify(AC_DATA.get(acid))
+		resp.status_code = 200
+		return resp

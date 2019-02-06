@@ -1,1 +1,5 @@
-from .readme import index
+"""
+Provides any static content for the application
+"""
+
+from .readme import readme
