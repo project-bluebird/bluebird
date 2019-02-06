@@ -29,7 +29,9 @@ To run locally, first start a BlueSky simulation, then:
 (venv) > python ./run.py [--bluesky_host=<address>]
 ```
 
-Note: If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
+Notes:
+- the `--dev` option will also install dependencies needed for developing BlueBird
+- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
 
 ### Running with Docker
 
