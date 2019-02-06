@@ -20,17 +20,16 @@ class BlueBird:
 		:return: True if a connection was established with the client, false otherwise.
 		"""
 
+		CLIENT_SIM.start()
+
 		try:
-			CLIENT_SIM.connect(
-							hostname=settings.BS_HOST,
-							event_port=settings.BS_EVENT_PORT,
-							stream_port=settings.BS_STREAM_PORT,
-							timeout=5)
+			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
+			                   stream_port=settings.BS_STREAM_PORT, timeout=5)
 
 			return True
 
 		except TimeoutError:
-			print('Failed to connect to BlueSky server on {}, exiting'.format(settings.BS_HOST))
+			print('Failed to connect to BlueSky server at {}, exiting'.format(settings.BS_HOST))
 			CLIENT_SIM.stop()
 			return False
 

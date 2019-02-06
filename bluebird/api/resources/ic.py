@@ -2,6 +2,7 @@
 Provides logic for the IC (initial condition) API endpoint
 """
 
+from flask import jsonify
 from flask_restful import Resource, reqparse
 
 from bluebird.client import CLIENT_SIM
@@ -22,14 +23,13 @@ class Ic(Resource):
 		loaded. Otherwise the currently running scenario is reset.
 		:return: :class:`~flask.Response`
 		"""
-		args = PARSER.parse_args()
 
-		if args['filename'] is not None:
-			cmd = args['filename']
-		else:
-			cmd = 'IC'
+		filename = PARSER.parse_args()['filename']
 
-		CLIENT_SIM.send_stackcmd('IC ' + cmd)
+		cmd = 'IC ' + ('IC' if filename is None else filename)
+		CLIENT_SIM.send_stack_cmd(cmd)
 
 		# TODO Get return status. Can hook this up to a 'SIMRESET' signal?
-		return 'Ok?', 418
+		resp = jsonify('Ok?')
+		resp.status_code = 418
+		return resp

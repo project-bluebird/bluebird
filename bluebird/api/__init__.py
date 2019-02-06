@@ -26,15 +26,18 @@ FLASK_API = BlueBirdApi(FLASK_APP, prefix='/api/v' + str(settings.API_VERSION))
 
 # region Resources
 
-# TODO Parser inheritance for common arguments
-# See: https://flask-restful.readthedocs.io/en/0.3.5/reqparse.html#parser-inheritance
-# TODO Input sanitisation for all endpoints
-# TODO Allow units to be specified
-
-FLASK_API.add_resource(res.Pos, '/pos/<acid>')
-FLASK_API.add_resource(res.Ic, '/ic')
-FLASK_API.add_resource(res.Cre, '/cre')
+# Aircraft control
 FLASK_API.add_resource(res.Alt, '/alt')
+FLASK_API.add_resource(res.Cre, '/cre')
+FLASK_API.add_resource(res.Hdg, '/hdg')
+FLASK_API.add_resource(res.Pos, '/pos')
+FLASK_API.add_resource(res.Spd, '/spd')
+FLASK_API.add_resource(res.Vs, '/vs')
+
+# Simulation control
+FLASK_API.add_resource(res.Hold, '/hold')
+FLASK_API.add_resource(res.Ic, '/ic')
+FLASK_API.add_resource(res.Op, '/op')
 
 # endregion
 

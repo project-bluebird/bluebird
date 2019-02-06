@@ -6,6 +6,22 @@ from bluebird.utils.timeutils import DEFAULT_LIFETIME, before, now
 
 VALID_TO = '_validTo'
 
+# Can use this to store extra data when fill() is called
+EXTRAS = {VALID_TO: now}
+
+
+def generate_extras(extras=None):
+	"""
+	Generates any additional properties required by the Cache
+	:param extras: Dict of extra properties and the method that generates their values
+	:return:
+	"""
+
+	if extras is None:
+		extras = EXTRAS
+
+	return {x: extras[x]() for x in extras}
+
 
 class Cache:
 	"""

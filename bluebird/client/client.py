@@ -28,13 +28,19 @@ class ApiClient(Client):
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
-		self.timer.start()
 
+	def start(self):
+		"""
+		Start the client
+		:return:
+		"""
+
+		self.timer.start()
 		TIMERS.append(self.timer)
 
 	def stop(self):
 		"""
-		Stop the client and disconnect.
+		Stop the client and disconnect
 		"""
 
 		# TODO Send quit signal properly
@@ -58,7 +64,7 @@ class ApiClient(Client):
 
 		self.stream_received.emit(name, data, sender_id)
 
-	def send_stackcmd(self, data=None, target=b'*'):
+	def send_stack_cmd(self, data=None, target=b'*'):
 		"""
 		Send a command to the BlueSky simulation command stack
 		:param data:

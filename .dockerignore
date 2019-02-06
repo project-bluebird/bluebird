@@ -12,18 +12,18 @@ Dockerfile
 .gitignore
 .gitmodules
 
-# JetBrains
-.idea
-
 # Python
 __pycache__/
 .pylintrc
 
-# Custom
+# JetBrains
+.idea
 
+# Custom
 docs/
 venv/
+tests/
 
 # Ignore all BlueSky content other than the code
-bluesky/
-!bluesky/bluesky/
+bluesky/*
+!bluesky/bluesky/**

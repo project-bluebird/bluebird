@@ -1,5 +1,7 @@
 
-FROM python:3
+FROM python:3.6
+
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /usr/src/app
 
@@ -10,7 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 RUN mv bluesky/bluesky/* bluesky/ && \
-	rm -r bluesky/bluesky
+    rm -r bluesky/bluesky && \
+    find . -type d -name '__pycache__' -prune -exec rm -r {} \;
 
 ENV FLASK_ENV=development
 

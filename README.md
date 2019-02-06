@@ -1,61 +1,90 @@
 
 # BlueBird
 
-Server to communicate with NATS air traffic simulator and BlueSky
+BlueBird is a web API for air traffic simulators.
+
+Currently supports:
+
+- [BlueSky](https://github.com/alan-turing-institute/bluesky)
+
+Future:
+
+- NATS Machine College 😊
+
 
 ## Initial Prototype
 
 See [here](docs/InitialProto.md).
 
+
 ## Usage
 
-### Running
+### Running locally
 
-Using docker, run BlueSky and BlueBird with the provided script:
+To run locally, first start a BlueSky simulation, then:
+
+```bash
+> ./install.sh [--dev] [<venv_name>]
+> python ./run.py [--bluesky_host=<address>]
+```
+
+Note: If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
+
+### Running with Docker
+
+BlueBird can also be run through Docker. Easiest way is to run the provided script:
 
 ```bash
 > ./run-docker.sh
 ```
 
-Can also run locally if you have a BlueSky simulation running:
+This first creates a BlueSky image using the git sub-module, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see [docker-compose.yml](docker-compose.yml)).
 
-```bash
-> ./install.sh
-> python ./run.py # Can also pass --bluesky_host=1.2.3.4 if you have BlueSky running somewhere else
-```
+### API Endpoints
 
-### Commands
+See [here](API.md).
 
-Currently available commands are `IC`, `POS`, and `CRE`. Example:
-
-- `GET` `localhost:5001/api/v1/pos/<acid/all>` - Get POS info on aircraft `<acid>`, or for `<all>`
-
-- `POST` `localhost:5001/api/v1/ic` - Reset the sim to the start of a scenario. If not passed any data, will reset the current scenario. Can also pass the following JSON to load a file (path relative to the BlueSky sim):
-```json
-{
-  "filename": "scenario/8.SCN"
-}
-```
-
-- `POST` `localhost:5001/api/v1/cre` - Create an aircraft. Must provide the following JSON body:
-```json
-{
-  "acid": "test1234",
-  "type": "B744",
-  "lat": "0",
-  "lon": "0",
-  "hdg": "0",
-  "alt": "FL250",
-  "spd": "250"
-}
-```
-
-Note: If sending a JSON body, the following HTTP header must be sent: `Content-Type: application/json`
 
 ## Development
 
-Pylint can be run with the included rc file:
+### Installation
+
+To install development packages, pass the `--dev` option to the install script. Or if you have already created a virtual environment:
 
 ```bash
-> pylint --rcfile .pylintrc bluebird # Can also pass paths to individual modules or packages
+> pip install -r requirements-dev.txt
+```
+
+### Testing
+
+The unit test suite can be run with:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit
+```
+
+You can also pass paths to individual modules or tests:
+
+```bash
+> pytest [<optional-arguments>] ./tests/unit/test_api_commands.py::test_pos_command
+```
+
+TODO: Integration tests using BlueSky
+
+### Code Style
+
+Linting can be run with the included `.pylintrc` file:
+
+```bash
+> pylint --rcfile .pylintrc ./bluebird
+```
+
+You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
+
+```bash
+pylint [<optional-arguments>] ./bluebird || pylint-exit $?
+if [ $? -ne 0 ]; then
+  echo "An error occurred while running pylint." >&2
+  exit 1
+fi
 ```
