@@ -25,11 +25,9 @@ class Ic(Resource):
 		"""
 
 		filename = PARSER.parse_args()['filename']
+		reset = CLIENT_SIM.reset_sim(filename)
 
-		cmd = 'IC ' + ('IC' if filename is None else filename)
-		CLIENT_SIM.send_stack_cmd(cmd)
+		resp = jsonify('Simulation {}reset'.format('' if reset else 'not '))
+		resp.status_code = 200 if reset else 500
 
-		# TODO Get return status. Can hook this up to a 'SIMRESET' signal?
-		resp = jsonify('Ok?')
-		resp.status_code = 418
 		return resp

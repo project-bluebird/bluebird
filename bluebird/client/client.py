@@ -2,6 +2,8 @@
 Contains the BlueSky client class for our API
 """
 
+import time
+
 import msgpack
 import zmq
 
@@ -28,6 +30,8 @@ class ApiClient(Client):
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
+
+		self.reset_flag = False
 
 	def start(self):
 		"""
@@ -73,7 +77,6 @@ class ApiClient(Client):
 
 		self.send_event(b'STACKCMD', data, target)
 
-	# TODO This is the same as the base method except for debugging code. Can remove when unused.
 	def receive(self, timeout=0):
 		try:
 			socks = dict(self.poller.poll(timeout))
@@ -93,6 +96,7 @@ class ApiClient(Client):
 
 				errprint('EVT :: {} :: {}'.format(eventname, pydata))
 
+				# TODO Is this case relevant here?
 				if eventname == b'NODESCHANGED':
 					self.servers.update(pydata)
 					self.nodes_changed.emit(pydata)
@@ -102,11 +106,18 @@ class ApiClient(Client):
 					if not self.act and nodes_myserver:
 						self.actnode(nodes_myserver[0])
 
+				# TODO Also handle the following message which asserts the scenario was loaded:
+				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
+				elif eventname == b'RESET':
+					errprint('Received BlueSky simulation reset message')
+					self.reset_flag = True
+
 				# TODO Handle simulation exit before client
 				elif eventname == b'QUIT':
 					errprint('Received sim exit')
 					self.signal_quit.emit()
 				else:
+					errprint('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
 					self.event(eventname, pydata, self.sender_id)
 
 			if socks.get(self.stream_in) == zmq.POLLIN:
@@ -129,3 +140,25 @@ class ApiClient(Client):
 		except zmq.ZMQError as exc:
 			errprint(exc)
 			return False
+
+	def reset_sim(self, filename):
+		"""
+		Resets the BlueSky sim and handles the response
+		:param filename:
+		:return:
+		"""
+
+		errprint('Doing reset_sim')
+
+		self.reset_flag = False
+		cmd = 'IC ' + ('IC' if filename is None else filename)
+		self.send_stack_cmd(cmd)
+
+		time.sleep(25 / POLL_RATE)
+		if not self.reset_flag:
+			errprint('Did not receive reset confirmation in time!')
+			return False
+
+		AC_DATA.clear()
+
+		return True
