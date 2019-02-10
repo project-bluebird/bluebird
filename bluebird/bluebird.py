@@ -39,7 +39,7 @@ class BlueBird:
 		Start the Flask app. This is a blocking method which only returns once the app exists.
 		"""
 
-		FLASK_APP.run(host='0.0.0.0', port=5001, debug=True)
+		FLASK_APP.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False)
 
 	@staticmethod
 	def stop():
