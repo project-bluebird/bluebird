@@ -22,7 +22,7 @@ class AcDataCache(Cache):
 
 		# If requested, just return the complete aircraft data
 		if acid == 'ALL':
-			return self.store
+			return list(self.store.values())
 
 		return super().get(acid)
 
@@ -34,7 +34,7 @@ class AcDataCache(Cache):
 			for idx in range(len(data['id'])):
 				acid = data['id'][idx]
 
-				ac_data = {'alt': data['alt'][idx], 'lat': data['lat'][idx], 'lon': data['lon'][idx],
-				           'gs': data['gs'][idx], 'vs': data['vs'][idx]}
+				ac_data = {'acid': data['id'][idx], 'alt': data['alt'][idx], 'lat': data['lat'][idx],
+                   'lon': data['lon'][idx], 'gs': data['gs'][idx], 'vs': data['vs'][idx]}
 
 				self.store[acid] = {**ac_data, **generate_extras()}
