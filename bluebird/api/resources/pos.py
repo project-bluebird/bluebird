@@ -3,13 +3,13 @@ Provides logic for the POST (position) API endpoint
 """
 
 from flask import jsonify
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import check_acid, generate_arg_parser
+from bluebird.api.resources.utils import check_acid
 from bluebird.cache import AC_DATA
 
-REQ_ARGS = []
-PARSER = generate_arg_parser(REQ_ARGS)
+PARSER = reqparse.RequestParser()
+PARSER.add_argument('acid', type=str, location='args', required=True)
 
 
 class Pos(Resource):
