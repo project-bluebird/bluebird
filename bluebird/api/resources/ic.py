@@ -5,7 +5,7 @@ Provides logic for the IC (initial condition) API endpoint
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.client import CLIENT_SIM
+import bluebird.client as bb_client
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
@@ -19,15 +19,24 @@ class Ic(Resource):
 	@staticmethod
 	def post():
 		"""
-		Logic for POST events. If the request contains a valid scenario filename, then that is
-		loaded. Otherwise the currently running scenario is reset.
+		Logic for POST events. Loads the scenario contained in the given file
 		:return: :class:`~flask.Response`
 		"""
 
 		filename = PARSER.parse_args()['filename']
-		reset = CLIENT_SIM.reset_sim(filename)
 
-		resp = jsonify('Simulation {}reset'.format('' if reset else 'not '))
-		resp.status_code = 200 if reset else 500
+		if filename is None or not filename.lower().endswith('.scn'):
+			resp = jsonify('Invalid filename ' + filename)
+			resp.status_code = 400
+			return resp
+
+		loaded = bb_client.CLIENT_SIM.load_scenario(filename)
+
+		if loaded:
+			resp = jsonify('Scenario file {} loaded'.format(filename))
+			resp.status_code = 200
+		else:
+			resp = jsonify('Error: Could not load scenario {}'.format(filename))
+			resp.status_code = 500
 
 		return resp
