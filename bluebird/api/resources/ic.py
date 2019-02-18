@@ -8,7 +8,7 @@ from flask_restful import Resource, reqparse
 from bluebird.client import CLIENT_SIM
 
 PARSER = reqparse.RequestParser()
-PARSER.add_argument('filename', type=str, location='json', required=False)
+PARSER.add_argument('filename', type=str, location='json', required=True)
 
 
 class Ic(Resource):
