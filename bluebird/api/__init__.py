@@ -4,6 +4,7 @@ Contains logic for flask and our app routes
 
 from flask import Flask
 from flask_restful import Api
+from flask_cors import CORS
 
 from bluebird import settings
 from . import resources as res, static
@@ -20,6 +21,7 @@ class BlueBirdApi(Api):
 
 # Create the Flask app & API, with the given prefix
 FLASK_APP = Flask(__name__)
+CORS(FLASK_APP)
 FLASK_API = BlueBirdApi(FLASK_APP, prefix='/api/v' + str(settings.API_VERSION))
 
 # Our API endpoints are defined below here
