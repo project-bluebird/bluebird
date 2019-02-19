@@ -2,9 +2,8 @@
 Contains the BlueSky client class for our API
 """
 
-import time
-
 import msgpack
+import time
 import zmq
 
 from bluebird.cache import AC_DATA
@@ -141,18 +140,35 @@ class ApiClient(Client):
 			errprint(exc)
 			return False
 
-	def reset_sim(self, filename):
+	def load_scenario(self, filename):
+		"""
+		Load a scenario from a file
+		:param filename:
+		:return:
+		"""
+
+		self.reset_flag = False
+		self.send_stack_cmd('IC ' + filename)
+
+		return self._await_reset_confirmation()
+
+	def reset_sim(self):
 		"""
 		Resets the BlueSky sim and handles the response
 		:param filename:
 		:return:
 		"""
 
-		errprint('Doing reset_sim')
-
 		self.reset_flag = False
-		cmd = 'IC ' + ('IC' if filename is None else filename)
-		self.send_stack_cmd(cmd)
+		self.send_stack_cmd('RESET')
+
+		return self._await_reset_confirmation()
+
+	def _await_reset_confirmation(self):
+		"""
+		Waits for reset_flag to be set, then clears AC_DATA.
+		:return: True if the simulation was reset
+		"""
 
 		time.sleep(25 / POLL_RATE)
 		if not self.reset_flag:

@@ -6,11 +6,12 @@ is then used to test the app endpoints with various HTTP requests. Test aircraft
 defined, so we don't have any test dependencies on BlueSky.
 """
 
-# pylint: disable=redefined-outer-name,unused-argument
+# pylint: disable=redefined-outer-name, unused-argument, no-member
 
 import pytest
 
 import bluebird.api as bluebird_api
+import bluebird.client as bb
 from bluebird.cache import AC_DATA
 from . import API_PREFIX, EXTRAS, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
@@ -60,6 +61,45 @@ def test_pos_command(client):
 				assert resp_json[prop] == TEST_DATA[prop][idx]
 			else:
 				assert prop in EXTRAS.keys()
+
+
+def test_ic_command(client, patch_client_sim):
+	"""
+	Tests the /ic endpoint
+	:param client:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/ic')
+	assert resp.status == '400 BAD REQUEST'
+
+	resp = client.post(API_PREFIX + '/ic', json={})
+	assert resp.status == '400 BAD REQUEST'
+
+	filename = 'testeroni.test'
+
+	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
+	assert resp.status == '400 BAD REQUEST'
+
+	filename = 'testeroni.scn'
+
+	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
+	assert resp.status == '200 OK'
+
+	assert bb.CLIENT_SIM.last_scenario == filename, 'Expected the filename to be loaded'
+
+
+def test_reset_command(client, patch_client_sim):
+	"""
+	Tests the /reset endpoint
+	:param client:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/reset')
+	assert resp.status == '200 OK'
+
+	assert bb.CLIENT_SIM.was_reset, 'Expected the client simulation to be reset'
 
 
 def test_cre_new_aircraft(client, patch_client_sim):

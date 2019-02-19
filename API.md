@@ -3,9 +3,9 @@
 
 Note: If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.
 
-- `POST <host>/api/v1/ic`
+## `POST <host>/api/v1/ic`
 
-Reset the simulation to the start of a scenario. If not passed any data, the currently running scenario will be reset (if one is running). A scenario file can also be loaded by sending the following data to the endpoint:
+Resets the sim and loads the scenario specified in the given filename. The `filename` parameter is required:
 
 ```json
 {
@@ -19,7 +19,15 @@ Returns:
 
 TODO
 
-- `POST <host>/api/v1/cre`
+## `POST <host>/api/v1/reset`
+
+Resets the sim and clears all aircraft data. 
+
+Returns:
+
+TODO
+
+## `POST <host>/api/v1/cre`
 
 Create an aircraft. The following data must be provided:
 
@@ -41,7 +49,7 @@ Returns:
 
 TODO
 
-- `GET <host>/api/v1/pos`
+## `GET <host>/api/v1/pos`
 
 Request the information for a specific aircraft by sending its aircraft ID (`acid`), or all aircraft in the current simulation:
 
@@ -67,7 +75,7 @@ Returns:
 }
 ```
 
-- `POST <host>/api/v1/alt`
+## `POST <host>/api/v1/alt`
 
 Request that the aircraft alters its altitude:
 
