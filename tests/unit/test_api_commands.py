@@ -12,7 +12,8 @@ import pytest
 
 import bluebird.api as bluebird_api
 import bluebird.client as bb
-from . import API_PREFIX, EXTRAS, TEST_DATA, TEST_DATA_KEYS
+from bluebird.cache import AC_DATA
+from . import API_PREFIX, EXTRAS, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
 
 @pytest.fixture
@@ -99,3 +100,37 @@ def test_reset_command(client, patch_client_sim):
 	assert resp.status == '200 OK'
 
 	assert bb.CLIENT_SIM.was_reset, 'Expected the client simulation to be reset'
+
+
+def test_cre_new_aircraft(client, patch_client_sim):
+	"""
+	Test the CRE endpoint handles new aircraft correctly
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	acid = 'TST1234'
+	assert AC_DATA.get(acid) is None, 'Expected the test aircraft not to exist'
+
+	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
+	resp = client.post(API_PREFIX + '/cre', json=cre_data)
+
+	assert resp.status == '200 OK'
+
+
+def test_cre_existing_aircraft(client, patch_client_sim):
+	"""
+	Test the CRE endpoint handles existing aircraft correctly
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	acid = TEST_ACIDS[0]
+	assert AC_DATA.get(acid) is not None, 'Expected the test aircraft to exist'
+
+	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
+	resp = client.post(API_PREFIX + '/cre', json=cre_data)
+
+	assert resp.status == '400 BAD REQUEST'
