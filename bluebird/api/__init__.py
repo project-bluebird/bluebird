@@ -40,6 +40,7 @@ FLASK_API.add_resource(res.Vs, '/vs')
 FLASK_API.add_resource(res.Hold, '/hold')
 FLASK_API.add_resource(res.Ic, '/ic')
 FLASK_API.add_resource(res.Op, '/op')
+FLASK_API.add_resource(res.Reset, '/reset')
 
 # endregion
 
