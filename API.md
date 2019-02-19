@@ -51,13 +51,14 @@ TODO
 
 ## `GET <host>/api/v1/pos`
 
-Request the information for a specific aircraft by sending its aircraft ID (`acid`), or all aircraft in the current simulation:
+- `GET <host>/api/v1/pos?acid=ALL` 
 
-```json
-{
-  "acid": (<acid>|"ALL")
-}
-```
+Request information for all aircraft in the current simulation.
+
+- `GET <host>/api/v1/pos?acid=acid` 
+
+Request the information for a specific aircraft by sending its aircraft ID (`acid`).
+
 
 Returns:
 

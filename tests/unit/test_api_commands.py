@@ -39,16 +39,16 @@ def test_pos_command(client):
 	resp = client.get(API_PREFIX + '/pos')
 	assert resp.status == '400 BAD REQUEST'
 
-	resp = client.get(API_PREFIX + '/pos', json={})
+	resp = client.get(API_PREFIX + '/pos', json={'acid': 'TST1001'})
 	assert resp.status == '400 BAD REQUEST'
 
-	resp = client.get(API_PREFIX + '/pos', json={'acid': 'unknown'})
+	resp = client.get(API_PREFIX + '/pos?acid=unknown')
 	assert resp.status == '404 NOT FOUND'
 
 	for idx in range(len(TEST_DATA['id'])):
 		acid = TEST_DATA['id'][idx]
 
-		resp = client.get(API_PREFIX + '/pos', json={'acid': acid})
+		resp = client.get(API_PREFIX + '/pos?acid={}'.format(acid))
 		assert resp.status == '200 OK'
 
 		resp_json = resp.get_json()
