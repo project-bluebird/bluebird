@@ -13,10 +13,10 @@ Notes:
 
 ### Simulation endpoints
 
-- [Scenario Load](#scenario-load)
+- [Scenario Load](#scenario-load-ic)
 - [Simulation Reset](#simulation-reset)
-- [Simulation Pause](#simulation-pause)
-- [Simulation Resume](#simulation-resume)
+- [Simulation Pause](#simulation-pause-hold)
+- [Simulation Resume](#simulation-resume-op)
 
 ### Aircraft endpoints
 
