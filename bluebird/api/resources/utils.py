@@ -92,10 +92,14 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 				cmd_str += ' {}'.format(parsed[opt])
 
 	errprint('Sending stack command: {}'.format(cmd_str))
-	bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
-	# TODO Get return status. Can check for the created aircraft? What does BlueSky
-	# return on an error?
-	resp = jsonify('Ok? Command string was: {}'.format(cmd_str))
-	resp.status_code = 200
+	if error:
+		resp = jsonify(f'Error: simulation returned: {error}')
+		resp.status_code = 500
+
+	else:
+		resp = jsonify('Command accepted')
+		resp.status_code = 200
+
 	return resp

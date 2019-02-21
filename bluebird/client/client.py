@@ -2,8 +2,9 @@
 Contains the BlueSky client class for our API
 """
 
-import msgpack
 import time
+
+import msgpack
 import zmq
 
 from bluebird.cache import AC_DATA
@@ -31,6 +32,7 @@ class ApiClient(Client):
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
 
 		self.reset_flag = False
+		self.echo_data = None
 
 	def start(self):
 		"""
@@ -74,7 +76,15 @@ class ApiClient(Client):
 		:param target:
 		"""
 
+		self.echo_data = None
 		self.send_event(b'STACKCMD', data, target)
+
+		time.sleep(25 / POLL_RATE)
+		if self.echo_data:
+			errprint(f'Command \'{data}\' resulted in error:\n{self.echo_data}')
+			return self.echo_data['text']
+
+		return None
 
 	def receive(self, timeout=0):
 		try:
@@ -104,6 +114,10 @@ class ApiClient(Client):
 					nodes_myserver = next(iter(pydata.values())).get('nodes')
 					if not self.act and nodes_myserver:
 						self.actnode(nodes_myserver[0])
+
+				# TODO Also check the pydata contains 'syntax error' etc.
+				elif eventname == b'ECHO':
+					self.echo_data = pydata
 
 				# TODO Also handle the following message which asserts the scenario was loaded:
 				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
