@@ -1,68 +1,131 @@
+  
+# BlueBird API
 
-# BlueBird API Endpoints
+Version `1`
 
-Note: If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.
+Notes:
 
-## `POST <host>/api/v1/ic`
+- If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.  
+- In future, this documentation will be auto-generated 😅
+- Unless otherwise noted, all references to 'speed' refer to the aircraft airspeed (usually in CAS)
 
-Resets the sim and loads the scenario specified in the given filename. The `filename` parameter is required:
+## Contents
 
-```json
+### Simulation endpoints
+
+- [Scenario Load](#scenario-load)
+- [Simulation Reset](#simulation-reset)
+- [Simulation Pause](#simulation-pause)
+- [Simulation Resume](#simulation-resume)
+
+### Aircraft endpoints
+
+- [Create](#create)
+- [Position](#position)
+- [Altitude](#altitude)
+- [Heading](#heading)
+- [Speed](#speed)
+- [Vertical Speed](#vertical-speed)
+
+## Scenario Load (IC)
+
+Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
+
+```javascript
+POST /api/v1/ic
 {
-  "filename": "scenario/8.SCN"
+  "filename": "scenario/<scenario>.scn"
 }
+```  
+ 
+Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future, there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+
+Returns:
+
+- `200 Ok` - Scenario was loaded
+- `400 Bad Request` - Filename was invalid
+- `500 Internal Server Error` - Could not load the scenario
+	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`
+  
+## Simulation Reset
+
+Resets the simulation and clears all aircraft data.
+
+```javascript
+POST /api/v1/reset
 ```
 
-Where the file path is relative to the BlueSky root directory.
+Returns:  
 
-Returns:
+- `200 Ok` - Simulation was reset
+- `500 Internal Server Error` - Simulation could not be reset
 
-TODO
+## Simulation Pause (HOLD)
 
-## `POST <host>/api/v1/reset`
+Pauses the simulation:
 
-Resets the sim and clears all aircraft data. 
-
-Returns:
-
-TODO
-
-## `POST <host>/api/v1/cre`
-
-Create an aircraft. The following data must be provided:
-
-TODO List of valid aircraft types (as an endpoint?)
-
-```json
-{
-  "acid": <acid>,
-  "type": "B744",
-  "lat": "0",
-  "lon": "0",
-  "hdg": "0",
-  "alt": "FL250",
-  "spd": "250"
-}
+```javascript
+POST /api/v1/hold
 ```
 
+Returns:  
+
+- `200 Ok` - Simulation was paused
+- `500 Internal Server Error` - Simulation could not be paused
+
+## Simulation Resume (OP)
+
+Resumes the simulation:
+
+```javascript
+POST /api/v1/op
+```
+
+Returns:  
+
+- `200 Ok` - Simulation was resumed
+- `500 Internal Server Error` - Simulation could not be resumed
+
+## Create Aircraft (CRE)
+
+Creates an aircraft. The following data must be provided:  
+
+```javascript
+POST /api/v1/cre
+{
+  "acid": "TST1000",	// Aircraft ID (alphanumeric, at least 3 characters)
+  "type": "B744",		// Aircraft type
+  "lat": "0",			// Initial latitude (degrees)
+  "lon": "0",			// Initial longitude (degrees)
+  "hdg": "0",			// Initial heading (degrees)
+  "alt": "FL250",		// Initial altitude (feet or FL)
+  "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
+}  
+```
+  
 Returns:
 
-TODO
+- `200 Ok` - Aircraft was created
+- `400 Bad Request` - Aircraft already exists
+- `500 Internal Server Error` - Other error, response will contain data:
+ 
+```javascript
+{TODO}
+```
+  
+##  Position
 
-## `GET <host>/api/v1/pos`
+Request information on one or all aircraft
 
-- `GET <host>/api/v1/pos?acid=ALL` 
-
-Request information for all aircraft in the current simulation.
-
-- `GET <host>/api/v1/pos?acid=acid` 
-
-Request the information for a specific aircraft by sending its aircraft ID (`acid`).
-
-
+```javascript
+GET <host>/api/v1/pos?acid=[<acid>|"all"]
+```
+  
 Returns:
 
-```json
+- `200 Ok` - Returns the following data:
+
+```javascript
 {
   "SCN1001": {
     "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",
@@ -73,30 +136,81 @@ Returns:
     "vs": 0
   },
   // ...
-}
-```
+}  
+```  
 
-## `POST <host>/api/v1/alt`
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
 
+## Altitude
+  
 Request that the aircraft alters its altitude:
 
-```json
+```javascript
+POST /api/v1/alt
 {
-  "acid": <acid>,
-  "alt": "FL250"
-}
-```
-
-Can also optionally pass the vertical speed at which to climb or descend at:
-
-```json
-{
-  "acid": <acid>,
-  "alt": "FL250",
-  "vspd": 50
-}
+  "acid": <acid>,	// Aircraft ID
+  "alt": "FL250",	// Requested altitude (feet or FL)
+  ["vspd": "50"]	// Optional: vertical speed (feet/min)
+}  
 ```
 
 Returns:
 
-TODO
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
+
+## Heading
+
+Request that the aircraft changes its heading:
+
+```javascript
+POST /api/v1/hdg
+{
+  "acid": <acid>,	// Aircraft ID
+  "hdg": "123.45",	// Requested heading (degrees)
+}  
+```
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
+
+## Speed
+
+Request that the aircraft changes its speed:
+
+```javascript
+POST /api/v1/spd
+{
+  "acid": <acid>,	// Aircraft ID
+  "spd": "250"		// Requested calibrated air speed (CAS) (kts or Mach)
+}  
+```
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
+
+## Vertical Speed
+
+Request that the aircraft changes its vertical speed:
+
+```javascript
+POST /api/v1/vs
+{
+  "acid": <acid>,	// Aircraft ID
+  "vspd": "250"		// Requested vertical speed (feet/min)
+}  
+```
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
