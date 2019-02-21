@@ -21,7 +21,7 @@ Notes:
 
 ### Aircraft endpoints
 
-- [Create](#create)
+- [Create Aircraft](#create-aircraft-cre)
 - [Position](#position)
 - [Altitude](#altitude)
 - [Heading](#heading)
@@ -116,7 +116,7 @@ Returns:
 {TODO}
 ```
   
-##  Position
+## Position
 
 Request information on one or all aircraft
 
