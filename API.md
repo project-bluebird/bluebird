@@ -7,6 +7,7 @@ Notes:
 
 - If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.  
 - In future, this documentation will be auto-generated 😅
+- Parameters should follow the [Docopt](http://docopt.org/) format
 - Unless otherwise noted, all references to 'speed' refer to the aircraft airspeed (usually in CAS)
 
 ## Contents
@@ -38,18 +39,18 @@ POST /api/v1/ic
 }
 ```  
  
-Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future, there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
 
 Returns:
 
 - `200 Ok` - Scenario was loaded
 - `400 Bad Request` - Filename was invalid
 - `500 Internal Server Error` - Could not load the scenario
-	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`
+	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
   
 ## Simulation Reset
 
-Resets the simulation and clears all aircraft data.
+Resets the simulation and clears all aircraft data:
 
 ```javascript
 POST /api/v1/reset
@@ -86,6 +87,8 @@ Returns:
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
 
+---
+
 ## Create Aircraft (CRE)
 
 Creates an aircraft. The following data must be provided:  
@@ -93,7 +96,7 @@ Creates an aircraft. The following data must be provided:
 ```javascript
 POST /api/v1/cre
 {
-  "acid": "TST1000",	// Aircraft ID (alphanumeric, at least 3 characters)
+  "acid": "TST1000",		// Aircraft ID (alphanumeric, at least 3 characters)
   "type": "B744",		// Aircraft type
   "lat": "0",			// Initial latitude (degrees)
   "lon": "0",			// Initial longitude (degrees)
@@ -118,7 +121,7 @@ Returns:
 Request information on one or all aircraft
 
 ```javascript
-GET <host>/api/v1/pos?acid=[<acid>|"all"]
+GET /api/v1/pos?acid=[<acid>|"all"]
 ```
   
 Returns:
@@ -127,8 +130,8 @@ Returns:
 
 ```javascript
 {
-  "SCN1001": {
-    "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",
+  "SCN1001": {	// The requested acid (aircraft ID)
+    "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",	// Estimate of when the data should be considered accurate to
     "alt": 6096,
     "gs": 293.6780042365748,
     "lat": 53.8,
@@ -169,7 +172,7 @@ Request that the aircraft changes its heading:
 POST /api/v1/hdg
 {
   "acid": <acid>,	// Aircraft ID
-  "hdg": "123.45",	// Requested heading (degrees)
+  "hdg": "123.45"	// Requested heading (degrees)
 }  
 ```
 
