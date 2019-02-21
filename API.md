@@ -98,9 +98,9 @@ POST /api/v1/cre
 {
   "acid": "TST1000",		// Aircraft ID (alphanumeric, at least 3 characters)
   "type": "B744",		// Aircraft type
-  "lat": "0",			// Initial latitude (degrees)
-  "lon": "0",			// Initial longitude (degrees)
-  "hdg": "0",			// Initial heading (degrees)
+  "lat": "0",			// Initial latitude (deg)
+  "lon": "0",			// Initial longitude (deg)
+  "hdg": "0",			// Initial heading (deg)
   "alt": "FL250",		// Initial altitude (feet or FL)
   "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
 }  
@@ -130,13 +130,13 @@ Returns:
 
 ```javascript
 {
-  "SCN1001": {	// The requested acid (aircraft ID)
+  "SCN1001": {						// The requested acid (aircraft ID)
     "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",	// Estimate of when the data should be considered accurate to
-    "alt": 6096,
-    "gs": 293.6780042365748,
-    "lat": 53.8,
-    "lon": 2.0364214816067467,
-    "vs": 0
+    "alt": 6096,					// Altitude (ft)
+    "gs": 293.6780042365748,				// Ground speed (kts)
+    "lat": 53.8,					// Latitude (deg)
+    "lon": 2.0364214816067467,				// Longitude (deg)
+    "vs": 0						// Vertical speed (ft/min)
   },
   // ...
 }  
@@ -154,7 +154,7 @@ POST /api/v1/alt
 {
   "acid": <acid>,	// Aircraft ID
   "alt": "FL250",	// Requested altitude (feet or FL)
-  ["vspd": "50"]	// Optional: vertical speed (feet/min)
+  ["vspd": "50"]	// Optional: vertical speed (ft/min)
 }  
 ```
 
@@ -172,7 +172,7 @@ Request that the aircraft changes its heading:
 POST /api/v1/hdg
 {
   "acid": <acid>,	// Aircraft ID
-  "hdg": "123.45"	// Requested heading (degrees)
+  "hdg": "123.45"	// Requested heading (deg)
 }  
 ```
 
@@ -208,7 +208,7 @@ Request that the aircraft changes its vertical speed:
 POST /api/v1/vs
 {
   "acid": <acid>,	// Aircraft ID
-  "vspd": "250"		// Requested vertical speed (feet/min)
+  "vspd": "250"		// Requested vertical speed (ft/min)
 }  
 ```
 
