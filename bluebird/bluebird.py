@@ -2,10 +2,14 @@
 Contains the BlueBird class
 """
 
+import logging
+
 from bluebird import settings
 from bluebird.api import FLASK_APP
 from bluebird.client import CLIENT_SIM
 from bluebird.utils import TIMERS
+
+LOGGER = logging.getLogger('bluebird')
 
 
 class BlueBird:
@@ -21,6 +25,8 @@ class BlueBird:
 		"""
 
 		CLIENT_SIM.start()
+
+		LOGGER.info('Connecting to client...')
 
 		try:
 			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
