@@ -171,7 +171,6 @@ class ApiClient(Client):
 		self.reset_flag = False
 
 		err = self.send_stack_cmd('IC ' + filename)
-		self._logger.debug(f'!! {err}')
 		return err if err else self._await_reset_confirmation()
 
 	def reset_sim(self):

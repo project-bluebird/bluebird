@@ -63,7 +63,7 @@ def check_acid(string, assert_exists=True):
 # TODO Allow units to be defined?
 # TODO The parser has already been seeded with the required and optional arguments, can we infer
 # them here?
-def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
+def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, success_code=200):
 	"""
 	Generates a command string using the provided parser and arguments, then sends it to the
 	running simulation.
@@ -103,6 +103,6 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 
 	else:
 		resp = jsonify('Command accepted')
-		resp.status_code = 200
+		resp.status_code = success_code
 
 	return resp

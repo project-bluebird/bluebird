@@ -108,7 +108,7 @@ POST /api/v1/cre
   
 Returns:
 
-- `200 Ok` - Aircraft was created
+- `201 Created` - Aircraft was created
 - `400 Bad Request` - Aircraft already exists
 - `500 Internal Server Error` - Other error, response will contain data:
  
