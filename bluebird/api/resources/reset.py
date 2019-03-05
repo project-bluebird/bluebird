@@ -20,9 +20,13 @@ class Reset(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
-		reset = bb_client.CLIENT_SIM.reset_sim()
+		err = bb_client.CLIENT_SIM.reset_sim()
 
-		resp = jsonify('Simulation {} reset'.format('' if reset else 'not '))
-		resp.status_code = 200 if reset else 500
+		if not err:
+			resp = jsonify('Simulation reset')
+			resp.status_code = 200
+		else:
+			resp = jsonify('Simulation now reset: '.format(err))
+			resp.status_code = 500
 
 		return resp

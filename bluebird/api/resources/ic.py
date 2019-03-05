@@ -30,13 +30,13 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		loaded = bb_client.CLIENT_SIM.load_scenario(filename)
+		err = bb_client.CLIENT_SIM.load_scenario(filename)
 
-		if loaded:
+		if not err:
 			resp = jsonify('Scenario file {} loaded'.format(filename))
 			resp.status_code = 200
 		else:
-			resp = jsonify('Error: Could not load scenario {}'.format(filename))
+			resp = jsonify('Error: Could not load scenario {}. Error was: {}'.format(filename, err))
 			resp.status_code = 500
 
 		return resp

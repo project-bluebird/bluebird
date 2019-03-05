@@ -29,6 +29,8 @@ class AcDataCache(Cache):
 
 		# Periodically log the sim state to file
 		self.timer = Timer(self._log, int(1 / SIM_DT))
+
+	def start(self):
 		self.timer.start()
 		TIMERS.append(self.timer)
 

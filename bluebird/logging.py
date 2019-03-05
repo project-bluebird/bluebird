@@ -4,7 +4,6 @@ Logging configuration for BlueBird
 
 import json
 import logging.config
-import logging.handlers
 import os
 
 from datetime import datetime

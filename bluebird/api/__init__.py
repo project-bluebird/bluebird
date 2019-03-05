@@ -2,9 +2,11 @@
 Contains logic for flask and our app routes
 """
 
-from flask import Flask
-from flask_restful import Api
+import logging
+
+from flask import Flask, request
 from flask_cors import CORS
+from flask_restful import Api
 
 from bluebird import settings
 from . import resources as res, static
@@ -23,6 +25,22 @@ class BlueBirdApi(Api):
 FLASK_APP = Flask(__name__)
 CORS(FLASK_APP)
 FLASK_API = BlueBirdApi(FLASK_APP, prefix='/api/v' + str(settings.API_VERSION))
+
+# Add hooks to log request response data
+
+LOGGER = logging.getLogger(__name__)
+
+
+@FLASK_APP.before_request
+def before_req():
+	LOGGER.debug(f'REQ: {request.method} {request.full_path} "{request.get_json()}"')
+
+
+@FLASK_APP.after_request
+def after_req(response):
+	LOGGER.debug(f'RESP: {response.status_code} "{response.get_json()}"')
+	return response
+
 
 # Our API endpoints are defined below here
 

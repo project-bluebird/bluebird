@@ -6,10 +6,11 @@ import logging
 
 from bluebird import settings
 from bluebird.api import FLASK_APP
+from bluebird.cache import AC_DATA
 from bluebird.client import CLIENT_SIM
 from bluebird.utils import TIMERS
 
-LOGGER = logging.getLogger('bluebird')
+LOGGER = logging.getLogger(__name__)
 
 
 class BlueBird:
@@ -45,6 +46,7 @@ class BlueBird:
 		Start the Flask app. This is a blocking method which only returns once the app exists.
 		"""
 
+		AC_DATA.start()
 		FLASK_APP.run(host='0.0.0.0', port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
 		              use_reloader=False)
 
@@ -56,7 +58,7 @@ class BlueBird:
 
 		LOGGER.info("BlueBird stopping")
 
-		for item in TIMERS:
-			item.stop()
+		for timer in TIMERS:
+			timer.stop()
 
 		CLIENT_SIM.stop()

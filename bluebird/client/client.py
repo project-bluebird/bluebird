@@ -30,7 +30,7 @@ class ApiClient(Client):
 	def __init__(self):
 		super(ApiClient, self).__init__(ACTIVE_NODE_TOPICS)
 
-		self._logger = logging.getLogger('bluebird')
+		self._logger = logging.getLogger(__name__)
 		self._ep_logger = logging.getLogger('episode')
 
 		self.recording = False
@@ -170,10 +170,9 @@ class ApiClient(Client):
 
 		self.reset_flag = False
 
-		# TODO Check for err result
-		self.send_stack_cmd('IC ' + filename)
-
-		return self._await_reset_confirmation()
+		err = self.send_stack_cmd('IC ' + filename)
+		self._logger.debug(f'!! {err}')
+		return err if err else self._await_reset_confirmation()
 
 	def reset_sim(self):
 		"""
@@ -183,10 +182,8 @@ class ApiClient(Client):
 
 		self.reset_flag = False
 
-		# TODO Check for err result
-		self.send_stack_cmd('RESET')
-
-		return self._await_reset_confirmation()
+		err = self.send_stack_cmd('RESET')
+		return err if err else self._await_reset_confirmation()
 
 	def _await_reset_confirmation(self):
 		"""
@@ -202,5 +199,3 @@ class ApiClient(Client):
 		AC_DATA.clear()
 		self._ep_logger.info("Episode started", extra={'PREFIX': LOG_PREFIX})
 		self.recording = True
-
-		return True
