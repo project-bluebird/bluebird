@@ -124,7 +124,11 @@ class ApiClient(Client):
 
 				# TODO Also check the pydata contains 'syntax error' etc.
 				elif eventname == b'ECHO':
-					self.echo_data = pydata
+					text = pydata['text']
+					if text.startswith('Unknown command: METRICS'):
+						self._logger.warning('Ignored warning about invalid "METRICS" command')
+					elif not text.startswith('IC: Opened'):
+						self.echo_data = pydata
 
 				# TODO Also handle the following message which asserts the scenario was loaded:
 				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
