@@ -33,12 +33,14 @@ LOGGER = logging.getLogger(__name__)
 
 @FLASK_APP.before_request
 def before_req():
-	LOGGER.debug(f'REQ: {request.method} {request.full_path} "{request.get_json()}"')
+	json = request.get_json()
+	LOGGER.debug(f'REQ: {request.method} {request.full_path} "{json if json else ""}"')
 
 
 @FLASK_APP.after_request
 def after_req(response):
-	LOGGER.debug(f'RESP: {response.status_code} "{response.get_json()}"')
+	json = response.get_json()
+	LOGGER.debug(f'RESP: {response.status_code} "{json if json else ""}"')
 	return response
 
 

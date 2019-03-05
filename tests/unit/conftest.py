@@ -51,10 +51,8 @@ def patch_client_sim(monkeypatch):
 
 		def load_scenario(self, filename):
 			self.last_scenario = filename
-			return True
 
 		def reset_sim(self):
 			self.was_reset = True
-			return True
 
 	monkeypatch.setattr(bluebird.client, 'CLIENT_SIM', TestClient())
