@@ -2,13 +2,16 @@
 Contains utility functions for the API resources
 """
 
+import logging
+
 from flask import jsonify
 from flask_restful import reqparse
 
 import bluebird.client
 from bluebird.cache import AC_DATA
-from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
+
+LOGGER = logging.getLogger('bluebird')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -91,7 +94,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	errprint('Sending stack command: {}'.format(cmd_str))
+	LOGGER.debug('Sending stack command: {}'.format(cmd_str))
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
 	if error:

@@ -3,13 +3,17 @@
   "disable_existing_loggers": true,
   "formatters": {
     "standard": {
-      "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+      "format": "%(asctime)s %(levelname)s: %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "episode": {
+      "format": "%(asctime)s %(PREFIX)s %(message)s",
       "datefmt": "%Y-%m-%d %H:%M:%S"
     }
   },
   "handlers": {
     "console": {
-      "level": "DEBUG",
+      "level": "INFO",
       "class": "logging.StreamHandler",
       "formatter": "standard"
     },
@@ -17,6 +21,11 @@
       "level": "DEBUG",
       "class": "logging.FileHandler",
       "formatter": "standard"
+    },
+    "episode-file": {
+      "level": "DEBUG",
+      "class": "logging.FileHandler",
+      "formatter": "episode"
     }
   },
   "loggers": {
@@ -26,7 +35,14 @@
         "debug-file"
       ],
       "propagate": true,
-      "level": "INFO"
+      "level": "DEBUG"
+    },
+    "episode": {
+      "handlers": [
+        "episode-file"
+      ],
+      "propagate": true,
+      "level": "DEBUG"
     }
   }
 }

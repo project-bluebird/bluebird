@@ -2,6 +2,7 @@
 Contains the BlueSky client class for our API
 """
 
+import logging
 import time
 
 import msgpack
@@ -9,9 +10,10 @@ import zmq
 
 from bluebird.cache import AC_DATA
 from bluebird.utils import TIMERS, Timer
-from bluebird.utils.debug import errprint
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
+
+LOG_PREFIX = 'E'
 
 # TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
 ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']  # Also available: ROUTEDATA
@@ -27,6 +29,11 @@ class ApiClient(Client):
 
 	def __init__(self):
 		super(ApiClient, self).__init__(ACTIVE_NODE_TOPICS)
+
+		self._logger = logging.getLogger('bluebird')
+		self._ep_logger = logging.getLogger('episode')
+
+		self.recording = False
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
@@ -48,7 +55,6 @@ class ApiClient(Client):
 		Stop the client and disconnect
 		"""
 
-		# TODO Send quit signal properly
 		self.timer.stop()
 
 	def stream(self, name, data, sender_id):
@@ -65,7 +71,7 @@ class ApiClient(Client):
 
 		elif name == b'SIMINFO':
 			# TODO Figure out what data is provided here
-			errprint('SIMINFO {}'.format(data))
+			self._logger.info('SIMINFO {}'.format(data))
 
 		self.stream_received.emit(name, data, sender_id)
 
@@ -80,8 +86,9 @@ class ApiClient(Client):
 		self.send_event(b'STACKCMD', data, target)
 
 		time.sleep(25 / POLL_RATE)
+
 		if self.echo_data:
-			errprint(f'Command \'{data}\' resulted in error:\n{self.echo_data}')
+			self._logger.error(f'Command \'{data}\' resulted in error: {self.echo_data}')
 			return self.echo_data['text']
 
 		return None
@@ -103,7 +110,7 @@ class ApiClient(Client):
 				route.reverse()
 				pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
 
-				errprint('EVT :: {} :: {}'.format(eventname, pydata))
+				self._logger.debug('EVT :: {} :: {}'.format(eventname, pydata))
 
 				# TODO Is this case relevant here?
 				if eventname == b'NODESCHANGED':
@@ -122,15 +129,15 @@ class ApiClient(Client):
 				# TODO Also handle the following message which asserts the scenario was loaded:
 				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
 				elif eventname == b'RESET':
-					errprint('Received BlueSky simulation reset message')
+					self._logger.info('Received BlueSky simulation reset message')
 					self.reset_flag = True
 
 				# TODO Handle simulation exit before client
 				elif eventname == b'QUIT':
-					errprint('Received sim exit')
+					self._logger.info('Received sim exit')
 					self.signal_quit.emit()
 				else:
-					errprint('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
+					self._logger.warning('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
 					self.event(eventname, pydata, self.sender_id)
 
 			if socks.get(self.stream_in) == zmq.POLLIN:
@@ -151,7 +158,7 @@ class ApiClient(Client):
 			return True
 
 		except zmq.ZMQError as exc:
-			errprint(exc)
+			self._logger.error(exc)
 			return False
 
 	def load_scenario(self, filename):
@@ -162,6 +169,8 @@ class ApiClient(Client):
 		"""
 
 		self.reset_flag = False
+
+		# TODO Check for err result
 		self.send_stack_cmd('IC ' + filename)
 
 		return self._await_reset_confirmation()
@@ -169,11 +178,12 @@ class ApiClient(Client):
 	def reset_sim(self):
 		"""
 		Resets the BlueSky sim and handles the response
-		:param filename:
 		:return:
 		"""
 
 		self.reset_flag = False
+
+		# TODO Check for err result
 		self.send_stack_cmd('RESET')
 
 		return self._await_reset_confirmation()
@@ -186,9 +196,11 @@ class ApiClient(Client):
 
 		time.sleep(25 / POLL_RATE)
 		if not self.reset_flag:
-			errprint('Did not receive reset confirmation in time!')
+			self._logger.error('Did not receive reset confirmation in time!')
 			return False
 
 		AC_DATA.clear()
+		self._ep_logger.info("Episode started", extra={'PREFIX': LOG_PREFIX})
+		self.recording = True
 
 		return True

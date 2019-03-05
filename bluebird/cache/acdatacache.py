@@ -2,14 +2,35 @@
 Contains the class for storing aircraft data which is streamed from the simulation
 """
 
+import json
+import logging
+
+import datetime
+
+import bluebird.client
+from bluebird.utils import TIMERS, Timer
 from .base import Cache, generate_extras
 
+LOG_PREFIX = 'A'
 
-# TODO Call clear when sim reset
+# TODO: Set this when BlueSky simulation dt changes
+SIM_DT = 1
+
+
 class AcDataCache(Cache):
 	"""
 	Holds the most recent aircraft data
 	"""
+
+	def __init__(self):
+		super().__init__()
+
+		self.logger = logging.getLogger('episode')
+
+		# Periodically log the sim state to file
+		self.timer = Timer(self._log, int(1 / SIM_DT))
+		self.timer.start()
+		TIMERS.append(self.timer)
 
 	def get(self, key):
 		"""
@@ -30,11 +51,28 @@ class AcDataCache(Cache):
 
 		if isinstance(data, dict) and 'id' in data:
 
-			# TODO Can definitely tidy this up
 			for idx in range(len(data['id'])):
 				acid = data['id'][idx]
-
-				ac_data = {'alt': data['alt'][idx], 'lat': data['lat'][idx], 'lon': data['lon'][idx],
-				           'gs': data['gs'][idx], 'vs': data['vs'][idx]}
+				ac_data = {'alt': int(data['alt'][idx]), 'lat': round(data['lat'][idx], 5),
+				           'lon': round(data['lon'][idx], 5), 'gs': int(data['gs'][idx]),
+				           'vs': int(data['vs'][idx])}
 
 				self.store[acid] = {**ac_data, **generate_extras()}
+
+	def _log(self):
+
+		# Only log if there is data, and if we are recording an episode
+		if not self.store or not bluebird.client.CLIENT_SIM.recording:
+			return
+
+		# TODO Tidy this up
+		data = dict(self.store)
+		for ac in data.keys():
+			for k in list(data[ac].keys()):
+				if k.startswith('_'):
+					del data[ac][k]
+					continue
+				if isinstance(data[ac][k], datetime.datetime):
+					data[ac][k] = str(data[ac][k].utcnow())
+
+		self.logger.debug(json.dumps(data, separators=(',', ':')), extra={'PREFIX': LOG_PREFIX})

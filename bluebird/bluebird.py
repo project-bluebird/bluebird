@@ -54,5 +54,9 @@ class BlueBird:
 		Stops the app and cleans up any threaded code
 		"""
 
+		LOGGER.info("BlueBird stopping")
+
 		for item in TIMERS:
 			item.stop()
+
+		CLIENT_SIM.stop()
