@@ -17,6 +17,12 @@ LOG_PREFIX = 'A'
 SIM_DT = 1
 
 
+# Note on unit precision:
+#   lat/lon 5 d.p. is ~1.1 meters, so can round to 5 places
+#   gs      1 knot is ~0.5 m/s, so can store as an int
+#   vs      1 fpm  is ~0.005 m/s, so can store as an int
+
+
 class AcDataCache(Cache):
 	"""
 	Holds the most recent aircraft data

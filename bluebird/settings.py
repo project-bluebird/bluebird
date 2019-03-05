@@ -12,6 +12,6 @@ BB_PORT = 5001
 
 # BlueSky server settings
 
-BS_HOST = '0.0.0.0'
+BS_HOST = 'localhost'
 BS_EVENT_PORT = 9000
 BS_STREAM_PORT = 9001

@@ -47,6 +47,12 @@ This first creates a BlueSky image using the git sub-module, then composes a pai
 
 See [here](API.md).
 
+### Logging
+
+By default, BlueBird creates two log files:
+
+- `logs/<timestamp>-debug.log` Contains general application logging, Flask request info
+- `logs/<timestamp>-episode.log` Contains a log of aircraft and simulation data
 
 ## Development
 
