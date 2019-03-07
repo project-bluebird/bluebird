@@ -69,6 +69,9 @@ class Cache:
 		:return: Data or None
 		"""
 
+	def is_empty(self):
+		return bool(self.store)
+
 	def clear(self):
 		"""
 		Clear any data in the store.

@@ -26,12 +26,13 @@ To run locally, first start a BlueSky simulation, then:
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>]
+(venv) > python ./run.py [--bluesky_host=<address> --reset_sim]
 ```
 
 Notes:
 - the `--dev` option will also install dependencies needed for developing BlueBird
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
+- If passed, `--reset_sim` will reset the simulation on connection
 
 ### Running with Docker
 
@@ -52,7 +53,11 @@ See [here](API.md).
 By default, BlueBird creates two log files:
 
 - `logs/<timestamp>-debug.log` Contains general application logging, Flask request info
-- `logs/<timestamp>-episode.log` Contains a log of aircraft and simulation data
+- `logs/<timestamp>-episode.log` Contains a log of aircraft and simulation data. A new file is created for each scenario that is loaded, and the file is closed if the simulation is reset
+    - Entries prefixed with 'A' contain info on the aircraft in the simulation
+    - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
+
+The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_FREQ` variable in the settings. This value represents the frequency of the logging in terms of the simulated time.
 
 ## Development
 

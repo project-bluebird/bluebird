@@ -5,10 +5,6 @@
     "standard": {
       "format": "%(asctime)s %(levelname)-8s %(name)s: %(message)s",
       "datefmt": "%Y-%m-%d %H:%M:%S"
-    },
-    "episode": {
-      "format": "%(asctime)s %(PREFIX)s %(message)s",
-      "datefmt": "%Y-%m-%d %H:%M:%S"
     }
   },
   "handlers": {
@@ -21,11 +17,6 @@
       "level": "DEBUG",
       "class": "logging.FileHandler",
       "formatter": "standard"
-    },
-    "episode-file": {
-      "level": "DEBUG",
-      "class": "logging.FileHandler",
-      "formatter": "episode"
     }
   },
   "loggers": {
@@ -33,13 +24,6 @@
       "handlers": [
         "console",
         "debug-file"
-      ],
-      "propagate": true,
-      "level": "DEBUG"
-    },
-    "episode": {
-      "handlers": [
-        "episode-file"
       ],
       "propagate": true,
       "level": "DEBUG"

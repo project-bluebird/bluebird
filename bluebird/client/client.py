@@ -8,8 +8,10 @@ import time
 import msgpack
 import zmq
 
-from bluebird.cache import AC_DATA
-from bluebird.utils import TIMERS, Timer
+import bluebird.cache as bb_cache
+import bluebird.logging
+import bluebird.utils as bb_utils
+from bluebird.utils import Timer
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
@@ -31,12 +33,9 @@ class ApiClient(Client):
 		super(ApiClient, self).__init__(ACTIVE_NODE_TOPICS)
 
 		self._logger = logging.getLogger(__name__)
-		self._ep_logger = logging.getLogger('episode')
-
-		self.recording = False
 
 		# Continually poll for the sim state
-		self.timer = Timer(self.receive, int(1 / POLL_RATE))
+		self.timer = Timer(self.receive, POLL_RATE)
 
 		self.reset_flag = False
 		self.echo_data = None
@@ -48,7 +47,7 @@ class ApiClient(Client):
 		"""
 
 		self.timer.start()
-		TIMERS.append(self.timer)
+		bb_utils.TIMERS.append(self.timer)
 
 	def stop(self):
 		"""
@@ -56,6 +55,7 @@ class ApiClient(Client):
 		"""
 
 		self.timer.stop()
+		bluebird.logging.close_episode_log('Client stopped')
 
 	def stream(self, name, data, sender_id):
 		"""
@@ -67,11 +67,10 @@ class ApiClient(Client):
 
 		# Fill the cache with the aircraft data
 		if name == b'ACDATA':
-			AC_DATA.fill(data)
+			bb_cache.AC_DATA.fill(data)
 
 		elif name == b'SIMINFO':
-			# TODO Figure out what data is provided here
-			self._logger.info('SIMINFO {}'.format(data))
+			bb_cache.SIM_STATE.update(data)
 
 		self.stream_received.emit(name, data, sender_id)
 
@@ -81,6 +80,8 @@ class ApiClient(Client):
 		:param data:
 		:param target:
 		"""
+
+		# TODO Should probably add a lock around this method
 
 		self.echo_data = None
 		self.send_event(b'STACKCMD', data, target)
@@ -130,8 +131,6 @@ class ApiClient(Client):
 					elif not text.startswith('IC: Opened'):
 						self.echo_data = pydata
 
-				# TODO Also handle the following message which asserts the scenario was loaded:
-				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
 				elif eventname == b'RESET':
 					self._logger.info('Received BlueSky simulation reset message')
 					self.reset_flag = True
@@ -172,6 +171,8 @@ class ApiClient(Client):
 		:return:
 		"""
 
+		bb_cache.AC_DATA.timer.disabled = True
+		bluebird.logging.restart_episode_log(filename)
 		self.reset_flag = False
 
 		err = self.send_stack_cmd('IC ' + filename)
@@ -183,6 +184,7 @@ class ApiClient(Client):
 		:return:
 		"""
 
+		bluebird.logging.close_episode_log('sim reset')
 		self.reset_flag = False
 
 		err = self.send_stack_cmd('RESET')
@@ -199,6 +201,4 @@ class ApiClient(Client):
 			self._logger.error('Did not receive reset confirmation in time!')
 			return False
 
-		AC_DATA.clear()
-		self._ep_logger.info("Episode started", extra={'PREFIX': LOG_PREFIX})
-		self.recording = True
+			bb_cache.AC_DATA.clear()

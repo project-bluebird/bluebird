@@ -3,18 +3,16 @@ Contains the class for storing aircraft data which is streamed from the simulati
 """
 
 import json
-import logging
 
 import datetime
 
-import bluebird.client
+import bluebird.cache
+import bluebird.logging
+from bluebird.settings import SIM_LOG_FREQ
 from bluebird.utils import TIMERS, Timer
 from .base import Cache, generate_extras
 
 LOG_PREFIX = 'A'
-
-# TODO: Set this when BlueSky simulation dt changes
-SIM_DT = 1
 
 
 # Note on unit precision:
@@ -31,10 +29,9 @@ class AcDataCache(Cache):
 	def __init__(self):
 		super().__init__()
 
-		self.logger = logging.getLogger('episode')
-
-		# Periodically log the sim state to file
-		self.timer = Timer(self._log, int(1 / SIM_DT))
+		# Periodically log the sim state to file. Starts disabled.
+		self.timer = Timer(self._log, SIM_LOG_FREQ)
+		self.timer.disabled = True
 
 	def start(self):
 		self.timer.start()
@@ -69,8 +66,7 @@ class AcDataCache(Cache):
 
 	def _log(self):
 
-		# Only log if there is data, and if we are recording an episode
-		if not self.store or not bluebird.client.CLIENT_SIM.recording:
+		if not self.store:
 			return
 
 		# TODO Tidy this up
@@ -83,4 +79,6 @@ class AcDataCache(Cache):
 				if isinstance(data[ac][k], datetime.datetime):
 					data[ac][k] = str(data[ac][k].utcnow())
 
-		self.logger.debug(json.dumps(data, separators=(',', ':')), extra={'PREFIX': LOG_PREFIX})
+		sim_t = bluebird.cache.SIM_STATE.sim_t
+		json_data = json.dumps(data, separators=(',', ':'))
+		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {json_data}', extra={'PREFIX': LOG_PREFIX})

@@ -6,7 +6,7 @@ import logging
 
 from bluebird import settings
 from bluebird.api import FLASK_APP
-from bluebird.cache import AC_DATA
+from bluebird.cache import AC_DATA, SIM_STATE
 from bluebird.client import CLIENT_SIM
 from bluebird.utils import TIMERS
 
@@ -19,7 +19,7 @@ class BlueBird:
 	"""
 
 	@staticmethod
-	def client_connect():
+	def client_connect(reset_on_connect=False):
 		"""
 		Connect to the (BlueSky) simulation client
 		:return: True if a connection was established with the client, false otherwise.
@@ -31,14 +31,19 @@ class BlueBird:
 
 		try:
 			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
-			                   stream_port=settings.BS_STREAM_PORT, timeout=5)
+			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
 
-			return True
 
 		except TimeoutError:
 			print('Failed to connect to BlueSky server at {}, exiting'.format(settings.BS_HOST))
 			CLIENT_SIM.stop()
 			return False
+
+		if reset_on_connect:
+			CLIENT_SIM.reset_sim()
+
+		SIM_STATE.start()
+		return True
 
 	@staticmethod
 	def run_app():

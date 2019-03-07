@@ -72,6 +72,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, suc
 	:param req_args:
 	:param opt_args:
 	:param assert_exists: Whether to assert the aircraft already exists or not.
+	:param success_code: Status code to return on success. Default is 200.
 	:return:
 	"""
 

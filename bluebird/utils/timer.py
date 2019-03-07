@@ -14,28 +14,33 @@ class Timer(Thread):
 	def __init__(self, method, tickrate, *args, **kwargs):
 		"""
 		:param method: The method to call periodically
-		:param tickrate: The rate in seconds at which the method is called
+		:param tickrate: The rate per second at which the method is called
 		:param args: Positional arguments to call the method with
 		:param kwargs: Keyword arguments to call the method with
 		"""
 
 		Thread.__init__(self)
-		self.event = Event()
-		self.tickrate = tickrate  # Seconds
-		self.cmd = lambda: method(*args, **kwargs)
+		self._event = Event()
+		self._cmd = lambda: method(*args, **kwargs)
+		self._sleep_time = 1 / tickrate
+		self.disabled = False
 
 	def run(self):
 		"""
 		Start the timer
 		"""
 
-		while not self.event.is_set():
-			self.cmd()
-			sleep(self.tickrate)
+		while not self._event.is_set():
+			if not self.disabled:
+				self._cmd()
+			sleep(self._sleep_time)
+
+	def set_tickrate(self, rate):
+		self._sleep_time = 1 / rate
 
 	def stop(self):
 		"""
 		Stop the timer and ensure the thread is joined
 		"""
 
-		self.event.set()
+		self._event.set()
