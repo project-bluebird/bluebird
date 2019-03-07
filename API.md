@@ -18,6 +18,7 @@ Notes:
 - [Simulation Reset](#simulation-reset)
 - [Simulation Pause](#simulation-pause-hold)
 - [Simulation Resume](#simulation-resume-op)
+- [Simulation Speed Change] (#simulation-speed-change)
 
 ### Aircraft endpoints
 
@@ -86,6 +87,23 @@ Returns:
 
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
+
+## Simulation Speed Change (DTMULT)
+
+Changes the simulation speed:
+
+```javascript
+POST /api/v1/dtmult
+{
+  "multiplier": 1.5
+}
+```
+
+Returns:
+
+- `200 Ok` - Speed was changed
+- `400 Bad Request` - Multiplier was invalid
+- `500 Internal Server Error` - Could not change the speed (error will be provided).
 
 ---
 
