@@ -56,6 +56,7 @@ By default, BlueBird creates two log files:
 - `logs/<timestamp>-episode.log` Contains a log of aircraft and simulation data. A new file is created for each scenario that is loaded, and the file is closed if the simulation is reset
     - Entries prefixed with 'A' contain info on the aircraft in the simulation
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
+    - Entries prefixed with 'C' contain info on commands sent to the simulator
 
 The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_FREQ` variable in the settings. This value represents the frequency of the logging in terms of the simulated time.
 

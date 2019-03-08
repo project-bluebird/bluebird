@@ -15,10 +15,10 @@ from bluebird.utils import Timer
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
-LOG_PREFIX = 'E'
+CMD_LOG_PREFIX = 'C'
 
-# TODO Figure out what we topics we need to subscribe to. Is there a list of possible events?
-ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']  # Also available: ROUTEDATA
+# The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
+ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
 
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
@@ -81,8 +81,6 @@ class ApiClient(Client):
 		:param target:
 		"""
 
-		# TODO Should probably add a lock around this method
-
 		self.echo_data = None
 		self.send_event(b'STACKCMD', data, target)
 
@@ -91,6 +89,10 @@ class ApiClient(Client):
 		if self.echo_data:
 			self._logger.error(f'Command \'{data}\' resulted in error: {self.echo_data}')
 			return self.echo_data['text']
+
+		# Log the event if we did not receive an error response
+		sim_t = bb_cache.SIM_STATE.sim_t
+		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		return None
 
@@ -132,8 +134,8 @@ class ApiClient(Client):
 						self.echo_data = pydata
 
 				elif eventname == b'RESET':
-					self._logger.info('Received BlueSky simulation reset message')
 					self.reset_flag = True
+					self._logger.info('Received BlueSky simulation reset message')
 
 				# TODO Handle simulation exit before client
 				elif eventname == b'QUIT':
@@ -185,6 +187,7 @@ class ApiClient(Client):
 		"""
 
 		bluebird.logging.close_episode_log('sim reset')
+
 		self.reset_flag = False
 
 		err = self.send_stack_cmd('RESET')

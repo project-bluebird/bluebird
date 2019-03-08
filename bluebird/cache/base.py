@@ -35,6 +35,9 @@ class Cache:
 
 		self.store = {}
 
+	def __len__(self):
+		return len(self.store)
+
 	def get(self, key):
 		"""
 		Get a piece of data given the key
@@ -68,9 +71,6 @@ class Cache:
 		:param key: Lookup key for the data
 		:return: Data or None
 		"""
-
-	def is_empty(self):
-		return bool(self.store)
 
 	def clear(self):
 		"""

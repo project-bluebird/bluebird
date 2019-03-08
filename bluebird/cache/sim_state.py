@@ -5,6 +5,7 @@ Module contains logic for storing the state of the remote simulation
 import logging
 
 import bluebird.cache
+import bluebird.logging
 from bluebird.settings import SIM_LOG_FREQ
 from bluebird.utils import TIMERS, Timer
 
@@ -56,7 +57,7 @@ class SimState:
 			bluebird.cache.AC_DATA.timer.disabled = True
 			return
 
-		if (old_speed != self.sim_speed) and not bluebird.cache.AC_DATA.is_empty():
+		if (old_speed != self.sim_speed) and not len(bluebird.cache.AC_DATA):
 			self.logger.info(f'Sim speed changed: {old_speed}x -> {self.sim_speed}x')
 			rate = round(1 / self.sim_speed, 2) / SIM_LOG_FREQ
 			self.logger.info(f'New log time: {rate}')
