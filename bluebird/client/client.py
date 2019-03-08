@@ -204,4 +204,4 @@ class ApiClient(Client):
 			self._logger.error('Did not receive reset confirmation in time!')
 			return False
 
-			bb_cache.AC_DATA.clear()
+		bb_cache.AC_DATA.clear()
