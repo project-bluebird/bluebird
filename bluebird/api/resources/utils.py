@@ -91,6 +91,16 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
+	return process_stack_cmd(cmd_str)
+
+
+def process_stack_cmd(cmd_str):
+	"""
+	Sends command to simulation and returns response.
+
+	:param cmd_str: a command string
+	:return :
+	"""
 	errprint('Sending stack command: {}'.format(cmd_str))
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
