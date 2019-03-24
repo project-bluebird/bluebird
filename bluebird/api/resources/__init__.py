@@ -16,3 +16,6 @@ from .ic import Ic
 from .op import Op
 from .reset import Reset
 from .dtmult import DtMult
+
+# Episode info
+from .epinfo import EpInfo

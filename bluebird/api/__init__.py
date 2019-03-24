@@ -74,6 +74,9 @@ FLASK_API.add_resource(res.Op, '/op')
 FLASK_API.add_resource(res.Reset, '/reset')
 FLASK_API.add_resource(res.DtMult, '/dtmult')
 
+# Episode info
+FLASK_API.add_resource(res.EpInfo, '/epinfo')
+
 # endregion
 
 # region Static routes

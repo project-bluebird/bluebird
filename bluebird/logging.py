@@ -16,8 +16,6 @@ from .settings import LOGS_ROOT, SIM_LOG_RATE
 if not os.path.exists(LOGS_ROOT):
 	os.mkdir(LOGS_ROOT)
 
-_INSTANCE_ID = uuid.uuid1()
-
 
 def log_name_time():
 	"""
@@ -27,20 +25,22 @@ def log_name_time():
 	return datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 
-_INST_LOG_DIR = os.path.join(LOGS_ROOT, f'{log_name_time()}_{_INSTANCE_ID}')
-os.mkdir(_INST_LOG_DIR)
+INSTANCE_ID = uuid.uuid1()
+INST_LOG_DIR = os.path.join(LOGS_ROOT, f'{log_name_time()}_{INSTANCE_ID}')
+os.mkdir(INST_LOG_DIR)
 
 with open('bluebird/logging_config.json') as f:
 	LOG_CONFIG = json.load(f)
 
 # Set filenames for logfiles (can't do this from the JSON)
-LOG_CONFIG['handlers']['debug-file']['filename'] = os.path.join(_INST_LOG_DIR, 'debug.log')
+LOG_CONFIG['handlers']['debug-file']['filename'] = os.path.join(INST_LOG_DIR, 'debug.log')
 
 # Set the logging config
 logging.config.dictConfig(LOG_CONFIG)
 
 # Setup episode logging
 
+EP_ID = EP_FILE = None
 EP_LOGGER = logging.getLogger('episode')
 EP_LOGGER.setLevel(logging.DEBUG)
 
@@ -90,12 +90,14 @@ def _start_episode_log():
 	:return:
 	"""
 
+	global EP_ID, EP_FILE  # pylint: disable=global-statement
+
 	if EP_LOGGER.hasHandlers():
 		raise Exception(f'Episode logger already has a handler assigned: {EP_LOGGER.handlers}')
 
-	episode_id = uuid.uuid4()
-	log_file = os.path.join(_INST_LOG_DIR, f'{log_name_time()}_{episode_id}.log')
-	file_handler = logging.FileHandler(log_file)
+	EP_ID = uuid.uuid4()
+	EP_FILE = os.path.join(INST_LOG_DIR, f'{log_name_time()}_{EP_ID}.log')
+	file_handler = logging.FileHandler(EP_FILE)
 	file_handler.name = 'episode-file'
 	file_handler.setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -103,7 +105,7 @@ def _start_episode_log():
 	EP_LOGGER.addHandler(file_handler)
 	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE}', extra={'PREFIX': _LOG_PREFIX})
 
-	return episode_id
+	return EP_ID
 
 
 def restart_episode_log():

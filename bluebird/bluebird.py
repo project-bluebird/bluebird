@@ -4,11 +4,11 @@ Contains the BlueBird class
 
 import logging
 
-from bluebird import settings
-from bluebird.api import FLASK_APP
-from bluebird.cache import AC_DATA, SIM_STATE
-from bluebird.client import CLIENT_SIM
-from bluebird.utils import TIMERS
+from . import settings
+from .api import FLASK_APP
+from .cache import AC_DATA, SIM_STATE
+from .client import CLIENT_SIM
+from .utils import TIMERS
 
 LOGGER = logging.getLogger(__name__)
 

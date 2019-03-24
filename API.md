@@ -29,6 +29,10 @@ Notes:
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
 
+### Application endpoints
+
+- [Episode Info](#episode-info)
+
 ## Scenario Load (IC)
 
 Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
@@ -235,3 +239,26 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+---
+
+## Episode Info
+
+Returns information for the current episode
+
+```javascript
+GET /api/v1/epinfo  
+```
+
+Returns:
+
+- `200 Ok` - Returns the following data:
+
+```javascript
+{
+  "cur_ep_file": <full path to episode log file>,
+  "cur_ep_id": <episode id>,
+  "inst_id": <application instance id>,
+  "log_dir": <application log directory>
+}  
+```  
