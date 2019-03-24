@@ -24,7 +24,9 @@ class SimState:
 	"""
 
 	def __init__(self):
-		self.logger = logging.getLogger(__name__)
+
+		self._logger = logging.getLogger(__name__)
+
 		self.timer = Timer(self._log, SIM_LOG_RATE)
 
 		self.sim_speed = 0
@@ -43,7 +45,7 @@ class SimState:
 
 		self.timer.start()
 		TIMERS.append(self.timer)
-		self.logger.info(f'Logging started. Initial SIM_LOG_RATE={SIM_LOG_RATE}')
+		self._logger.info(f'Logging started. Initial SIM_LOG_RATE={SIM_LOG_RATE}')
 
 	def update(self, data):
 		"""
@@ -61,4 +63,4 @@ class SimState:
 	def _log(self):
 		data = f'speed={self.sim_speed}x, ticks={self.sim_t:4}, time={self.sim_utc}, ' \
 		       f'state={BS_STATES[self.sim_state]}, aircraft={self.ac_count}'
-		self.logger.info(data)
+		self._logger.info(data)

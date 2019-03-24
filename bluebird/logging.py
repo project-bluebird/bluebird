@@ -2,16 +2,22 @@
 Logging configuration for BlueBird
 """
 
+# TODO Cli option - single episode log
+
 import json
 import logging.config
 import os
 
+import uuid
 from datetime import datetime
 
-from .settings import SIM_LOG_RATE
+from .settings import LOGS_ROOT, SIM_LOG_RATE
 
+if not os.path.exists(LOGS_ROOT):
+	os.mkdir(LOGS_ROOT)
 
-# TODO Cli option - single episode log
+_INSTANCE_ID = uuid.uuid1()
+
 
 def log_name_time():
 	"""
@@ -21,14 +27,14 @@ def log_name_time():
 	return datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 
-if not os.path.exists('logs'):
-	os.mkdir('logs')
+_INST_LOG_DIR = os.path.join(LOGS_ROOT, f'{log_name_time()}_{_INSTANCE_ID}')
+os.mkdir(_INST_LOG_DIR)
 
 with open('bluebird/logging_config.json') as f:
 	LOG_CONFIG = json.load(f)
 
 # Set filenames for logfiles (can't do this from the JSON)
-LOG_CONFIG['handlers']['debug-file']['filename'] = f'logs/{log_name_time()}-debug.log'
+LOG_CONFIG['handlers']['debug-file']['filename'] = os.path.join(_INST_LOG_DIR, 'debug.log')
 
 # Set the logging config
 logging.config.dictConfig(LOG_CONFIG)
@@ -45,12 +51,13 @@ _LOG_PREFIX = 'E'
 def bodge_file_content(filename):
 	"""
 	Log the content of the scenario file which was loaded.	Interim solution until we move away from
-	using BlueSky's default scenario files...
+	using BlueSky's default scenario files. Note that we log the contents of our copy of the scenario
+	files, so this won't reflect any changes to BlueSky's files (which are actually loaded).
 	:param filename:
 	:return:
 	"""
 
-	EP_LOGGER.info(f"Scenario file loaded: {filename}", extra={'PREFIX': _LOG_PREFIX})
+	EP_LOGGER.info(f"Scenario file loaded: {filename}. Contents are:", extra={'PREFIX': _LOG_PREFIX})
 	scn_file = os.path.join('bluesky', filename)
 
 	try:
@@ -86,7 +93,9 @@ def _start_episode_log():
 	if EP_LOGGER.hasHandlers():
 		raise Exception(f'Episode logger already has a handler assigned: {EP_LOGGER.handlers}')
 
-	file_handler = logging.FileHandler(f'logs/{log_name_time()}-episode.log')
+	episode_id = uuid.uuid4()
+	log_file = os.path.join(_INST_LOG_DIR, f'{log_name_time()}_{episode_id}.log')
+	file_handler = logging.FileHandler(log_file)
 	file_handler.name = 'episode-file'
 	file_handler.setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -94,12 +103,14 @@ def _start_episode_log():
 	EP_LOGGER.addHandler(file_handler)
 	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE}', extra={'PREFIX': _LOG_PREFIX})
 
+	return episode_id
+
 
 def restart_episode_log():
 	"""
-	Closes the current episode log and starts a new one
+	Closes the current episode log and starts a new one. Returns the UUID of the new episode
 	:return:
 	"""
 
 	close_episode_log('episode logging restarted')
-	_start_episode_log()
+	return _start_episode_log()

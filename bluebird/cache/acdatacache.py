@@ -3,6 +3,7 @@ Contains the class for storing aircraft data which is streamed from the simulati
 """
 
 import json
+import logging
 
 import datetime
 
@@ -29,6 +30,8 @@ class AcDataCache(Cache):
 
 	def __init__(self):
 		super().__init__()
+
+		self._logger = logging.getLogger(__name__)
 
 		# Periodically log the sim state to file. Starts disabled.
 		self.timer = Timer(self._log, SIM_LOG_RATE)
@@ -85,19 +88,19 @@ class AcDataCache(Cache):
 
 		if new_log or (new_speed > 0 and current_speed == 0):
 			state = 'started' if new_log else 'resumed'
-			sim_state.logger.info(f'Simulation {state}. Log rate: {rate}')
+			self._logger.info(f'Simulation {state}. Log rate: {rate}')
 			self.timer.set_tickrate(rate)
 			self.timer.disabled = False
 			return
 
 		if new_speed == 0 and current_speed != 0:
-			sim_state.logger.info('Simulation paused')
+			self._logger.info('Simulation paused')
 			self.timer.disabled = True
 			return
 
 		if current_speed != new_speed:
-			sim_state.logger.info(f'Sim speed changed: {current_speed}x -> {new_speed}x. New '
-			                      f'log rate: {rate}')
+			self._logger.info(f'Sim speed changed: {current_speed}x -> {new_speed}x. New '
+			                  f'log rate: {rate}')
 			self.timer.set_tickrate(rate)
 			return
 

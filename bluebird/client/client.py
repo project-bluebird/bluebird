@@ -169,7 +169,8 @@ class ApiClient(Client):
 		"""
 
 		bb_cache.AC_DATA.timer.disabled = True
-		bluebird.logging.restart_episode_log()
+		episode_id = bluebird.logging.restart_episode_log()
+		self._logger.info(f'Episode {episode_id} started')
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
 		self.reset_flag = False
