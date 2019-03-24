@@ -170,15 +170,29 @@ class ApiClient(Client):
 
 		bb_cache.AC_DATA.timer.disabled = True
 		episode_id = bluebird.logging.restart_episode_log()
-		self._logger.info(f'Episode {episode_id} started')
+		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
 		self.reset_flag = False
 		err = self.send_stack_cmd('IC ' + filename)
 
+		if err:
+			return err
+
+		err = self._await_reset_confirmation()
+
+		if err:
+			return err
+
 		bluebird.logging.bodge_file_content(filename)
 
-		return err if err else self._await_reset_confirmation()
+		if speed != 1.0:
+			cmd = f'DTMULT {speed}'
+			err = self.send_stack_cmd(cmd)
+			if err:
+				return err
+
+		return None
 
 	def reset_sim(self):
 		"""

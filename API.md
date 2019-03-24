@@ -40,7 +40,8 @@ Resets the simulation and loads the scenario specified in the given filename. Th
 ```javascript
 POST /api/v1/ic
 {
-  "filename": "scenario/<scenario>.scn"
+  "filename": "scenario/<scenario>.scn",
+  ["multiplier": 1.0]   // Optional: speed multiplier
 }
 ```  
  
@@ -49,7 +50,7 @@ Where the file path is relative to the BlueSky root directory. The filename must
 Returns:
 
 - `200 Ok` - Scenario was loaded
-- `400 Bad Request` - Filename was invalid
+- `400 Bad Request` - Either the filename or multiplier were invalid
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
   

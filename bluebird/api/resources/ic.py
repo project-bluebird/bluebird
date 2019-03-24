@@ -9,6 +9,7 @@ import bluebird.client as bb_client
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
+PARSER.add_argument('multiplier', type=float, location='json', required=False)
 
 
 class Ic(Resource):
@@ -23,15 +24,23 @@ class Ic(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
-		filename = PARSER.parse_args()['filename']
+		parsed = PARSER.parse_args()
+		filename = parsed['filename']
 
 		if filename is None or not filename.lower().endswith('.scn'):
-			resp = jsonify('Invalid filename ' + str(filename))
+			resp = jsonify(f'Invalid filename {filename}')
 			resp.status_code = 400
 			return resp
 
-		# TODO: Add speed to request arguments
-		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=1.0)
+		multiplier = parsed['multiplier']
+		speed = multiplier if multiplier else 1.0
+
+		if speed <= 0.0:
+			resp = jsonify(f'Invalid speed {speed}')
+			resp.status_code = 400
+			return resp
+
+		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed)
 
 		if not err:
 			resp = jsonify('Scenario file {} loaded'.format(filename))
