@@ -63,6 +63,7 @@ def check_acid(string, assert_exists=True):
 # TODO Allow units to be defined?
 # TODO The parser has already been seeded with the required and optional arguments, can we infer
 # them here?
+# pylint: disable=too-many-arguments
 def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, success_code=200):
 	"""
 	Generates a command string using the provided parser and arguments, then sends it to the

@@ -43,6 +43,7 @@ class BlueBird:
 			CLIENT_SIM.reset_sim()
 
 		SIM_STATE.start()
+
 		return True
 
 	@staticmethod

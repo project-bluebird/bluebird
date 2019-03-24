@@ -8,8 +8,9 @@ import datetime
 
 import bluebird.cache
 import bluebird.logging
-from bluebird.settings import SIM_LOG_FREQ
+from bluebird.settings import SIM_LOG_RATE
 from bluebird.utils import TIMERS, Timer
+from bluebird.utils.timeutils import log_rate
 from .base import Cache, generate_extras
 
 LOG_PREFIX = 'A'
@@ -30,10 +31,15 @@ class AcDataCache(Cache):
 		super().__init__()
 
 		# Periodically log the sim state to file. Starts disabled.
-		self.timer = Timer(self._log, SIM_LOG_FREQ)
+		self.timer = Timer(self._log, SIM_LOG_RATE)
 		self.timer.disabled = True
 
 	def start(self):
+		"""
+		Starts the timer for logging
+		:return:
+		"""
+
 		self.timer.start()
 		TIMERS.append(self.timer)
 
@@ -64,6 +70,37 @@ class AcDataCache(Cache):
 
 				self.store[acid] = {**ac_data, **generate_extras()}
 
+	def set_log_rate(self, new_speed, new_log=False):
+		"""
+		Set the speed at which simulation data is logged at
+		:param new_log:
+		:param new_speed:
+		:return:
+		"""
+
+		sim_state = bluebird.cache.SIM_STATE
+		current_speed = sim_state.sim_speed
+
+		rate = log_rate(new_speed)
+
+		if new_log or (new_speed > 0 and current_speed == 0):
+			state = 'started' if new_log else 'resumed'
+			sim_state.logger.info(f'Simulation {state}. Log rate: {rate}')
+			self.timer.set_tickrate(rate)
+			self.timer.disabled = False
+			return
+
+		if new_speed == 0 and current_speed != 0:
+			sim_state.logger.info('Simulation paused')
+			self.timer.disabled = True
+			return
+
+		if current_speed != new_speed:
+			sim_state.logger.info(f'Sim speed changed: {current_speed}x -> {new_speed}x. New '
+			                      f'log rate: {rate}')
+			self.timer.set_tickrate(rate)
+			return
+
 	def _log(self):
 
 		if not self.store:
@@ -71,13 +108,13 @@ class AcDataCache(Cache):
 
 		# TODO Tidy this up
 		data = dict(self.store)
-		for ac in data.keys():
-			for k in list(data[ac].keys()):
-				if k.startswith('_'):
-					del data[ac][k]
+		for aircraft in data.keys():  # pylint: disable=consider-iterating-dictionary
+			for prop in list(data[aircraft].keys()):
+				if prop.startswith('_'):
+					del data[aircraft][prop]
 					continue
-				if isinstance(data[ac][k], datetime.datetime):
-					data[ac][k] = str(data[ac][k].utcnow())
+				if isinstance(data[aircraft][prop], datetime.datetime):
+					data[aircraft][prop] = str(data[aircraft][prop].utcnow())
 
 		sim_t = bluebird.cache.SIM_STATE.sim_t
 		json_data = json.dumps(data, separators=(',', ':'))

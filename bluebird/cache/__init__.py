@@ -2,6 +2,8 @@
 Contains objects for storing simulation state
 """
 
+# pylint: disable=wrong-import-position
+
 AC_DATA = SIM_STATE = None
 
 from .acdatacache import AcDataCache

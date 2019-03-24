@@ -160,18 +160,23 @@ class ApiClient(Client):
 			self._logger.error(exc)
 			return False
 
-	def load_scenario(self, filename):
+	def load_scenario(self, filename, speed=1.0):
 		"""
 		Load a scenario from a file
+		:param speed:
 		:param filename:
 		:return:
 		"""
 
 		bb_cache.AC_DATA.timer.disabled = True
-		bluebird.logging.restart_episode_log(filename)
-		self.reset_flag = False
+		bluebird.logging.restart_episode_log()
+		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
+		self.reset_flag = False
 		err = self.send_stack_cmd('IC ' + filename)
+
+		bluebird.logging.bodge_file_content(filename)
+
 		return err if err else self._await_reset_confirmation()
 
 	def reset_sim(self):
@@ -180,11 +185,12 @@ class ApiClient(Client):
 		:return:
 		"""
 
+		bb_cache.AC_DATA.timer.disabled = True
 		bluebird.logging.close_episode_log('sim reset')
 
 		self.reset_flag = False
-
 		err = self.send_stack_cmd('RESET')
+
 		return err if err else self._await_reset_confirmation()
 
 	def _await_reset_confirmation(self):
@@ -195,7 +201,7 @@ class ApiClient(Client):
 
 		time.sleep(25 / POLL_RATE)
 		if not self.reset_flag:
-			self._logger.error('Did not receive reset confirmation in time!')
-			return False
+			return 'Did not receive reset confirmation in time!'
 
 		bb_cache.AC_DATA.clear()
+		return None

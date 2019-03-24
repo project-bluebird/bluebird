@@ -12,6 +12,10 @@ from datetime import datetime
 # TODO Cli option - single episode log
 
 def log_name_time():
+	"""
+	Returns the current formatted timestamp
+	:return:
+	"""
 	return datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
 
@@ -32,9 +36,10 @@ logging.config.dictConfig(LOG_CONFIG)
 EP_LOGGER = logging.getLogger('episode')
 EP_LOGGER.setLevel(logging.DEBUG)
 
-_log_prefix = 'E'
+_LOG_PREFIX = 'E'
 
 
+# TODO: Remove this when we move away from loading files
 def bodge_file_content(filename):
 	"""
 	Log the content of the scenario file which was loaded.	Interim solution until we move away from
@@ -43,7 +48,7 @@ def bodge_file_content(filename):
 	:return:
 	"""
 
-	EP_LOGGER.info(f"Scenario file loaded: {filename}", extra={'PREFIX': _log_prefix})
+	EP_LOGGER.info(f"Scenario file loaded: {filename}", extra={'PREFIX': _LOG_PREFIX})
 	scn_file = os.path.join('bluesky', filename)
 
 	try:
@@ -51,9 +56,9 @@ def bodge_file_content(filename):
 			for line in scn:
 				if line.isspace() or line.strip()[0] == "#":
 					continue
-				EP_LOGGER.info(line.lstrip().strip('\n'), extra={'PREFIX': _log_prefix})
+				EP_LOGGER.info(line.lstrip().strip('\n'), extra={'PREFIX': _LOG_PREFIX})
 
-	except Exception as exc:
+	except Exception as exc:  # pylint: disable=broad-except
 		EP_LOGGER.error(f'Could not log file contents', exc_info=exc)
 
 
@@ -66,14 +71,13 @@ def close_episode_log(reason):
 	if not EP_LOGGER.hasHandlers():
 		return
 
-	EP_LOGGER.info(f'Episode finished. Reason: ({reason})', extra={'PREFIX': _log_prefix})
+	EP_LOGGER.info(f'Episode finished ({reason})', extra={'PREFIX': _LOG_PREFIX})
 	EP_LOGGER.handlers.pop()
 
 
-def _start_episode_log(filename):
+def _start_episode_log():
 	"""
 	Starts a new episode logfile
-	:param filename:
 	:return:
 	"""
 
@@ -86,10 +90,14 @@ def _start_episode_log(filename):
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 	file_handler.setFormatter(formatter)
 	EP_LOGGER.addHandler(file_handler)
-	EP_LOGGER.info("Episode started", extra={'PREFIX': _log_prefix})
-	bodge_file_content(filename)
+	EP_LOGGER.info("Episode started", extra={'PREFIX': _LOG_PREFIX})
 
 
-def restart_episode_log(filename):
-	close_episode_log('restarted')
-	_start_episode_log(filename)
+def restart_episode_log():
+	"""
+	Closes the current episode log and starts a new one
+	:return:
+	"""
+
+	close_episode_log('episode logging restarted')
+	_start_episode_log()

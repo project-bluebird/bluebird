@@ -26,7 +26,7 @@ class Reset(Resource):
 			resp = jsonify('Simulation reset')
 			resp.status_code = 200
 		else:
-			resp = jsonify('Simulation not reset: '.format(err))
+			resp = jsonify(f'Simulation not reset: {err}')
 			resp.status_code = 500
 
 		return resp

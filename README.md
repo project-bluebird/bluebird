@@ -91,8 +91,10 @@ TODO: Integration tests using BlueSky
 Linting can be run with the included `.pylintrc` file:
 
 ```bash
-> pylint --rcfile .pylintrc ./bluebird
+> pylint --rcfile=.pylintrc [--enable=<msg>] ./bluebird
 ```
+
+The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable` option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
 
 You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
 

@@ -49,7 +49,7 @@ def patch_client_sim(monkeypatch):
 		def send_stack_cmd(self, data=None, target=b'*'):
 			self.last_stack_cmd = data
 
-		def load_scenario(self, filename):
+		def load_scenario(self, filename, speed=1.0):
 			self.last_scenario = filename
 
 		def reset_sim(self):

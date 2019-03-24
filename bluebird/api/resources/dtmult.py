@@ -6,6 +6,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
+from bluebird.cache import AC_DATA
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('multiplier', type=float, location='json', required=True)
@@ -35,6 +36,7 @@ class DtMult(Resource):
 		err = bb_client.CLIENT_SIM.send_stack_cmd(cmd)
 
 		if not err:
+			AC_DATA.set_log_rate(mult)
 			resp = jsonify('Simulation speed changed')
 			resp.status_code = 200
 		else:

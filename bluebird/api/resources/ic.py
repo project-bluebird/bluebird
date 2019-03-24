@@ -30,7 +30,8 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		err = bb_client.CLIENT_SIM.load_scenario(filename)
+		# TODO: Add speed to request arguments
+		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=1.0)
 
 		if not err:
 			resp = jsonify('Scenario file {} loaded'.format(filename))
