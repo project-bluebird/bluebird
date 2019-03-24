@@ -55,7 +55,7 @@ class ApiClient(Client):
 		"""
 
 		self.timer.stop()
-		bluebird.logging.close_episode_log('Client stopped')
+		bluebird.logging.close_episode_log('client was stopped')
 
 	def stream(self, name, data, sender_id):
 		"""
@@ -81,6 +81,9 @@ class ApiClient(Client):
 		:param target:
 		"""
 
+		sim_t = bb_cache.SIM_STATE.sim_t
+		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
+
 		self.echo_data = None
 		self.send_event(b'STACKCMD', data, target)
 
@@ -89,10 +92,6 @@ class ApiClient(Client):
 		if self.echo_data:
 			self._logger.error(f'Command \'{data}\' resulted in error: {self.echo_data}')
 			return self.echo_data['text']
-
-		# Log the event if we did not receive an error response
-		sim_t = bb_cache.SIM_STATE.sim_t
-		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		return None
 
@@ -141,6 +140,7 @@ class ApiClient(Client):
 				elif eventname == b'QUIT':
 					self._logger.info('Received sim exit')
 					self.signal_quit.emit()
+
 				else:
 					self._logger.warning('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
 					self.event(eventname, pydata, self.sender_id)
@@ -153,12 +153,6 @@ class ApiClient(Client):
 				pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
 
 				self.stream(strmname, pydata, sender_id)
-
-			# If we are in discovery mode, parse this message
-			if self.discovery and socks.get(self.discovery.handle.fileno()):
-				dmsg = self.discovery.recv_reqreply()
-				if dmsg.conn_id != self.client_id and dmsg.is_server:
-					self.server_discovered.emit(dmsg.conn_ip, dmsg.ports)
 
 			return True
 
