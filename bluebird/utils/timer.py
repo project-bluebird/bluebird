@@ -22,7 +22,10 @@ class Timer(Thread):
 		Thread.__init__(self)
 		self._event = Event()
 		self._cmd = lambda: method(*args, **kwargs)
+
+		self._check_rate(tickrate)
 		self._sleep_time = 1 / tickrate
+
 		self.disabled = False
 
 	def run(self):
@@ -36,6 +39,13 @@ class Timer(Thread):
 			sleep(self._sleep_time)
 
 	def set_tickrate(self, rate):
+		"""
+		Set the timer tickrate
+		:param rate:
+		:return:
+		"""
+
+		self._check_rate(rate)
 		self._sleep_time = 1 / rate
 
 	def stop(self):
@@ -44,3 +54,8 @@ class Timer(Thread):
 		"""
 
 		self._event.set()
+
+	@staticmethod
+	def _check_rate(rate):
+		if rate <= 0:
+			raise ValueError('Rate must be positive')
