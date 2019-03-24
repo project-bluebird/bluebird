@@ -33,14 +33,25 @@ LOGGER = logging.getLogger(__name__)
 
 @FLASK_APP.before_request
 def before_req():
+	"""
+	Method called before every request is handled
+	:return:
+	"""
+
 	json = request.get_json()
-	LOGGER.debug(f'REQ: {request.method} {request.full_path} "{json if json else ""}"')
+	LOGGER.info(f'REQ: {request.method} {request.full_path} "{json if json else ""}"')
 
 
 @FLASK_APP.after_request
 def after_req(response):
+	"""
+	Method called before any response is returned
+	:param response:
+	:return:
+	"""
+
 	json = response.get_json()
-	LOGGER.debug(f'RESP: {response.status_code} "{json if json else ""}"')
+	LOGGER.info(f'RESP: {response.status_code} "{json if json else ""}"')
 	return response
 
 
