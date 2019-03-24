@@ -8,6 +8,8 @@ import os
 
 from datetime import datetime
 
+from .settings import SIM_LOG_RATE
+
 
 # TODO Cli option - single episode log
 
@@ -90,7 +92,7 @@ def _start_episode_log():
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 	file_handler.setFormatter(formatter)
 	EP_LOGGER.addHandler(file_handler)
-	EP_LOGGER.info("Episode started", extra={'PREFIX': _LOG_PREFIX})
+	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE}', extra={'PREFIX': _LOG_PREFIX})
 
 
 def restart_episode_log():
