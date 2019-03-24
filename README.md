@@ -26,7 +26,7 @@ To run locally, first start a BlueSky simulation, then:
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address> --reset_sim]
+(venv) > python ./run.py [--bluesky_host=<address>] [--reset_sim] [--log_rate=<rate>]
 ```
 
 Notes:
@@ -58,7 +58,7 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_FREQ` variable in the settings. This value represents the frequency of the logging in terms of the simulated time.
+The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_RATE` variable in the settings. This value represents the frequency of logging in terms of the simulator time. This can be set at startup with the `--log_rate` option.
 
 ## Development
 

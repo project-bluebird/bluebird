@@ -10,7 +10,7 @@ FLASK_DEBUG = True
 
 BB_PORT = 5001
 
-SIM_LOG_FREQ = 10  # Rate (in sim-seconds) at which aircraft data is logged to the episode file
+SIM_LOG_RATE = 0.2  # Rate (in sim-seconds) at which aircraft data is logged to the episode file
 
 # BlueSky server settings
 
