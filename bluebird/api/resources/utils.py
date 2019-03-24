@@ -11,7 +11,7 @@ import bluebird.client
 from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
 
-LOGGER = logging.getLogger('bluebird')
+_LOGGER = logging.getLogger('bluebird')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -96,18 +96,18 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, suc
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	return process_stack_cmd(cmd_str)
+	return process_stack_cmd(cmd_str, success_code)
 
 
-def process_stack_cmd(cmd_str):
+def process_stack_cmd(cmd_str, success_code=200):
 	"""
 	Sends command to simulation and returns response.
-
 	:param cmd_str: a command string
-	:return :
+	:param success_code:
+	:return:
 	"""
 
-	LOGGER.debug('Sending stack command: {}'.format(cmd_str))
+	_LOGGER.debug('Sending stack command: {}'.format(cmd_str))
 
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
