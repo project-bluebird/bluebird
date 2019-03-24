@@ -30,6 +30,7 @@ class SimState:
 		self.sim_speed = 0
 		self.sim_dt = 0
 		self.sim_t = 0
+		self.sim_utc = ''
 		self.sim_state = 0
 		self.ac_count = 0
 		self.scn_name = ''
@@ -50,11 +51,14 @@ class SimState:
 		:param data:
 		:return:
 		"""
-		self.sim_speed, self.sim_dt, self.sim_t, _, self.ac_count, self.sim_state, self.scn_name = data
+
+		self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, \
+		self.scn_name = data
 		self.sim_speed = round(self.sim_speed, 1)
 		self.sim_t = round(self.sim_t)
+		self.sim_utc = self.sim_utc.split()[1]
 
 	def _log(self):
-		data = f'speed={self.sim_speed}x, time={self.sim_t:4}, ' \
+		data = f'speed={self.sim_speed}x, ticks={self.sim_t:4}, time={self.sim_utc}, ' \
 		       f'state={BS_STATES[self.sim_state]}, aircraft={self.ac_count}'
 		self.logger.info(data)
