@@ -7,6 +7,7 @@ from flask_restful import reqparse
 
 import bluebird.client
 from bluebird.cache import AC_DATA
+from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
 
 
@@ -90,10 +91,25 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+	return process_stack_cmd(cmd_str)
 
-	# TODO Get return status. Can check for the created aircraft? What does BlueSky
-	# return on an error?
-	resp = jsonify('Ok? Command string was: {}'.format(cmd_str))
-	resp.status_code = 200
+
+def process_stack_cmd(cmd_str):
+	"""
+	Sends command to simulation and returns response.
+
+	:param cmd_str: a command string
+	:return :
+	"""
+	errprint('Sending stack command: {}'.format(cmd_str))
+	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+
+	if error:
+		resp = jsonify(f'Error: simulation returned: {error}')
+		resp.status_code = 500
+
+	else:
+		resp = jsonify('Command accepted')
+		resp.status_code = 200
+
 	return resp

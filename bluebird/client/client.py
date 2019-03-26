@@ -2,6 +2,8 @@
 Contains the BlueSky client class for our API
 """
 
+import time
+
 import msgpack
 import zmq
 
@@ -28,6 +30,9 @@ class ApiClient(Client):
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, int(1 / POLL_RATE))
+
+		self.reset_flag = False
+		self.echo_data = None
 
 	def start(self):
 		"""
@@ -71,9 +76,16 @@ class ApiClient(Client):
 		:param target:
 		"""
 
+		self.echo_data = None
 		self.send_event(b'STACKCMD', data, target)
 
-	# TODO This is the same as the base method except for debugging code. Can remove when unused.
+		time.sleep(25 / POLL_RATE)
+		if self.echo_data:
+			errprint(f'Command \'{data}\' resulted in error:\n{self.echo_data}')
+			return self.echo_data['text']
+
+		return None
+
 	def receive(self, timeout=0):
 		try:
 			socks = dict(self.poller.poll(timeout))
@@ -93,6 +105,7 @@ class ApiClient(Client):
 
 				errprint('EVT :: {} :: {}'.format(eventname, pydata))
 
+				# TODO Is this case relevant here?
 				if eventname == b'NODESCHANGED':
 					self.servers.update(pydata)
 					self.nodes_changed.emit(pydata)
@@ -102,11 +115,22 @@ class ApiClient(Client):
 					if not self.act and nodes_myserver:
 						self.actnode(nodes_myserver[0])
 
+				# TODO Also check the pydata contains 'syntax error' etc.
+				elif eventname == b'ECHO':
+					self.echo_data = pydata
+
+				# TODO Also handle the following message which asserts the scenario was loaded:
+				# b'ECHO', {'text': 'IC: Opened IC', 'flags': 0}
+				elif eventname == b'RESET':
+					errprint('Received BlueSky simulation reset message')
+					self.reset_flag = True
+
 				# TODO Handle simulation exit before client
 				elif eventname == b'QUIT':
 					errprint('Received sim exit')
 					self.signal_quit.emit()
 				else:
+					errprint('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
 					self.event(eventname, pydata, self.sender_id)
 
 			if socks.get(self.stream_in) == zmq.POLLIN:
@@ -129,3 +153,42 @@ class ApiClient(Client):
 		except zmq.ZMQError as exc:
 			errprint(exc)
 			return False
+
+	def load_scenario(self, filename):
+		"""
+		Load a scenario from a file
+		:param filename:
+		:return:
+		"""
+
+		self.reset_flag = False
+		self.send_stack_cmd('IC ' + filename)
+
+		return self._await_reset_confirmation()
+
+	def reset_sim(self):
+		"""
+		Resets the BlueSky sim and handles the response
+		:param filename:
+		:return:
+		"""
+
+		self.reset_flag = False
+		self.send_stack_cmd('RESET')
+
+		return self._await_reset_confirmation()
+
+	def _await_reset_confirmation(self):
+		"""
+		Waits for reset_flag to be set, then clears AC_DATA.
+		:return: True if the simulation was reset
+		"""
+
+		time.sleep(25 / POLL_RATE)
+		if not self.reset_flag:
+			errprint('Did not receive reset confirmation in time!')
+			return False
+
+		AC_DATA.clear()
+
+		return True
