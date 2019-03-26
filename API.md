@@ -44,7 +44,7 @@ Where the file path is relative to the BlueSky root directory. The filename must
 Returns:
 
 - `200 Ok` - Scenario was loaded
-- `400 Bad Request` - Filename was invalid
+- `400 Bad Request` - File extension was invalid
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
   
