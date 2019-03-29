@@ -132,7 +132,7 @@ Returns:
 {
   "SCN1001": {						// The requested acid (aircraft ID)
     "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",	// Estimate of when the data should be considered accurate to
-    "alt": 6096,					// Altitude (ft)
+    "alt": 6096,					// Altitude (m)
     "gs": 293.6780042365748,				// Ground speed (kts)
     "lat": 53.8,					// Latitude (deg)
     "lon": 2.0364214816067467,				// Longitude (deg)
