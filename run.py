@@ -13,6 +13,8 @@ def parse_args():
 	:return:
 	"""
 
+	# TODO Add verb for selecting bluesky/nats sim. Default to bluesky if not specified
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--bluesky_host', type=str, help='Hostname of the BlueSky simulation to '
 	                                                     'connect to')
@@ -40,14 +42,13 @@ def main():
 
 	args = parse_args()
 
-	# Connect the BlueSky client
-	connected = BlueBird.client_connect(args.reset_sim)
+	with BlueBird() as app:
+		# Connect to the simulator
+		app.client_connect(args.reset_sim)
 
-	if connected:
-		# Run the Flask app. Blocks here until it exits
-		BlueBird.run_app()
-
-	BlueBird.stop()
+		if app.client_connected:
+			# Run the Flask app. Blocks here until it exits
+			app.run()
 
 
 if __name__ == '__main__':
