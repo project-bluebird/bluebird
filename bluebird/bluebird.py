@@ -18,7 +18,7 @@ class BlueBird:
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
-		self.client_connected = bool
+		self.client_connected = False
 
 	def __enter__(self):
 		return self
@@ -36,10 +36,9 @@ class BlueBird:
 		try:
 			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
 			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
-
 			self.client_connected = True
 		except TimeoutError:
-			print('Failed to connect to BlueSky server at {}, exiting'.format(settings.BS_HOST))
+			self._logger.error(f'Failed to connect to BlueSky server at {settings.BS_HOST}, exiting')
 			CLIENT_SIM.stop()
 			return
 
@@ -53,6 +52,8 @@ class BlueBird:
 		Start the Flask app. This is a blocking method which only returns once the app exists.
 		"""
 
+		self._logger.debug("Starting Flask app")
+
 		AC_DATA.start()
 		FLASK_APP.run(host=settings.BB_HOST, port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
 		              use_reloader=False)
@@ -62,7 +63,7 @@ class BlueBird:
 		Stops the app and cleans up any threaded code
 		"""
 
-		LOGGER.info("BlueBird stopping")
+		self._logger.info("BlueBird stopping")
 
 		for timer in TIMERS:
 			timer.stop()
