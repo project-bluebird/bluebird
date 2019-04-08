@@ -18,7 +18,7 @@ Notes:
 - [Simulation Reset](#simulation-reset)
 - [Simulation Pause](#simulation-pause-hold)
 - [Simulation Resume](#simulation-resume-op)
-- [Simulation Speed Change] (#simulation-speed-change)
+- [Simulation Speed Change](#simulation-speed-change-dtmult)
 
 ### Aircraft endpoints
 
