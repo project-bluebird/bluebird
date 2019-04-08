@@ -18,6 +18,7 @@ Notes:
 - [Simulation Reset](#simulation-reset)
 - [Simulation Pause](#simulation-pause-hold)
 - [Simulation Resume](#simulation-resume-op)
+- [Simulation Speed Change] (#simulation-speed-change)
 
 ### Aircraft endpoints
 
@@ -28,6 +29,10 @@ Notes:
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
 
+### Application endpoints
+
+- [Episode Info](#episode-info)
+
 ## Scenario Load (IC)
 
 Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
@@ -35,7 +40,8 @@ Resets the simulation and loads the scenario specified in the given filename. Th
 ```javascript
 POST /api/v1/ic
 {
-  "filename": "scenario/<scenario>.scn"
+  "filename": "scenario/<scenario>.scn",
+  ["multiplier": 1.0]   // Optional: speed multiplier
 }
 ```  
  
@@ -44,7 +50,7 @@ Where the file path is relative to the BlueSky root directory. The filename must
 Returns:
 
 - `200 Ok` - Scenario was loaded
-- `400 Bad Request` - Filename was invalid
+- `400 Bad Request` - Either the filename or multiplier were invalid
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
   
@@ -87,6 +93,23 @@ Returns:
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
 
+## Simulation Speed Change (DTMULT)
+
+Changes the simulation speed:
+
+```javascript
+POST /api/v1/dtmult
+{
+  "multiplier": 1.5
+}
+```
+
+Returns:
+
+- `200 Ok` - Speed was changed
+- `400 Bad Request` - Multiplier was invalid
+- `500 Internal Server Error` - Could not change the speed (error will be provided).
+
 ---
 
 ## Create Aircraft (CRE)
@@ -108,7 +131,7 @@ POST /api/v1/cre
   
 Returns:
 
-- `200 Ok` - Aircraft was created
+- `201 Created` - Aircraft was created
 - `400 Bad Request` - Aircraft already exists
 - `500 Internal Server Error` - Other error, response will contain data:
  
@@ -217,3 +240,26 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+---
+
+## Episode Info
+
+Returns information for the current episode
+
+```javascript
+GET /api/v1/epinfo  
+```
+
+Returns:
+
+- `200 Ok` - Returns the following data:
+
+```javascript
+{
+  "cur_ep_file": <full path to episode log file>,
+  "cur_ep_id": <episode id>,
+  "inst_id": <application instance id>,
+  "log_dir": <application log directory>
+}  
+```  

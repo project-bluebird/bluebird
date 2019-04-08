@@ -2,13 +2,16 @@
 Contains utility functions for the API resources
 """
 
+import logging
+
 from flask import jsonify
 from flask_restful import reqparse
 
 import bluebird.client
 from bluebird.cache import AC_DATA
-from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
+
+_LOGGER = logging.getLogger('bluebird')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -60,7 +63,8 @@ def check_acid(string, assert_exists=True):
 # TODO Allow units to be defined?
 # TODO The parser has already been seeded with the required and optional arguments, can we infer
 # them here?
-def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
+# pylint: disable=too-many-arguments
+def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, success_code=200):
 	"""
 	Generates a command string using the provided parser and arguments, then sends it to the
 	running simulation.
@@ -69,6 +73,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 	:param req_args:
 	:param opt_args:
 	:param assert_exists: Whether to assert the aircraft already exists or not.
+	:param success_code: Status code to return on success. Default is 200.
 	:return:
 	"""
 
@@ -91,7 +96,19 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	errprint('Sending stack command: {}'.format(cmd_str))
+	return process_stack_cmd(cmd_str, success_code)
+
+
+def process_stack_cmd(cmd_str, success_code=200):
+	"""
+	Sends command to simulation and returns response.
+	:param cmd_str: a command string
+	:param success_code:
+	:return:
+	"""
+
+	_LOGGER.debug('Sending stack command: {}'.format(cmd_str))
+
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
 	if error:
@@ -100,6 +117,6 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 
 	else:
 		resp = jsonify('Command accepted')
-		resp.status_code = 200
+		resp.status_code = success_code
 
 	return resp

@@ -116,7 +116,7 @@ def test_cre_new_aircraft(client, patch_client_sim):
 	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
 	resp = client.post(API_PREFIX + '/cre', json=cre_data)
 
-	assert resp.status == '200 OK'
+	assert resp.status == '201 CREATED'
 
 
 def test_cre_existing_aircraft(client, patch_client_sim):

@@ -2,10 +2,9 @@
 Provides logic for the OP (operate) API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource
 
-from bluebird.client import CLIENT_SIM
+from bluebird.api.resources.utils import process_stack_cmd
 
 
 class Op(Resource):
@@ -16,13 +15,8 @@ class Op(Resource):
 	@staticmethod
 	def post():
 		"""
-		Logic for POST events.
+		POST the OP (operate/resume) command and process the response.
 		:return: :class:`~flask.Response`
 		"""
 
-		CLIENT_SIM.send_stack_cmd('OP')
-
-		# TODO Handle response from simulation
-		resp = jsonify('Ok?')
-		resp.status_code = 418
-		return resp
+		return process_stack_cmd('OP')

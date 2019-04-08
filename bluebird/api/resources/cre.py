@@ -33,4 +33,4 @@ class Cre(Resource):
 			resp.status_code = 400
 			return resp
 
-		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False)
+		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False, success_code=201)

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "disable_existing_loggers": true,
+  "formatters": {
+    "standard": {
+      "format": "%(asctime)s %(levelname)-8s %(name)s: %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console": {
+      "level": "INFO",
+      "class": "logging.StreamHandler",
+      "formatter": "standard"
+    },
+    "debug-file": {
+      "level": "DEBUG",
+      "class": "logging.FileHandler",
+      "formatter": "standard"
+    }
+  },
+  "loggers": {
+    "bluebird": {
+      "handlers": [
+        "console",
+        "debug-file"
+      ],
+      "propagate": true,
+      "level": "DEBUG"
+    }
+  }
+}
