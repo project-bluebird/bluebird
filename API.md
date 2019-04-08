@@ -141,10 +141,10 @@ Returns:
   
 ## Position
 
-Request information on one or all aircraft
+Request information on specific aircraft, or all:
 
 ```javascript
-GET /api/v1/pos?acid=[<acid>|"all"]
+GET /api/v1/pos?acid=[<acid>[,<acid> ...]|"all"]
 ```
   
 Returns:
