@@ -52,10 +52,12 @@ def check_acid(string, assert_exists=True):
 		resp.status_code = 400
 		return resp
 
-	if assert_exists and AC_DATA.get(string) is None:
-		resp = jsonify('AC {} not found'.format(string))
-		resp.status_code = 404
-		return resp
+	if assert_exists:
+		for acid in filter(None, string.split(',')):
+			if not AC_DATA.contains(acid):
+				resp = jsonify('AC {} not found'.format(acid))
+				resp.status_code = 404
+				return resp
 
 	return None
 

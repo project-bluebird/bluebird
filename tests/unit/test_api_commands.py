@@ -13,7 +13,7 @@ import pytest
 import bluebird.api as bluebird_api
 import bluebird.client as bb
 from bluebird.cache import AC_DATA
-from . import API_PREFIX, EXTRAS, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
+from . import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
 
 @pytest.fixture
@@ -53,14 +53,16 @@ def test_pos_command(client):
 
 		resp_json = resp.get_json()
 
-		assert len(resp_json) == len(TEST_DATA)
-		assert set(resp_json.keys()) == set(TEST_DATA_KEYS)
+		assert len(resp_json) == 2
+		assert SIM_DATA[2] == resp_json['sim_t']
 
-		for prop in resp_json:
-			if not prop.startswith('_'):
-				assert resp_json[prop] == TEST_DATA[prop][idx]
-			else:
-				assert prop in EXTRAS.keys()
+		ac_data = resp_json[acid]
+
+		assert len(ac_data) == len(TEST_DATA) - 1  # 'id' not included in response
+		assert set(ac_data.keys()) == set(TEST_DATA_KEYS)
+
+		for prop in ac_data:
+			assert TEST_DATA[prop][idx] == ac_data[prop]
 
 
 def test_ic_command(client, patch_client_sim):
@@ -111,7 +113,7 @@ def test_cre_new_aircraft(client, patch_client_sim):
 	"""
 
 	acid = 'TST1234'
-	assert AC_DATA.get(acid) is None, 'Expected the test aircraft not to exist'
+	assert not AC_DATA.contains(acid), 'Expected the test aircraft not to exist'
 
 	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
 	resp = client.post(API_PREFIX + '/cre', json=cre_data)

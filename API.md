@@ -141,10 +141,10 @@ Returns:
   
 ## Position
 
-Request information on one or all aircraft
+Request information on specific aircraft, or all:
 
 ```javascript
-GET /api/v1/pos?acid=[<acid>|"all"]
+GET /api/v1/pos?acid=[<acid>[,<acid> ...]|"all"]
 ```
   
 Returns:
@@ -154,14 +154,14 @@ Returns:
 ```javascript
 {
   "SCN1001": {						// The requested acid (aircraft ID)
-    "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",	// Estimate of when the data should be considered accurate to
+    "actype": "B747"                // Aircraft type
     "alt": 6096,					// Altitude (ft)
     "gs": 293.6780042365748,				// Ground speed (kts)
     "lat": 53.8,					// Latitude (deg)
-    "lon": 2.0364214816067467,				// Longitude (deg)
+    "lon": 2.0364214816067467,				// Longitude (deg)    
     "vs": 0						// Vertical speed (ft/min)
   },
-  // ...
+  "sim_t": 123                  // Sim time (seconds since start of scenario)
 }  
 ```  
 

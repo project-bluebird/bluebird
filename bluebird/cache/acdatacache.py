@@ -12,7 +12,7 @@ import bluebird.logging
 from bluebird.settings import SIM_LOG_RATE
 from bluebird.utils import TIMERS, Timer
 from bluebird.utils.timeutils import log_rate
-from .base import Cache, generate_extras
+from .base import Cache
 
 LOG_PREFIX = 'A'
 
@@ -53,13 +53,28 @@ class AcDataCache(Cache):
 		:return: Aircraft information
 		"""
 
-		acid = key.upper()
+		query = key.upper()
 
-		# If requested, just return the complete aircraft data
-		if acid == 'ALL':
-			return self.store
+		if query == 'ALL':
+			data = self.store
+		else:
+			data = {}
+			for acid in filter(None, query.split(',')):
+				data[acid] = super().get(acid)
 
-		return super().get(acid)
+		if data is not None:
+			sim_state = bluebird.cache.SIM_STATE
+			data['sim_t'] = sim_state.sim_t
+
+		return data
+
+	def contains(self, acid):
+		"""
+		Check if the given acid exists in the simulation
+		:param acid:
+		:return:
+		"""
+		return acid in self.store.keys()
 
 	def fill(self, data):
 
@@ -67,11 +82,11 @@ class AcDataCache(Cache):
 
 			for idx in range(len(data['id'])):
 				acid = data['id'][idx]
-				ac_data = {'alt': int(data['alt'][idx]), 'lat': round(data['lat'][idx], 5),
-				           'lon': round(data['lon'][idx], 5), 'gs': int(data['gs'][idx]),
-				           'vs': int(data['vs'][idx])}
+				ac_data = {'actype': data['actype'][idx], 'alt': int(data['alt'][idx]),
+				           'lat': round(data['lat'][idx], 5), 'lon': round(data['lon'][idx], 5),
+				           'gs': int(data['gs'][idx]), 'vs': int(data['vs'][idx])}
 
-				self.store[acid] = {**ac_data, **generate_extras()}
+				self.store[acid] = ac_data
 
 	def set_log_rate(self, new_speed, new_log=False):
 		"""

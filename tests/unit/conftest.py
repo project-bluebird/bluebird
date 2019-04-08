@@ -10,7 +10,7 @@ import pytest
 import bluebird.cache
 import bluebird.client
 from bluebird.client.client import ApiClient
-from . import TEST_DATA
+from . import SIM_DATA, TEST_DATA
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -25,6 +25,7 @@ def populate_test_data():
 	                                       'same length.'
 
 	bluebird.cache.AC_DATA.fill(TEST_DATA)
+	bluebird.cache.SIM_STATE.update(SIM_DATA)
 
 
 @pytest.fixture
