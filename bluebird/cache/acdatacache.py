@@ -59,7 +59,14 @@ class AcDataCache(Cache):
 		if acid == 'ALL':
 			return self.store
 
-		return super().get(acid)
+		sim_state = bluebird.cache.SIM_STATE
+
+		data = super().get(acid)
+
+		if data is not None:
+			data['sim_t'] = sim_state.sim_t
+
+		return data
 
 	def fill(self, data):
 

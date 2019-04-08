@@ -57,10 +57,7 @@ def test_pos_command(client):
 		assert set(resp_json.keys()) == set(TEST_DATA_KEYS)
 
 		for prop in resp_json:
-			if not prop.startswith('_'):
-				assert resp_json[prop] == TEST_DATA[prop][idx]
-			else:
-				assert prop in EXTRAS.keys()
+			assert resp_json[prop] == TEST_DATA[prop][idx]
 
 
 def test_ic_command(client, patch_client_sim):

@@ -159,6 +159,7 @@ Returns:
     "gs": 293.6780042365748,				// Ground speed (kts)
     "lat": 53.8,					// Latitude (deg)
     "lon": 2.0364214816067467,				// Longitude (deg)
+    "sim_t": 123,               // Sim time (seconds since start of scenario)
     "vs": 0						// Vertical speed (ft/min)
   },
   // ...
