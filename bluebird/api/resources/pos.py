@@ -28,6 +28,11 @@ class Pos(Resource):
 		parsed = PARSER.parse_args()
 		acid = parsed['acid']
 
+		if acid == '':
+			resp = jsonify('No ACID provided')
+			resp.status_code = 400
+			return resp
+
 		resp = check_acid(acid)
 		if resp is not None:
 			return resp

@@ -53,20 +53,28 @@ class AcDataCache(Cache):
 		:return: Aircraft information
 		"""
 
-		acid = key.upper()
+		query = key.upper()
 
-		# If requested, just return the complete aircraft data
-		if acid == 'ALL':
-			return self.store
-
-		sim_state = bluebird.cache.SIM_STATE
-
-		data = super().get(acid)
+		if query == 'ALL':
+			data = self.store
+		else:
+			data = {}
+			for acid in filter(None, query.split(',')):
+				data[acid] = super().get(acid)
 
 		if data is not None:
+			sim_state = bluebird.cache.SIM_STATE
 			data['sim_t'] = sim_state.sim_t
 
 		return data
+
+	def contains(self, acid):
+		"""
+		Check if the given acid exists in the simulation
+		:param acid:
+		:return:
+		"""
+		return acid in self.store.keys()
 
 	def fill(self, data):
 

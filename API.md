@@ -158,11 +158,10 @@ Returns:
     "alt": 6096,					// Altitude (ft)
     "gs": 293.6780042365748,				// Ground speed (kts)
     "lat": 53.8,					// Latitude (deg)
-    "lon": 2.0364214816067467,				// Longitude (deg)
-    "sim_t": 123,               // Sim time (seconds since start of scenario)
+    "lon": 2.0364214816067467,				// Longitude (deg)    
     "vs": 0						// Vertical speed (ft/min)
   },
-  // ...
+  "sim_t": 123                  // Sim time (seconds since start of scenario)
 }  
 ```  
 
