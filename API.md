@@ -154,7 +154,7 @@ Returns:
 ```javascript
 {
   "SCN1001": {						// The requested acid (aircraft ID)
-    "_validTo": "Thu, 24 Jan 2019 13:53:48 GMT",	// Estimate of when the data should be considered accurate to
+    "actype": "B747"                // Aircraft type
     "alt": 6096,					// Altitude (ft)
     "gs": 293.6780042365748,				// Ground speed (kts)
     "lat": 53.8,					// Latitude (deg)

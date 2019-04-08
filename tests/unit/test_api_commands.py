@@ -13,7 +13,7 @@ import pytest
 import bluebird.api as bluebird_api
 import bluebird.client as bb
 from bluebird.cache import AC_DATA
-from . import API_PREFIX, EXTRAS, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
+from . import API_PREFIX, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def test_pos_command(client):
 
 		resp_json = resp.get_json()
 
-		assert len(resp_json) == len(TEST_DATA)
+		assert len(resp_json) == len(TEST_DATA) - 1  # 'id' not included in response
 		assert set(resp_json.keys()) == set(TEST_DATA_KEYS)
 
 		for prop in resp_json:
