@@ -23,7 +23,8 @@ def parse_args():
 	parser.add_argument('--log_rate', type=float, help='Log rate in sim-seconds')
 	args = parser.parse_args()
 
-	settings.BS_HOST = args.bluesky_host
+	if args.bluesky_host:
+		settings.BS_HOST = args.bluesky_host
 
 	if args.log_rate:
 		if args.log_rate > 0:
