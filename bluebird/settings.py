@@ -8,7 +8,7 @@ API_VERSION = 1
 
 FLASK_DEBUG = True
 
-BB_HOST = 'localhost'
+BB_HOST = '0.0.0.0'
 BB_PORT = 5001
 
 SIM_LOG_RATE = 0.2  # Rate (in sim-seconds) at which aircraft data is logged to the episode file

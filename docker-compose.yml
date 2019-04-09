@@ -17,6 +17,7 @@ services:
     build: .
     volumes:
       - .:/usr/src/app
+      - ./docker_logs:/usr/src/app/logs
     ports:
       - 5001:5001
     environment:
