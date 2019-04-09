@@ -133,10 +133,12 @@ Returns:
 
 - `201 Created` - Aircraft was created
 - `400 Bad Request` - Aircraft already exists
-- `500 Internal Server Error` - Other error, response will contain data:
+- `500 Internal Server Error` - Other error, response will contain data e.g.:
  
 ```javascript
-{TODO}
+"Error: simulation returned: Syntax error processing argument 5:"
+"Could not parse \"-FL050\" as altitude"
+"CRE acid,type,lat,lon,hdg,alt,spd"
 ```
   
 ## Position
