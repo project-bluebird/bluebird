@@ -165,7 +165,7 @@ Returns:
 }  
 ```  
 
-- `400 Bad Request` - Aircraft ID was invalid
+- `400 Bad Request` - Aircraft ID was invalid, or no aircraft exist (when `?acid=ALL` specified)
 - `404 Not Found` - Aircraft was not found
 
 ## Altitude

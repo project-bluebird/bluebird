@@ -15,9 +15,6 @@ class Cache:
 
 		self.store = {}
 
-	def __len__(self):
-		return len(self.store)
-
 	def get(self, key):
 		"""
 		Get a piece of data given the key

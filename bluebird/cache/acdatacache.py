@@ -56,7 +56,7 @@ class AcDataCache(Cache):
 		query = key.upper()
 
 		if query == 'ALL':
-			data = self.store
+			data = dict(self.store)
 		else:
 			data = {}
 			for acid in filter(None, query.split(',')):

@@ -33,9 +33,15 @@ class Pos(Resource):
 			resp.status_code = 400
 			return resp
 
-		resp = check_acid(acid)
-		if resp is not None:
-			return resp
+		if acid.upper() == 'ALL':
+			if not AC_DATA.store:
+				resp = jsonify('No aircraft in the simulation')
+				resp.status_code = 400
+				return resp
+		else:
+			resp = check_acid(acid)
+			if resp is not None:
+				return resp
 
 		resp = jsonify(AC_DATA.get(acid))
 		resp.status_code = 200
