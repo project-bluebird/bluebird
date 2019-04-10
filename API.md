@@ -128,7 +128,6 @@ POST /api/v1/cre
   "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
 }  
 ```
-  
 Returns:
 
 - `201 Created` - Aircraft was created
@@ -140,8 +139,26 @@ Returns:
 "Could not parse \"-FL050\" as altitude"
 "CRE acid,type,lat,lon,hdg,alt,spd"
 ```
-  
-## Position
+
+## Direct to Waypoint (DIRECT)
+ 
+Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist on the aircraft's route.  
+ 
+```javascript
+POST /api/v1/direct
+{
+    "acid": "TST1000",      // Aircraft ID (alphanumeric, at least 3 characters)
+    "waypoint": "TESTWPT"   // The name of the waypoint to go to 
+}  
+```
+   
+Returns:
+ 
+- `200 Ok` - Command was excepted
+- `400 Bad Request` - Aircraft ID was invalid, or the specified aircraft did not exist in the simulation
+- `500 Internal Server Error` - Other error, response will contain data. Note there is currently no way to distinguish between the waypoint not existing, and the waypoint extsting but not being on the aircraft's route. 
+
+## Position (POS)
 
 Request information on specific aircraft, or all:
 

@@ -62,6 +62,7 @@ def after_req(response):
 # Aircraft control
 FLASK_API.add_resource(res.Alt, '/alt')
 FLASK_API.add_resource(res.Cre, '/cre')
+FLASK_API.add_resource(res.Direct, '/direct')
 FLASK_API.add_resource(res.Hdg, '/hdg')
 FLASK_API.add_resource(res.Pos, '/pos')
 FLASK_API.add_resource(res.Spd, '/spd')
