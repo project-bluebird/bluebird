@@ -47,6 +47,11 @@ def check_acid(string, assert_exists=True):
 	:return:
 	"""
 
+	if not string:
+		resp = jsonify('No ACID provided')
+		resp.status_code = 400
+		return resp
+
 	if not is_acid(string):
 		resp = jsonify('Invalid ACID \'{}\''.format(string))
 		resp.status_code = 400
@@ -114,7 +119,7 @@ def process_stack_cmd(cmd_str, success_code=200):
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
 	if error:
-		resp = jsonify(f'Error: simulation returned: {error}')
+		resp = jsonify(f'Simulation returned: {error}')
 		resp.status_code = 500
 
 	else:

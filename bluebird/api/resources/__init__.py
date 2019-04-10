@@ -7,6 +7,7 @@ from .alt import Alt
 from .cre import Cre
 from .direct import Direct
 from .hdg import Hdg
+from .listroute import ListRoute
 from .pos import Pos
 from .spd import Spd
 from .vs import Vs

@@ -128,6 +128,7 @@ POST /api/v1/cre
   "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
 }  
 ```
+
 Returns:
 
 - `201 Created` - Aircraft was created
@@ -155,7 +156,8 @@ POST /api/v1/direct
 Returns:
  
 - `200 Ok` - Command was excepted
-- `400 Bad Request` - Aircraft ID was invalid, or the specified aircraft did not exist in the simulation
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - The specified aircraft did not exist in the simulation
 - `500 Internal Server Error` - Other error, response will contain data. Note there is currently no way to distinguish between the waypoint not existing, and the waypoint extsting but not being on the aircraft's route. 
 
 ## Position (POS)
@@ -223,6 +225,32 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+## List Route (LISTROUTE)
+
+Returns a list of the waypoints on an aircraft's route:
+
+```javascript
+GET /api/v1/listroute?acid=<acid>
+```
+
+Returns:
+
+- `200 Ok` - Returns the following data:
+
+```javascript
+{
+    "route": [
+      "*HOP : -----/---",
+      " AHL : -----/---",
+      " WSR : -----/---"
+    ]  
+}
+```
+
+- `400 Bad Request` - Aircraft ID was invalid, 
+- `404 Not Found` - Aircraft does not exist in the simulation.
+- `500 Internal Server Error` - Other error, or the specified aircraft has no route (response will contain data).
 
 ## Speed
 
