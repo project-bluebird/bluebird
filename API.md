@@ -50,7 +50,7 @@ Where the file path is relative to the BlueSky root directory. The filename must
 Returns:
 
 - `200 Ok` - Scenario was loaded
-- `400 Bad Request` - Either the filename or multiplier were invalid
+- `400 Bad Request` - File extension or multiplier were invalid
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
   
@@ -157,7 +157,7 @@ Returns:
 {
   "SCN1001": {				// The requested acid (aircraft ID)
     "actype": "B747"        		// Aircraft type
-    "alt": 6096,			// Altitude (ft)
+    "alt": 6096,			// Altitude (m)
     "gs": 293.6780042365748,		// Ground speed (kts)
     "lat": 53.8,			// Latitude (deg)
     "lon": 2.0364214816067467,		// Longitude (deg)    
