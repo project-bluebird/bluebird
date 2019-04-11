@@ -93,7 +93,7 @@ class ApiClient(Client):
 		is_error_response = False
 
 		if response_expected and self._echo_data:
-			if self._echo_data[0].startswith((' ', '*', 'TIME')):
+			if self._echo_data[0].startswith((' ', '*', 'TIME', 'DEFWPT')):
 				return list(self._echo_data)
 			is_error_response = True
 		elif self._echo_data:

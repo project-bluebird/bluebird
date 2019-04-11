@@ -13,6 +13,7 @@ from .spd import Spd
 from .vs import Vs
 
 # Simulation control
+from .defwpt import DefWpt
 from .dtmult import DtMult
 from .hold import Hold
 from .ic import Ic

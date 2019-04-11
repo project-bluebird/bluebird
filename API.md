@@ -9,6 +9,7 @@ Notes:
 - In future, this documentation will be auto-generated 😅
 - Parameters should follow the [Docopt](http://docopt.org/) format
 - Unless otherwise noted, all references to 'speed' refer to the aircraft airspeed (usually in CAS)
+- In general, any endpoint may return a `400 Bad Request` if the required parameters were not provided in the correct format
 
 ## Contents
 
@@ -18,7 +19,8 @@ Notes:
 - [Simulation Reset](#simulation-reset)
 - [Simulation Pause](#simulation-pause-hold)
 - [Simulation Resume](#simulation-resume-op)
-- [Simulation Speed Change](#simulation-speed-change-dtmult)
+- [Simulation Speed Change](#simulation-speed-change-(dtmult))
+- [Define waypoint](#define-waypoint-(defwpt))
 
 ### Aircraft endpoints
 
@@ -115,6 +117,31 @@ Returns:
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
 
+## Define Waypoint (DEFWPT)
+
+Defines a custom waypoint:
+
+```javascript
+POST /api/v1/defwpt
+{
+    "wpname": "TEST",
+    "lat": 1.23,
+    "lon": 4.56,
+    ["type": "<type>"]
+}
+```
+
+Notes:
+
+- Currently BlueSky does not detect duplicate waypoints
+- `<type>` is an (optional) custom string which can be used to tag waypoints
+
+Returns:
+
+- `200 Ok` - Waypoint was defined
+- `500 Internal Server Error` - Could not change the speed (error will be provided).
+
+
 ## Simulation Speed Change (DTMULT)
 
 Changes the simulation speed:
@@ -122,7 +149,7 @@ Changes the simulation speed:
 ```javascript
 POST /api/v1/dtmult
 {
-  "multiplier": 1.5
+    "multiplier": 1.5
 }
 ```
 
