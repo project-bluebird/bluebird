@@ -15,10 +15,13 @@ Notes:
 
 ### Simulation endpoints
 
-- [Define waypoint](#define-waypoint-defwpt)
+- [Define Area](#define-area-area)
+- [Define Waypoint](#define-waypoint-defwpt)
 - [Simulation Speed Change](#simulation-speed-change-dtmult)
 - [Simulation Pause](#simulation-pause-hold)
 - [Scenario Load](#scenario-load-ic)
+- [2D Polygon](#2d-polygon-poly)
+- [3D Polygon](#3d-polygon-polyalt)
 - [Simulation Resume](#simulation-resume-op)
 - [Simulation Reset](#simulation-reset)
 - [Simulation Time](#simulation-time-time)
@@ -40,6 +43,12 @@ Notes:
 - [Episode Info](#episode-info)
 
 ---
+
+## Define Area (AREA)
+
+Defines an experiment area:
+
+`TODO`
 
 ## Define Waypoint (DEFWPT)
 
@@ -128,6 +137,18 @@ Returns:
 
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
+
+## 2D Polygon (POLY)
+
+Define a 2D polygon in the simulation space:
+
+`TODO`
+
+## 3D Polygon (POLYALT)
+
+Define a 3D polygon in the simulation space:
+
+`TODO`
 
 ## Simulation Reset
 
