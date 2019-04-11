@@ -23,6 +23,9 @@ ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
 
+# Tuple of strings which should not be considered error responses from BlueSky
+ALLOWED_RESPONSES = (' ', '*', 'TIME', 'DEFWPT')
+
 
 class ApiClient(Client):
 	"""
@@ -93,7 +96,7 @@ class ApiClient(Client):
 		is_error_response = False
 
 		if response_expected and self._echo_data:
-			if self._echo_data[0].startswith((' ', '*', 'TIME', 'DEFWPT')):
+			if self._echo_data[0].startswith(ALLOWED_RESPONSES):
 				return list(self._echo_data)
 			is_error_response = True
 		elif self._echo_data:
