@@ -239,18 +239,27 @@ Returns:
 - `200 Ok` - Returns the following data:
 
 ```javascript
-{
+{   
     "route": [
-      "*HOP : -----/---",
-      " AHL : -----/---",
-      " WSR : -----/---"
-    ]  
+        {
+            "is_current": true,
+            "req_alt": "FL250",
+            "req_spd": 123,
+            "wpt_name": "BKN"
+        },
+        {
+            "is_current": false,
+            "req_alt": "4500",
+            "req_spd": 100,
+            "wpt_name": "SPY"
+        }
+    ]    
 }
 ```
 
 - `400 Bad Request` - Aircraft ID was invalid, 
 - `404 Not Found` - Aircraft does not exist in the simulation.
-- `500 Internal Server Error` - Other error, or the specified aircraft has no route (response will contain data).
+- `500 Internal Server Error` - Other error i.e. route data could not be parsed, or the specified aircraft has no route (response will contain data).
 
 ## Speed
 

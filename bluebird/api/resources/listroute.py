@@ -4,6 +4,7 @@ Provides logic for the LISTROUTE (list route) API endpoint
 
 import logging
 
+import re
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
@@ -14,6 +15,28 @@ PARSER = reqparse.RequestParser()
 PARSER.add_argument('acid', type=str, location='args', required=True)
 
 _LOGGER = logging.getLogger('bluebird')
+
+_ROUTE_RE = re.compile(r'^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$')
+
+
+def _parse_route_data(route_data):
+	"""
+	Parse a list of strings containing route data into a keyed dictionary
+	:param route_data:
+	:return:
+	"""
+
+	parsed = []
+	for line in map(lambda s: s.replace(" ", ""), route_data):
+		match = _ROUTE_RE.match(line)
+		if not match:
+			return line
+		req_alt = match.group(3) if not '-' in match.group(3) else None
+		req_spd = int(match.group(4)) if not '-' in match.group(4) else None
+		parsed.append(
+						{'is_current': bool(match.group(1)), 'wpt_name': match.group(2), 'req_alt': req_alt,
+						 'req_spd': req_spd})
+	return parsed
 
 
 class ListRoute(Resource):
@@ -50,6 +73,13 @@ class ListRoute(Resource):
 			resp.status_code = 500
 			return resp
 
-		resp = jsonify({'route': reply})
+		parsed_route = _parse_route_data(reply)
+
+		if not isinstance(parsed_route, list):
+			resp = jsonify(f'Error: Could not parse route entry {parsed_route}')
+			resp.status_code = 500
+			return resp
+
+		resp = jsonify({'route': parsed_route})
 		resp.status_code = 200
 		return resp
