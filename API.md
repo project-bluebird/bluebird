@@ -61,7 +61,7 @@ Notes:
 
 Returns:
 
-- `200 Ok` - Waypoint was defined
+- `201 Created` - Waypoint was defined
 - `500 Internal Server Error` - Could not change the speed (error will be provided)
 
 ## Simulation Speed Change (DTMULT)

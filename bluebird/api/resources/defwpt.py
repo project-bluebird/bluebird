@@ -50,5 +50,5 @@ class DefWpt(Resource):
 			return resp
 
 		resp = jsonify(''.join(reply))
-		resp.status_code = 200
+		resp.status_code = 201
 		return resp
