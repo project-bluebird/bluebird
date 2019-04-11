@@ -13,11 +13,12 @@ from .spd import Spd
 from .vs import Vs
 
 # Simulation control
+from .dtmult import DtMult
 from .hold import Hold
 from .ic import Ic
 from .op import Op
 from .reset import Reset
-from .dtmult import DtMult
+from .time import Time
 
 # Episode info
 from .epinfo import EpInfo

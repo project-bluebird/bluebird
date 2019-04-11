@@ -93,7 +93,7 @@ class ApiClient(Client):
 		is_error_response = False
 
 		if response_expected and self._echo_data:
-			if self._echo_data[0].startswith((' ', '*')):
+			if self._echo_data[0].startswith((' ', '*', 'TIME')):
 				return list(self._echo_data)
 			is_error_response = True
 		elif self._echo_data:
@@ -101,7 +101,8 @@ class ApiClient(Client):
 
 		if is_error_response:
 			self._logger.error(f'Command \'{data}\' resulted in error: {self._echo_data}')
-			return str(f'Error(s): {str(self._echo_data)}')
+			errs = '\n'.join(str(x) for x in self._echo_data)
+			return str(f'Error(s): {errs}')
 
 		return None
 

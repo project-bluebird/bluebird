@@ -67,6 +67,28 @@ Returns:
 - `200 Ok` - Simulation was reset
 - `500 Internal Server Error` - Simulation could not be reset
 
+## Simulation Time (TIME)
+
+Get or set the current simulated time:
+
+```javascript
+POST /api/v1/time
+{
+    ["time": <time>]
+}
+```
+
+The `<time>` argument (if specified) must be one of the following:
+
+- `RUN` - Default if not specified. Returns the current simulated time
+- `REAL` - Return the current UTC time (not sure this is particularly useful...)
+- `HH:MM:SS.mmm` - Set the simulated time to the given time-string
+
+Returns:  
+
+- `200 Ok` - Simulation time was set
+- `500 Internal Server Error` - Time could not be set, or input time was invalid
+
 ## Simulation Pause (HOLD)
 
 Pauses the simulation:
