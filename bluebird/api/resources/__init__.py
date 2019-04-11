@@ -3,6 +3,7 @@ Package provides logic for the simulation API endpoints
 """
 
 # Aircraft control
+from .addwpt import AddWpt
 from .alt import Alt
 from .cre import Cre
 from .direct import Direct

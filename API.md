@@ -25,6 +25,7 @@ Notes:
 
 ### Aircraft endpoints
 
+- [Add Waypoint](#add-waypoint-addwpt)
 - [Altitude](#altitude)
 - [Create Aircraft](#create-aircraft-cre)
 - [Direct to Waypoint](#direct-to-waypoint-direct)
@@ -164,6 +165,30 @@ Returns:
 - `500 Internal Server Error` - Time could not be set, or input time was invalid
 
 ---
+
+## Add Waypoint (ADDWPT)
+
+Add a waypoint to the end of the aircraft's route:
+
+```javascript
+POST /api/v1/addwpt
+{
+    "acid": "SCN1001",
+    ("wpname": "<waypoint>" | "lat": 123, "lon": 456),
+    ["alt": "FL250"],
+    ["spd": 250]
+}  
+```
+
+Notes:
+
+- Either the `wpname`, or both a `lat` and `lon` must be provided 
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid, or an accepted combination of arguments was not provided
+- `404 Not Found` - Aircraft was not found in the simulation
 
 ## Altitude
   

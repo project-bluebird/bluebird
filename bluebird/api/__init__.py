@@ -60,6 +60,7 @@ def after_req(response):
 # region Resources
 
 # Aircraft control
+FLASK_API.add_resource(res.AddWpt, '/addwpt')
 FLASK_API.add_resource(res.Alt, '/alt')
 FLASK_API.add_resource(res.Cre, '/cre')
 FLASK_API.add_resource(res.Direct, '/direct')
