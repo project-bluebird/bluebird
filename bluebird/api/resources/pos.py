@@ -28,11 +28,6 @@ class Pos(Resource):
 		parsed = PARSER.parse_args()
 		acid = parsed['acid']
 
-		if acid == '':
-			resp = jsonify('No ACID provided')
-			resp.status_code = 400
-			return resp
-
 		if acid.upper() == 'ALL':
 			if not AC_DATA.store:
 				resp = jsonify('No aircraft in the simulation')
