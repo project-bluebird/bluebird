@@ -31,7 +31,7 @@ Notes:
 - [Direct to Waypoint](#direct-to-waypoint-direct)
 - [Heading](#heading)
 - [List Route](#list-route-listroute)
-- [Position](#position)
+- [Position](#position-pos)
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
 
