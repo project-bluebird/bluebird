@@ -1,4 +1,4 @@
-  
+
 # BlueBird API
 
 Version `1`
@@ -16,12 +16,12 @@ Notes:
 ### Simulation endpoints
 
 - [Define waypoint](#define-waypoint-defwpt)
-- [Simulation Speed Change](#simulation-speed-change-dtmult)
-- [Simulation Pause](#simulation-pause-hold)
-- [Scenario Load](#scenario-load-ic)
-- [Simulation Resume](#simulation-resume-op)
-- [Simulation Reset](#simulation-reset)
-- [Simulation Time](#simulation-time-time)
+- [Change Simulation Rate Multiplier](#change-simulation-rate-multiplier-dtmult)
+- [Pause Simulation](#pause-simulation-hold)
+- [Load Scenario](#load-scenario-ic)
+- [Resume Simulation](#resume-simulation-op)
+- [Reset Simulation](#reset-simulation)
+- [Simulation Time](#simulation-time)
 
 ### Aircraft endpoints
 
@@ -63,11 +63,11 @@ Notes:
 Returns:
 
 - `201 Created` - Waypoint was defined
-- `500 Internal Server Error` - Could not change the speed (error will be provided)
+- `500 Internal Server Error` - Could not define the waypoint (error will be provided)
 
-## Simulation Speed Change (DTMULT)
+## Change Simulation Rate Multiplier (DTMULT)
 
-Changes the simulation speed:
+Changes the simulation rate multiplier:
 
 ```javascript
 POST /api/v1/dtmult
@@ -78,11 +78,11 @@ POST /api/v1/dtmult
 
 Returns:
 
-- `200 Ok` - Speed was changed
-- `400 Bad Request` - Multiplier was invalid
-- `500 Internal Server Error` - Could not change the speed (error will be provided).
+- `200 Ok` - Rate multiplier was changed
+- `400 Bad Request` - Rate multiplier was invalid
+- `500 Internal Server Error` - Could not change the rate multiplier (error will be provided).
 
-## Simulation Pause (HOLD)
+## Pause Simulation (HOLD)
 
 Pauses the simulation:
 
@@ -95,7 +95,7 @@ Returns:
 - `200 Ok` - Simulation was paused
 - `500 Internal Server Error` - Simulation could not be paused
 
-## Scenario Load (IC)
+## Load Scenario (IC)
 
 Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
 
@@ -103,10 +103,10 @@ Resets the simulation and loads the scenario specified in the given filename. Th
 POST /api/v1/ic
 {
   "filename": "scenario/<scenario>.scn",
-  ["multiplier": 1.0]   // Optional: speed multiplier
+  ["multiplier": 1.0]   // Optional: simulation rate multiplier
 }
 ```  
- 
+
 Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
 
 Returns:
@@ -116,7 +116,7 @@ Returns:
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
 
-## Simulation Resume (OP)
+## Resume Simulation (OP)
 
 Resumes the simulation:
 
@@ -129,7 +129,7 @@ Returns:
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
 
-## Simulation Reset
+## Reset Simulation
 
 Resets the simulation and clears all aircraft data:
 
@@ -182,7 +182,7 @@ POST /api/v1/addwpt
 
 Notes:
 
-- Either the `wpname`, or both a `lat` and `lon` must be provided 
+- Either the `wpname`, or both a `lat` and `lon` must be provided
 
 Returns:
 
@@ -191,7 +191,7 @@ Returns:
 - `404 Not Found` - Aircraft was not found in the simulation
 
 ## Altitude
-  
+
 Request that the aircraft alters its altitude:
 
 ```javascript
@@ -231,7 +231,7 @@ Returns:
 - `201 Created` - Aircraft was created
 - `400 Bad Request` - Aircraft already exists
 - `500 Internal Server Error` - Other error, response will contain data e.g.:
- 
+
 ```javascript
 "Error: simulation returned: Syntax error processing argument 5:"
 "Could not parse \"-FL050\" as altitude"
@@ -239,23 +239,23 @@ Returns:
 ```
 
 ## Direct to Waypoint (DIRECT)
- 
+
 Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist on the aircraft's route.  
- 
+
 ```javascript
 POST /api/v1/direct
 {
     "acid": "TST1000",      // Aircraft ID (alphanumeric, at least 3 characters)
-    "waypoint": "TESTWPT"   // The name of the waypoint to go to 
+    "waypoint": "TESTWPT"   // The name of the waypoint to go to
 }  
 ```
-   
+
 Returns:
- 
+
 - `200 Ok` - Command was excepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - The specified aircraft did not exist in the simulation
-- `500 Internal Server Error` - Other error, response will contain data. Note there is currently no way to distinguish between the waypoint not existing, and the waypoint extsting but not being on the aircraft's route. 
+- `500 Internal Server Error` - Other error, response will contain data. Note there is currently no way to distinguish between the waypoint not existing, and the waypoint extsting but not being on the aircraft's route.
 
 ## Heading
 
@@ -306,7 +306,7 @@ Returns:
 }
 ```
 
-- `400 Bad Request` - Aircraft ID was invalid, 
+- `400 Bad Request` - Aircraft ID was invalid,
 - `404 Not Found` - Aircraft does not exist in the simulation.
 - `500 Internal Server Error` - Other error i.e. route data could not be parsed, or the specified aircraft has no route (response will contain data).
 
@@ -317,7 +317,7 @@ Request information on specific aircraft, or all:
 ```javascript
 GET /api/v1/pos?acid=[<acid>[,<acid> ...]|"all"]
 ```
-  
+
 Returns:
 
 - `200 Ok` - Returns the following data:
