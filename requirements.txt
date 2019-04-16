@@ -3,6 +3,7 @@ Flask == 1.0.*
 flask-restful == 0.3.*
 markdown == 3.0.*
 flask-cors == 3.0.*
+semver == 2.8.*
 
 # Required by BlueSky. Versions unknown
 matplotlib
