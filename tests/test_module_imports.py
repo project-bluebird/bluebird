@@ -18,3 +18,15 @@ def test_module_import(module):
 		__import__(module)
 	except ImportError as exc:
 		pytest.fail(str(exc))
+
+
+def test_run_script_import():
+	"""
+	Tests that the top-level run.py script can be imported without errors
+	:return:
+	"""
+
+	try:
+		import run
+	except ImportError as exc:
+		pytest.fail(str(exc))
