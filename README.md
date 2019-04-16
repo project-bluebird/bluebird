@@ -52,8 +52,8 @@ See [here](API.md).
 
 By default, BlueBird creates two log files:
 
-- `logs/<timestamp>-<instance_id>/debug.log` Contains general application logging and Flask request info. One file per instance of BlueBird
-- `logs/<timestamp>-<instance_id>/<timestamp>-<episode_id>.log` Contains a log of aircraft and simulation data. A new file is created for each scenario that is loaded, and the file is closed if the simulation is reset.
+- `logs/<timestamp>-<instance_id>/debug.log` Contains general application logging and Flask request info. One file per instance of BlueBird. The `instance_id` is a unique identifier based on the ID of the host machine and the current time.
+- `logs/<timestamp>-<instance_id>/<timestamp>-<episode_id>.log` Contains a log of aircraft and simulation data. A new file is created for each scenario that is loaded, and the file is closed if the simulation is reset. The `episode_id` is a random unique identifier.
     - Entries prefixed with 'A' contain info on the aircraft in the simulation
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
