@@ -10,7 +10,7 @@ import pytest
 import bluebird.cache
 import bluebird.client
 from bluebird.client.client import ApiClient
-from . import TEST_DATA
+from . import SIM_DATA, TEST_DATA
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -25,6 +25,7 @@ def populate_test_data():
 	                                       'same length.'
 
 	bluebird.cache.AC_DATA.fill(TEST_DATA)
+	bluebird.cache.SIM_STATE.update(SIM_DATA)
 
 
 @pytest.fixture
@@ -49,12 +50,10 @@ def patch_client_sim(monkeypatch):
 		def send_stack_cmd(self, data=None, target=b'*'):
 			self.last_stack_cmd = data
 
-		def load_scenario(self, filename):
+		def load_scenario(self, filename, speed=1.0):
 			self.last_scenario = filename
-			return True
 
 		def reset_sim(self):
 			self.was_reset = True
-			return True
 
 	monkeypatch.setattr(bluebird.client, 'CLIENT_SIM', TestClient())

@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   bluesky:
-    image: turinginst/bluesky:1.0.2
+    image: turinginst/bluesky:${BS_MIN_VERSION}
     volumes:
       - ./bluesky:/usr/src/app
     expose:
@@ -17,6 +17,7 @@ services:
     build: .
     volumes:
       - .:/usr/src/app
+      - ./docker_logs:/usr/src/app/logs
     ports:
       - 5001:5001
     environment:

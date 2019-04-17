@@ -2,10 +2,10 @@
 Provides logic for the OP (operate) API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource
 
 from bluebird.api.resources.utils import process_stack_cmd
+
 
 class Op(Resource):
 	"""

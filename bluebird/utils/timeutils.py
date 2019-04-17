@@ -5,6 +5,8 @@ Contains utility functions for dates and times
 import datetime
 import time
 
+from bluebird.settings import SIM_LOG_RATE
+
 DEFAULT_LIFETIME = datetime.timedelta(seconds=10)
 
 
@@ -39,3 +41,13 @@ def wait_until(condition, *args, interval=0.1, timeout=1):
 	start = time.time()
 	while not condition(*args) and time.time() - start < timeout:
 		time.sleep(interval)
+
+
+def log_rate(sim_speed):
+	"""
+	Calculate the log rate for a given sim speed
+	:param sim_speed:
+	:return:
+	"""
+
+	return round(SIM_LOG_RATE * sim_speed, 2)

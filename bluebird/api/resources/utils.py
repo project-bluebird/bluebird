@@ -2,13 +2,16 @@
 Contains utility functions for the API resources
 """
 
+import logging
+
 from flask import jsonify
 from flask_restful import reqparse
 
 import bluebird.client
 from bluebird.cache import AC_DATA
-from bluebird.utils.debug import errprint
 from bluebird.utils.strings import is_acid
+
+_LOGGER = logging.getLogger('bluebird')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -44,15 +47,22 @@ def check_acid(string, assert_exists=True):
 	:return:
 	"""
 
+	if not string:
+		resp = jsonify('No ACID provided')
+		resp.status_code = 400
+		return resp
+
 	if not is_acid(string):
 		resp = jsonify('Invalid ACID \'{}\''.format(string))
 		resp.status_code = 400
 		return resp
 
-	if assert_exists and AC_DATA.get(string) is None:
-		resp = jsonify('AC {} not found'.format(string))
-		resp.status_code = 404
-		return resp
+	if assert_exists:
+		for acid in filter(None, string.split(',')):
+			if not AC_DATA.contains(acid):
+				resp = jsonify('AC {} not found'.format(acid))
+				resp.status_code = 404
+				return resp
 
 	return None
 
@@ -60,7 +70,8 @@ def check_acid(string, assert_exists=True):
 # TODO Allow units to be defined?
 # TODO The parser has already been seeded with the required and optional arguments, can we infer
 # them here?
-def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
+# pylint: disable=too-many-arguments
+def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True, success_code=200):
 	"""
 	Generates a command string using the provided parser and arguments, then sends it to the
 	running simulation.
@@ -69,6 +80,7 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 	:param req_args:
 	:param opt_args:
 	:param assert_exists: Whether to assert the aircraft already exists or not.
+	:param success_code: Status code to return on success. Default is 200.
 	:return:
 	"""
 
@@ -91,25 +103,27 @@ def process_ac_cmd(cmd, parser, req_args, opt_args=None, assert_exists=True):
 			if parsed[opt] is not None:
 				cmd_str += ' {}'.format(parsed[opt])
 
-	return process_stack_cmd(cmd_str)
+	return process_stack_cmd(cmd_str, success_code)
 
 
-def process_stack_cmd(cmd_str):
+def process_stack_cmd(cmd_str, success_code=200):
 	"""
 	Sends command to simulation and returns response.
-
 	:param cmd_str: a command string
-	:return :
+	:param success_code:
+	:return:
 	"""
-	errprint('Sending stack command: {}'.format(cmd_str))
+
+	_LOGGER.debug('Sending stack command: {}'.format(cmd_str))
+
 	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
 	if error:
-		resp = jsonify(f'Error: simulation returned: {error}')
+		resp = jsonify(f'Simulation returned: {error}')
 		resp.status_code = 500
 
 	else:
 		resp = jsonify('Command accepted')
-		resp.status_code = 200
+		resp.status_code = success_code
 
 	return resp

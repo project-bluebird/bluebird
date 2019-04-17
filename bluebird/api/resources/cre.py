@@ -28,9 +28,9 @@ class Cre(Resource):
 		parsed = PARSER.parse_args(strict=True)
 		acid = parsed['acid']
 
-		if AC_DATA.get(acid) is not None:
+		if AC_DATA.contains(acid):
 			resp = jsonify('Aircraft {} already exists'.format(acid))
 			resp.status_code = 400
 			return resp
 
-		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False)
+		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False, success_code=201)
