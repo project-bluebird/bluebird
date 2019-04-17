@@ -144,25 +144,23 @@ Returns:
 
 ## Simulation Time
 
-Get or set the current simulated time:
+Get the current simulated time:
 
 ```javascript
-POST /api/v1/time
-{
-    ["time": <time>]
-}
+GET /api/v1/time
 ```
-
-The `<time>` argument (if specified) must be one of the following:
-
-- `RUN` - Default if not specified. Returns the current simulated time
-- `REAL` - Return the current UTC time (not sure this is particularly useful...)
-- `HH:MM:SS.mmm` - Set the simulated time to the given time-string
 
 Returns:  
 
-- `200 Ok` - Simulation time was set
-- `500 Internal Server Error` - Time could not be set, or input time was invalid
+- `200 Ok` - Time retrieved. Data will of the form:
+
+```javascript
+{
+    "sim_utc": "2019-04-17 00:12:08.300000"
+}
+```
+
+- `500 Internal Server Error` - Time could not be retrieved - response will contain error info
 
 ---
 
