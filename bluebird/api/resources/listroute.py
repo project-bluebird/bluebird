@@ -8,6 +8,7 @@ import re
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
+import bluebird.cache
 import bluebird.client
 from bluebird.api.resources.utils import check_acid
 
@@ -80,6 +81,8 @@ class ListRoute(Resource):
 			resp.status_code = 500
 			return resp
 
-		resp = jsonify({'route': parsed_route})
+		sim_state = bluebird.cache.SIM_STATE
+
+		resp = jsonify({'route': parsed_route, 'acid': acid, 'sim_t': sim_state.sim_t})
 		resp.status_code = 200
 		return resp
