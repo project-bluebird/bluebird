@@ -24,7 +24,7 @@ ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
 POLL_RATE = 50  # Hz
 
 # Tuple of strings which should not be considered error responses from BlueSky
-ALLOWED_RESPONSES = (' ', '*', 'TIME', 'DEFWPT')
+ALLOWED_RESPONSES = (' ', '*', 'TIME', 'DEFWPT', 'AREA')
 
 
 class ApiClient(Client):
@@ -188,10 +188,12 @@ class ApiClient(Client):
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
 		self._reset_flag = False
-		err = self.send_stack_cmd('IC ' + filename)
+		err = self.send_stack_cmd('IC ' + filename, response_expected=True)
 
 		if err:
-			return err
+			# Some scenario files define an area, which is passed back to the client in a message
+			if not (isinstance(err, list) and len(err) == 1 and err[0].startswith('AREA')):
+				return err
 
 		err = self._await_reset_confirmation()
 
