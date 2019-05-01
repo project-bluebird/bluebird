@@ -287,6 +287,7 @@ Returns:
 
 ```javascript
 {   
+    "acid": "SCN1001",
     "route": [
         {
             "is_current": true,
@@ -300,7 +301,8 @@ Returns:
             "req_spd": 100,
             "wpt_name": "SPY"
         }
-    ]    
+    ],
+    "sim_t": 1234  
 }
 ```
 

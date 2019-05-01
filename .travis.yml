@@ -3,6 +3,7 @@ branches:
   only:
   - master
   - /^release\/.*$/
+  - /^hotfix\/.*$/
 
 language: python
 python:
