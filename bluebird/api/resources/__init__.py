@@ -24,3 +24,4 @@ from .time import Time
 
 # Episode info
 from .epinfo import EpInfo
+from .eplog import EpLog
