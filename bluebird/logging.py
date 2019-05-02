@@ -103,7 +103,8 @@ def _start_episode_log():
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 	file_handler.setFormatter(formatter)
 	EP_LOGGER.addHandler(file_handler)
-	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE} Hz', extra={'PREFIX': _LOG_PREFIX})
+	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE} Hz',
+	               extra={'PREFIX': _LOG_PREFIX})
 
 	return EP_ID
 

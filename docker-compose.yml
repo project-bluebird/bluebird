@@ -3,9 +3,11 @@ version: '3.7'
 
 services:
   bluesky:
+    container_name: bluesky
     image: turinginst/bluesky:${BS_MIN_VERSION}
-    volumes:
-      - ./bluesky:/usr/src/app
+# Uncomment to include any local changes to BlueSky
+#    volumes:
+#      - ./bluesky:/usr/src/app
     expose:
       - 9000
       - 9001
@@ -14,10 +16,11 @@ services:
 #      - 9000:9000
 #      - 9001:9001
   bluebird:
+    container_name: bluebird
     build: .
     volumes:
       - .:/usr/src/app
-      - ./docker_logs:/usr/src/app/logs
+      - /usr/src/app/logs/ # Prevents any local logs being copied to the container
     ports:
       - 5001:5001
     environment:
