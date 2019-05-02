@@ -18,45 +18,9 @@ class BlueBird:
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
-		self.client_connected = False
 
 	def __enter__(self):
 		return self
-
-	def client_connect(self, reset_on_connect=False):
-		"""
-		Connect to the (BlueSky) simulation client
-		:return: True if a connection was established with the client, false otherwise.
-		"""
-
-		CLIENT_SIM.start()
-
-		self._logger.info('Connecting to client...')
-
-		try:
-			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
-			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
-			self.client_connected = True
-		except TimeoutError:
-			self._logger.error(f'Failed to connect to BlueSky server at {settings.BS_HOST}, exiting')
-			CLIENT_SIM.stop()
-			return
-
-		if reset_on_connect:
-			CLIENT_SIM.reset_sim()
-
-		SIM_STATE.start()
-
-	def run(self):
-		"""
-		Start the Flask app. This is a blocking method which only returns once the app exists.
-		"""
-
-		self._logger.debug("Starting Flask app")
-
-		AC_DATA.start()
-		FLASK_APP.run(host=settings.BB_HOST, port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
-		              use_reloader=False)
 
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		"""
@@ -69,3 +33,44 @@ class BlueBird:
 			timer.stop()
 
 		CLIENT_SIM.stop()
+
+	def client_connect(self, min_bs_version, reset_on_connect):
+		"""
+		Connect to the (BlueSky) simulation client
+		:return: True if a connection was established with the client, false otherwise.
+		"""
+
+		CLIENT_SIM.start()
+
+		self._logger.info('Connecting to client...')
+
+		try:
+			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
+			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
+		except TimeoutError:
+			self._logger.error(f'Failed to connect to BlueSky server at {settings.BS_HOST}, exiting')
+			CLIENT_SIM.stop()
+			return False
+
+		if CLIENT_SIM.host_version < min_bs_version:
+			self._logger.error(
+							f'BlueSky server of version {CLIENT_SIM.host_version} does not meet the minimum '
+							f'requirement ({min_bs_version})')
+			return False
+
+		if reset_on_connect:
+			CLIENT_SIM.reset_sim()
+
+		SIM_STATE.start()
+		return True
+
+	def run(self):
+		"""
+		Start the Flask app. This is a blocking method which only returns once the app exists.
+		"""
+
+		self._logger.debug("Starting Flask app")
+
+		AC_DATA.start()
+		FLASK_APP.run(host=settings.BB_HOST, port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
+		              use_reloader=False)

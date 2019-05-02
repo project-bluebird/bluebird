@@ -2,12 +2,16 @@
 Entry point for the BlueBird app
 """
 
+import os
+
 import argparse
+from dotenv import load_dotenv
+from semver import VersionInfo
 
 from bluebird import BlueBird, settings
 
 
-def parse_args():
+def _parse_args():
 	"""
 	Parse cli arguments and override any BlueBird settings
 	:return:
@@ -35,19 +39,25 @@ def parse_args():
 	return args
 
 
+def _get_min_bs_version():
+	bs_min_version = os.getenv('BS_MIN_VERSION')
+	if not bs_min_version:
+		raise ValueError('Error: the BS_MIN_VERSION environment variable must be set')
+	return VersionInfo.parse(bs_min_version)
+
+
 def main():
 	"""
 	Main app entry point
 	:return:
 	"""
 
-	args = parse_args()
+	args = _parse_args()
+	load_dotenv(verbose=True, override=True)
+	bs_min_version = _get_min_bs_version()
 
 	with BlueBird() as app:
-		# Connect to the simulator
-		app.client_connect(args.reset_sim)
-
-		if app.client_connected:
+		if app.client_connect(bs_min_version, args.reset_sim):
 			# Run the Flask app. Blocks here until it exits
 			app.run()
 

@@ -23,6 +23,9 @@ ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
 
+# Tuple of strings which should not be considered error responses from BlueSky
+ALLOWED_RESPONSES = (' ', '*', 'TIME', 'DEFWPT', 'AREA')
+
 
 class ApiClient(Client):
 	"""
@@ -37,8 +40,8 @@ class ApiClient(Client):
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, POLL_RATE)
 
-		self.reset_flag = False
-		self.echo_data = None
+		self._reset_flag = False
+		self._echo_data = []
 
 	def start(self):
 		"""
@@ -74,24 +77,35 @@ class ApiClient(Client):
 
 		self.stream_received.emit(name, data, sender_id)
 
-	def send_stack_cmd(self, data=None, target=b'*'):
+	def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
 		"""
 		Send a command to the BlueSky simulation command stack
 		:param data:
+		:param response_expected:
 		:param target:
 		"""
 
 		sim_t = bb_cache.SIM_STATE.sim_t
 		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
-		self.echo_data = None
+		self._echo_data = []
 		self.send_event(b'STACKCMD', data, target)
 
 		time.sleep(25 / POLL_RATE)
 
-		if self.echo_data:
-			self._logger.error(f'Command \'{data}\' resulted in error: {self.echo_data}')
-			return self.echo_data['text']
+		is_error_response = False
+
+		if response_expected and self._echo_data:
+			if self._echo_data[0].startswith(ALLOWED_RESPONSES):
+				return list(self._echo_data)
+			is_error_response = True
+		elif self._echo_data:
+			is_error_response = True
+
+		if is_error_response:
+			self._logger.error(f'Command \'{data}\' resulted in error: {self._echo_data}')
+			errs = '\n'.join(str(x) for x in self._echo_data)
+			return str(f'Error(s): {errs}')
 
 		return None
 
@@ -130,10 +144,10 @@ class ApiClient(Client):
 					if text.startswith('Unknown command: METRICS'):
 						self._logger.warning('Ignored warning about invalid "METRICS" command')
 					elif not text.startswith('IC: Opened'):
-						self.echo_data = pydata
+						self._echo_data.append(text)
 
 				elif eventname == b'RESET':
-					self.reset_flag = True
+					self._reset_flag = True
 					self._logger.info('Received BlueSky simulation reset message')
 
 				# TODO Handle simulation exit before client
@@ -173,11 +187,13 @@ class ApiClient(Client):
 		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
-		self.reset_flag = False
-		err = self.send_stack_cmd('IC ' + filename)
+		self._reset_flag = False
+		err = self.send_stack_cmd('IC ' + filename, response_expected=True)
 
 		if err:
-			return err
+			# Some scenario files define an area, which is passed back to the client in a message
+			if not (isinstance(err, list) and len(err) == 1 and err[0].startswith('AREA')):
+				return err
 
 		err = self._await_reset_confirmation()
 
@@ -203,7 +219,7 @@ class ApiClient(Client):
 		bb_cache.AC_DATA.timer.disabled = True
 		bluebird.logging.close_episode_log('sim reset')
 
-		self.reset_flag = False
+		self._reset_flag = False
 		err = self.send_stack_cmd('RESET')
 
 		return err if err else self._await_reset_confirmation()
@@ -215,7 +231,7 @@ class ApiClient(Client):
 		"""
 
 		time.sleep(25 / POLL_RATE)
-		if not self.reset_flag:
+		if not self._reset_flag:
 			return 'Did not receive reset confirmation in time!'
 
 		bb_cache.AC_DATA.clear()

@@ -60,19 +60,24 @@ def after_req(response):
 # region Resources
 
 # Aircraft control
+FLASK_API.add_resource(res.AddWpt, '/addwpt')
 FLASK_API.add_resource(res.Alt, '/alt')
 FLASK_API.add_resource(res.Cre, '/cre')
+FLASK_API.add_resource(res.Direct, '/direct')
 FLASK_API.add_resource(res.Hdg, '/hdg')
+FLASK_API.add_resource(res.ListRoute, '/listroute')
 FLASK_API.add_resource(res.Pos, '/pos')
 FLASK_API.add_resource(res.Spd, '/spd')
 FLASK_API.add_resource(res.Vs, '/vs')
 
 # Simulation control
+FLASK_API.add_resource(res.DefWpt, '/defwpt')
+FLASK_API.add_resource(res.DtMult, '/dtmult')
 FLASK_API.add_resource(res.Hold, '/hold')
 FLASK_API.add_resource(res.Ic, '/ic')
 FLASK_API.add_resource(res.Op, '/op')
 FLASK_API.add_resource(res.Reset, '/reset')
-FLASK_API.add_resource(res.DtMult, '/dtmult')
+FLASK_API.add_resource(res.Time, '/time')
 
 # Episode info
 FLASK_API.add_resource(res.EpInfo, '/epinfo')

@@ -1,4 +1,4 @@
-  
+
 # BlueBird API
 
 Version `1`
@@ -9,23 +9,29 @@ Notes:
 - In future, this documentation will be auto-generated 😅
 - Parameters should follow the [Docopt](http://docopt.org/) format
 - Unless otherwise noted, all references to 'speed' refer to the aircraft airspeed (usually in CAS)
+- In general, any endpoint may return a `400 Bad Request` if the required parameters were not provided in the correct format
 
 ## Contents
 
 ### Simulation endpoints
 
-- [Scenario Load](#scenario-load-ic)
-- [Simulation Reset](#simulation-reset)
-- [Simulation Pause](#simulation-pause-hold)
-- [Simulation Resume](#simulation-resume-op)
-- [Simulation Speed Change](#simulation-speed-change-dtmult)
+- [Define waypoint](#define-waypoint-defwpt)
+- [Change Simulation Rate Multiplier](#change-simulation-rate-multiplier-dtmult)
+- [Pause Simulation](#pause-simulation-hold)
+- [Load Scenario](#load-scenario-ic)
+- [Resume Simulation](#resume-simulation-op)
+- [Reset Simulation](#reset-simulation)
+- [Simulation Time](#simulation-time)
 
 ### Aircraft endpoints
 
-- [Create Aircraft](#create-aircraft-cre)
-- [Position](#position)
+- [Add Waypoint](#add-waypoint-addwpt)
 - [Altitude](#altitude)
+- [Create Aircraft](#create-aircraft-cre)
+- [Direct to Waypoint](#direct-to-waypoint-direct)
 - [Heading](#heading)
+- [List Route](#list-route-listroute)
+- [Position](#position-pos)
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
 
@@ -33,41 +39,50 @@ Notes:
 
 - [Episode Info](#episode-info)
 
-## Scenario Load (IC)
+---
 
-Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
+## Define Waypoint (DEFWPT)
+
+Defines a custom waypoint:
 
 ```javascript
-POST /api/v1/ic
+POST /api/v1/defwpt
 {
-  "filename": "scenario/<scenario>.scn",
-  ["multiplier": 1.0]   // Optional: speed multiplier
+    "wpname": "TEST",
+    "lat": 1.23,
+    "lon": 4.56,
+    ["type": "<type>"]
 }
-```  
- 
-Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+```
+
+Notes:
+
+- Currently BlueSky does not detect duplicate waypoints
+- `<type>` is an (optional) custom string which can be used to tag waypoints
 
 Returns:
 
-- `200 Ok` - Scenario was loaded
-- `400 Bad Request` - Either the filename or multiplier were invalid
-- `500 Internal Server Error` - Could not load the scenario
-	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
-  
-## Simulation Reset
+- `201 Created` - Waypoint was defined
+- `500 Internal Server Error` - Could not define the waypoint (error will be provided)
 
-Resets the simulation and clears all aircraft data:
+## Change Simulation Rate Multiplier (DTMULT)
+
+Changes the simulation rate multiplier:
 
 ```javascript
-POST /api/v1/reset
+POST /api/v1/dtmult
+{
+    "multiplier": 1.5
+}
 ```
 
-Returns:  
+Returns:
 
-- `200 Ok` - Simulation was reset
-- `500 Internal Server Error` - Simulation could not be reset
+- `200 Ok` - Rate multiplier was changed
+- `400 Bad Request` - Rate multiplier was invalid
+- `500 Internal Server Error` - Could not change the rate multiplier (error will be provided).
 
-## Simulation Pause (HOLD)
+## Pause Simulation (HOLD)
 
 Pauses the simulation:
 
@@ -80,7 +95,28 @@ Returns:
 - `200 Ok` - Simulation was paused
 - `500 Internal Server Error` - Simulation could not be paused
 
-## Simulation Resume (OP)
+## Load Scenario (IC)
+
+Resets the simulation and loads the scenario specified in the given filename. The `filename` parameter is required:
+
+```javascript
+POST /api/v1/ic
+{
+  "filename": "scenario/<scenario>.scn",
+  ["multiplier": 1.0]   // Optional: simulation rate multiplier
+}
+```  
+
+Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+
+Returns:
+
+- `200 Ok` - Scenario was loaded
+- `400 Bad Request` - File extension or multiplier were invalid
+- `500 Internal Server Error` - Could not load the scenario
+	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
+
+## Resume Simulation (OP)
 
 Resumes the simulation:
 
@@ -93,24 +129,83 @@ Returns:
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
 
-## Simulation Speed Change (DTMULT)
+## Reset Simulation
 
-Changes the simulation speed:
+Resets the simulation and clears all aircraft data:
 
 ```javascript
-POST /api/v1/dtmult
+POST /api/v1/reset
+```
+
+Returns:  
+
+- `200 Ok` - Simulation was reset
+- `500 Internal Server Error` - Simulation could not be reset
+
+## Simulation Time
+
+Get the current simulated time:
+
+```javascript
+GET /api/v1/time
+```
+
+Returns:  
+
+- `200 Ok` - Time retrieved. Data will of the form:
+
+```javascript
 {
-  "multiplier": 1.5
+    "sim_utc": "2019-04-17 00:12:08.300000"
 }
+```
+
+- `500 Internal Server Error` - Time could not be retrieved - response will contain error info
+
+---
+
+## Add Waypoint (ADDWPT)
+
+Add a waypoint to the end of the aircraft's route:
+
+```javascript
+POST /api/v1/addwpt
+{
+    "acid": "SCN1001",
+    ("wpname": "<waypoint>" | "lat": 123, "lon": 456),
+    ["alt": "FL250"],
+    ["spd": 250]
+}  
+```
+
+Notes:
+
+- Either the `wpname`, or both a `lat` and `lon` must be provided
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid, or an accepted combination of arguments was not provided
+- `404 Not Found` - Aircraft was not found in the simulation
+
+## Altitude
+
+Request that the aircraft alters its altitude:
+
+```javascript
+POST /api/v1/alt
+{
+  "acid": <acid>,	// Aircraft ID
+  "alt": "FL250",	// Requested altitude (feet or FL)
+  ["vspd": "50"]	// Optional: vertical speed (ft/min)
+}  
 ```
 
 Returns:
 
-- `200 Ok` - Speed was changed
-- `400 Bad Request` - Multiplier was invalid
-- `500 Internal Server Error` - Could not change the speed (error will be provided).
-
----
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
 
 ## Create Aircraft (CRE)
 
@@ -128,27 +223,101 @@ POST /api/v1/cre
   "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
 }  
 ```
-  
+
 Returns:
 
 - `201 Created` - Aircraft was created
 - `400 Bad Request` - Aircraft already exists
 - `500 Internal Server Error` - Other error, response will contain data e.g.:
- 
+
 ```javascript
 "Error: simulation returned: Syntax error processing argument 5:"
 "Could not parse \"-FL050\" as altitude"
 "CRE acid,type,lat,lon,hdg,alt,spd"
 ```
-  
-## Position
+
+## Direct to Waypoint (DIRECT)
+
+Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist on the aircraft's route.  
+
+```javascript
+POST /api/v1/direct
+{
+    "acid": "TST1000",      // Aircraft ID (alphanumeric, at least 3 characters)
+    "waypoint": "TESTWPT"   // The name of the waypoint to go to
+}  
+```
+
+Returns:
+
+- `200 Ok` - Command was excepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - The specified aircraft did not exist in the simulation
+- `500 Internal Server Error` - Other error, response will contain data. Note there is currently no way to distinguish between the waypoint not existing, and the waypoint extsting but not being on the aircraft's route.
+
+## Heading
+
+Request that the aircraft changes its heading:
+
+```javascript
+POST /api/v1/hdg
+{
+  "acid": <acid>,	// Aircraft ID
+  "hdg": "123.45"	// Requested heading (deg)
+}  
+```
+
+Returns:
+
+- `200 Ok` - Command accepted
+- `400 Bad Request` - Aircraft ID was invalid
+- `404 Not Found` - Aircraft was not found
+
+## List Route (LISTROUTE)
+
+Returns a list of the waypoints on an aircraft's route:
+
+```javascript
+GET /api/v1/listroute?acid=<acid>
+```
+
+Returns:
+
+- `200 Ok` - Returns the following data:
+
+```javascript
+{   
+    "acid": "SCN1001",
+    "route": [
+        {
+            "is_current": true,
+            "req_alt": "FL250",
+            "req_spd": 123,
+            "wpt_name": "BKN"
+        },
+        {
+            "is_current": false,
+            "req_alt": "4500",
+            "req_spd": 100,
+            "wpt_name": "SPY"
+        }
+    ],
+    "sim_t": 1234  
+}
+```
+
+- `400 Bad Request` - Aircraft ID was invalid,
+- `404 Not Found` - Aircraft does not exist in the simulation.
+- `500 Internal Server Error` - Other error i.e. route data could not be parsed, or the specified aircraft has no route (response will contain data).
+
+## Position (POS)
 
 Request information on specific aircraft, or all:
 
 ```javascript
 GET /api/v1/pos?acid=[<acid>[,<acid> ...]|"all"]
 ```
-  
+
 Returns:
 
 - `200 Ok` - Returns the following data:
@@ -168,43 +337,6 @@ Returns:
 ```  
 
 - `400 Bad Request` - Aircraft ID was invalid, or no aircraft exist (when `?acid=ALL` specified)
-- `404 Not Found` - Aircraft was not found
-
-## Altitude
-  
-Request that the aircraft alters its altitude:
-
-```javascript
-POST /api/v1/alt
-{
-  "acid": <acid>,	// Aircraft ID
-  "alt": "FL250",	// Requested altitude (feet or FL)
-  ["vspd": "50"]	// Optional: vertical speed (ft/min)
-}  
-```
-
-Returns:
-
-- `200 Ok` - Command accepted
-- `400 Bad Request` - Aircraft ID was invalid
-- `404 Not Found` - Aircraft was not found
-
-## Heading
-
-Request that the aircraft changes its heading:
-
-```javascript
-POST /api/v1/hdg
-{
-  "acid": <acid>,	// Aircraft ID
-  "hdg": "123.45"	// Requested heading (deg)
-}  
-```
-
-Returns:
-
-- `200 Ok` - Command accepted
-- `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
 
 ## Speed

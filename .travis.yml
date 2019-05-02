@@ -1,8 +1,9 @@
 # whitelist
 branches:
   only:
-  - travis
+  - master
   - /^release\/.*$/
+  - /^hotfix\/.*$/
 
 language: python
 python:
