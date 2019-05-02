@@ -136,3 +136,25 @@ def test_cre_existing_aircraft(client, patch_client_sim):
 	resp = client.post(API_PREFIX + '/cre', json=cre_data)
 
 	assert resp.status == '400 BAD REQUEST'
+
+
+def test_scenario_endpoint(client, patch_client_sim):
+	"""
+
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/scenario')
+	assert '400 BAD REQUEST' == resp.status
+
+	data = {'scn_name': 'new-scenario', 'content': []}
+
+	resp = client.post(API_PREFIX + '/scenario', json=data)
+	assert '400 BAD REQUEST' == resp.status
+
+	data['content'] = ['line 1', 'line 2']
+
+	resp = client.post(API_PREFIX + '/scenario', json=data)
+	assert '200 OK' == resp.status
