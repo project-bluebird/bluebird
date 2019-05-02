@@ -400,11 +400,13 @@ Returns:
 
 ## Episode Logfile
 
-Returns the content of the current episode's logfile
+Returns the content of the current episode's logfile:
 
 ```javascript
-GET /api/v1/eplog  
+GET /api/v1/eplog[?close_ep]
 ```
+
+The `close_ep` parameter can be used to close the episode and reset the simulator.
 
 Returns:
 

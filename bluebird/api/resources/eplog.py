@@ -11,7 +11,7 @@ import bluebird.client as bb_client
 import bluebird.logging as bb_logging
 
 PARSER = reqparse.RequestParser()
-PARSER.add_argument('close_ep', type=bool, location='json', required=False)
+PARSER.add_argument('close_ep', type=bool, location='args', required=False)
 
 
 class EpLog(Resource):
@@ -27,6 +27,7 @@ class EpLog(Resource):
 		"""
 
 		parsed = PARSER.parse_args(strict=True)
+		close_ep = False if parsed['close_ep'] is None else True
 
 		ep_file_path = bb_logging.EP_FILE
 
@@ -35,7 +36,7 @@ class EpLog(Resource):
 			resp.status_code = 404
 			return resp
 
-		if parsed['close_ep']:
+		if close_ep:
 			err = bb_client.CLIENT_SIM.reset_sim()
 			if err:
 				resp = jsonify(f'Could not reset simulation: {err}')

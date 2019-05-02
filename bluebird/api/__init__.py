@@ -52,7 +52,7 @@ def after_req(response):
 
 	json = response.get_json()
 
-	if request.url.lower().endswith('eplog'):
+	if 'eplog' in request.url.lower():
 		json = 'EPLOG data'
 
 	LOGGER.info(f'RESP: {response.status_code} "{json if json else ""}"')
