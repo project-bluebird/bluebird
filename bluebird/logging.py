@@ -57,7 +57,8 @@ def bodge_file_content(filename):
 	:return:
 	"""
 
-	EP_LOGGER.info(f"Scenario file loaded: {filename}. Contents are:", extra={'PREFIX': _LOG_PREFIX})
+	prefix = {'PREFIX': _LOG_PREFIX}
+	EP_LOGGER.info(f"Scenario file loaded: {filename}. Contents are:", extra=prefix)
 	scn_file = os.path.join('bluesky', filename)
 
 	try:
@@ -65,10 +66,10 @@ def bodge_file_content(filename):
 			for line in scn:
 				if line.isspace() or line.strip()[0] == "#":
 					continue
-				EP_LOGGER.info(line.lstrip().strip('\n'), extra={'PREFIX': _LOG_PREFIX})
+				EP_LOGGER.info(line.lstrip().strip('\n'), extra=prefix)
 
 	except Exception as exc:  # pylint: disable=broad-except
-		EP_LOGGER.error(f'Could not log file contents', exc_info=exc)
+		EP_LOGGER.error(f'Could not log file contents', exc_info=exc, extra=prefix)
 
 
 def close_episode_log(reason):
