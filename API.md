@@ -397,3 +397,27 @@ Returns:
   "log_dir": <application log directory>
 }  
 ```  
+
+## Episode Logfile
+
+Returns the content of the current episode's logfile
+
+```javascript
+GET /api/v1/eplog  
+```
+
+Returns:
+
+- `200 Ok` - Returns the following data:
+
+```javascript
+{
+  "cur_ep_file": <full path to episode log file>,
+  "cur_ep_id": <episode id>,
+  "lines": [...]
+}
+```
+
+Where the `lines` array contains each line from the log file.
+
+- `404 Not Found` - No episode is being recorded  

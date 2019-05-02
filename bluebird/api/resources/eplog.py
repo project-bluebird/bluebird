@@ -26,7 +26,7 @@ class EpLog(Resource):
 
 		if not ep_file_path:
 			resp = jsonify('Error: No episode being recorded')
-			resp.status_code = 400
+			resp.status_code = 404
 			return resp
 
 		full_ep_file = os.path.join(os.getcwd(), ep_file_path)
