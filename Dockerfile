@@ -16,6 +16,7 @@ RUN mv bluesky/bluesky/* bluesky/ && \
     find . -type d -name '__pycache__' -prune -exec rm -r {} \;
 
 ENV FLASK_ENV=development
+ENV BB_LOGS_ROOT="/var/log/bluebird"
 
 # BS_HOST is set if run through docker-compose. Otherwise need to set manually
 CMD python ./run.py --bluesky_host=$BS_HOST
