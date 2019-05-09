@@ -215,7 +215,7 @@ class ApiClient(Client):
 
 		if err:
 			# Some scenario files define an area, which is passed back to the client in a message
-			if not (isinstance(err, list) and len(err) == 1 and err[0].startswith('AREA')):
+			if not (isinstance(err, list) and len(err) == 1 and err[0].startswith(ALLOWED_RESPONSES)):
 				return err
 
 		err = self._await_reset_confirmation()
