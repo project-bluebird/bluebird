@@ -3,6 +3,7 @@ version: '3.7'
 
 services:
   bluesky:
+    container_name: bluesky
     image: turinginst/bluesky:${BS_MIN_VERSION}
     volumes:
       - ./bluesky:/usr/src/app
@@ -14,6 +15,9 @@ services:
 #      - 9000:9000
 #      - 9001:9001
   bluebird:
+    container_name: bluebird
+    depends_on:
+      - bluesky
     build: .
     volumes:
       - .:/usr/src/app
