@@ -38,17 +38,18 @@ class DefWpt(Resource):
 			resp.status_code = 400
 			return resp
 
+		wp_name = parsed["wpname"]
 		wp_type = parsed['type'] if parsed['type'] else ''
-		cmd_str = f'DEFWPT {parsed["wpname"]} {parsed["lat"]} {parsed["lon"]} {wp_type}'
+		cmd_str = f'DEFWPT {wp_name} {parsed["lat"]} {parsed["lon"]} {wp_type}'
 
 		_LOGGER.info(f'Sending stack command: {cmd_str}')
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
+		err = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
 
-		if not reply:
-			resp = jsonify('Error: No route data received from BlueSky')
+		if err:
+			resp = jsonify(f'Error: {err}')
 			resp.status_code = 500
 			return resp
 
-		resp = jsonify(''.join(reply))
+		resp = jsonify(f'Waypoint {wp_name} created')
 		resp.status_code = 201
 		return resp

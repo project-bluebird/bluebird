@@ -17,6 +17,8 @@ services:
 #      - 9001:9001
   bluebird:
     container_name: bluebird
+    depends_on:
+      - bluesky
     build: .
     volumes:
       - .:/usr/src/app

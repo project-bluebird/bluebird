@@ -11,7 +11,7 @@ import os
 import uuid
 from datetime import datetime
 
-from .settings import LOGS_ROOT, SIM_LOG_RATE
+from .settings import CONSOLE_LOG_LEVEL, LOGS_ROOT, SIM_LOG_RATE
 
 if not os.path.exists(LOGS_ROOT):
 	os.mkdir(LOGS_ROOT)
@@ -31,6 +31,7 @@ os.mkdir(INST_LOG_DIR)
 
 with open('bluebird/logging_config.json') as f:
 	LOG_CONFIG = json.load(f)
+	LOG_CONFIG['handlers']['console']['level'] = CONSOLE_LOG_LEVEL
 
 # Set filenames for logfiles (can't do this from the JSON)
 LOG_CONFIG['handlers']['debug-file']['filename'] = os.path.join(INST_LOG_DIR, 'debug.log')

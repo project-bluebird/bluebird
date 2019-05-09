@@ -24,8 +24,11 @@ ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
 
+# Events which should be ignored
+IGNORED_EVENTS = [b'DEFWPT', b'DISPLAYFLAG', b'PANZOOM', b'SHAPE']
+
 # Tuple of strings which should not be considered error responses from BlueSky
-ALLOWED_RESPONSES = (' ', '*', 'TIME', 'DEFWPT', 'AREA')
+IGNORED_RESPONSES = ('TIME', 'DEFWPT', 'AREA')
 
 
 class ApiClient(Client):
@@ -95,19 +98,20 @@ class ApiClient(Client):
 
 		time.sleep(25 / POLL_RATE)
 
-		is_error_response = False
-
 		if response_expected and self._echo_data:
-			if self._echo_data[0].startswith(ALLOWED_RESPONSES):
-				return list(self._echo_data)
-			is_error_response = True
-		elif self._echo_data:
-			is_error_response = True
+			return list(self._echo_data)
 
-		if is_error_response:
+		if self._echo_data:
+
+			if self._echo_data[0].startswith(IGNORED_RESPONSES):
+				return None
+
 			self._logger.error(f'Command \'{data}\' resulted in error: {self._echo_data}')
 			errs = '\n'.join(str(x) for x in self._echo_data)
 			return str(f'Error(s): {errs}')
+
+		if response_expected:
+			return 'Error: no response received'
 
 		return None
 
@@ -130,8 +134,11 @@ class ApiClient(Client):
 
 				self._logger.debug('EVT :: {} :: {}'.format(eventname, pydata))
 
+				if eventname in IGNORED_EVENTS:
+					self._logger.debug(f'Ignored event {eventname}')
+
 				# TODO Is this case relevant here?
-				if eventname == b'NODESCHANGED':
+				elif eventname == b'NODESCHANGED':
 					self.servers.update(pydata)
 					self.nodes_changed.emit(pydata)
 
@@ -211,15 +218,12 @@ class ApiClient(Client):
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
 		self._reset_flag = False
-		err = self.send_stack_cmd('IC ' + filename, response_expected=True)
 
+		err = self.send_stack_cmd('IC ' + filename)
 		if err:
-			# Some scenario files define an area, which is passed back to the client in a message
-			if not (isinstance(err, list) and len(err) == 1 and err[0].startswith(ALLOWED_RESPONSES)):
-				return err
+			return err
 
 		err = self._await_reset_confirmation()
-
 		if err:
 			return err
 
