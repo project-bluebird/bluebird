@@ -20,6 +20,7 @@ Notes:
 - [Pause Simulation](#pause-simulation-hold)
 - [Load Scenario](#load-scenario-ic)
 - [Resume Simulation](#resume-simulation-op)
+- [Create Scenario](#create-scenario)
 - [Reset Simulation](#reset-simulation)
 - [Simulation Time](#simulation-time)
 
@@ -128,6 +129,37 @@ Returns:
 
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
+
+## Create Scenario
+
+Creates a scenario with the provided content:
+
+```javascript
+POST /api/v1/scenario
+{
+    "scn_name": "test",
+    "content": [
+        "00:00:00>CRE SWR39W A320 EHAM RWY18L * 0 0",
+        "00:00:01>SPD SWR39W 300",
+        "00:00:01>ALT SWR39W FL300"
+    ],
+    ["start_new": true],    // Optional: start the simulation after upload
+    ["start_dtmult": 5.0]   // Optional: simulation rate multiplier
+}
+```
+
+Notes:
+
+- Any existing scenario with the same name will be overwritten
+- Each line in `content` must contain a timestamp and a valid BlueSky command. The timestamp must be in the format `hh:mm:ss`
+- A small delay should be included between creating an aircraft and issuing commands to it
+
+Returns:  
+
+- `200 Ok` - Simulation was created and started
+- `201 Created` - Simulation was created
+- `400 Bad Request` - Error with simulation content
+- `500 Internal Server Error` - Simulation could not be uploaded, or could not be started after upload
 
 ## Reset Simulation
 

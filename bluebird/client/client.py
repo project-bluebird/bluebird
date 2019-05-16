@@ -2,6 +2,7 @@
 Contains the BlueSky client class for our API
 """
 
+import json
 import logging
 import time
 
@@ -45,6 +46,7 @@ class ApiClient(Client):
 
 		self._reset_flag = False
 		self._echo_data = []
+		self._scn_response = None
 
 	def start(self):
 		"""
@@ -162,6 +164,9 @@ class ApiClient(Client):
 					self._logger.info('Received sim exit')
 					self.signal_quit.emit()
 
+				elif eventname == b'SCENARIO':
+					self._scn_response = pydata
+
 				else:
 					self._logger.warning('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
 					self.event(eventname, pydata, self.sender_id)
@@ -180,6 +185,24 @@ class ApiClient(Client):
 		except zmq.ZMQError as exc:
 			self._logger.error(exc)
 			return False
+
+	def upload_new_scenario(self, name, lines):
+		"""
+		Uploads a new scenario file to the BlueSky simulation
+		:param name:
+		:param lines:
+		:return:
+		"""
+
+		self._scn_response = None
+
+		data = json.dumps({'name': name, 'lines': lines})
+		self.send_event(b'SCENARIO', data)
+
+		time.sleep(25 / POLL_RATE)
+		resp = self._scn_response
+
+		return resp if (not resp or not resp == 'Ok') else None
 
 	def load_scenario(self, filename, speed=1.0):
 		"""
