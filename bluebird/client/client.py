@@ -202,7 +202,7 @@ class ApiClient(Client):
 		time.sleep(25 / POLL_RATE)
 		resp = self._scn_response
 
-		return resp if not resp or not 'Ok' == resp else None
+		return resp if (not resp or not resp == 'Ok') else None
 
 	def load_scenario(self, filename, speed=1.0):
 		"""

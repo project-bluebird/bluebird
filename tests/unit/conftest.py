@@ -45,15 +45,20 @@ def patch_client_sim(monkeypatch):
 			super().__init__()
 			self.last_stack_cmd = None
 			self.last_scenario = None
+			self.last_dtmult = None
 			self.was_reset = False
 
-		def send_stack_cmd(self, data=None, target=b'*'):
+		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
 			self.last_stack_cmd = data
 
 		def load_scenario(self, filename, speed=1.0):
 			self.last_scenario = filename
+			self.last_dtmult = speed
 
 		def reset_sim(self):
 			self.was_reset = True
+
+		def upload_new_scenario(self, name, lines):
+			return None
 
 	monkeypatch.setattr(bluebird.client, 'CLIENT_SIM', TestClient())

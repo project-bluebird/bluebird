@@ -140,21 +140,35 @@ def test_cre_existing_aircraft(client, patch_client_sim):
 
 def test_scenario_endpoint(client, patch_client_sim):
 	"""
-
+	Tests the create scenario endpoint
 	:param client:
 	:param patch_client_sim:
 	:return:
 	"""
 
 	resp = client.post(API_PREFIX + '/scenario')
-	assert '400 BAD REQUEST' == resp.status
+	assert resp.status == '400 BAD REQUEST'
 
 	data = {'scn_name': 'new-scenario', 'content': []}
 
 	resp = client.post(API_PREFIX + '/scenario', json=data)
-	assert '400 BAD REQUEST' == resp.status
+	assert resp.status == '400 BAD REQUEST'
 
-	data['content'] = ['line 1', 'line 2']
+	data['content'] = ['invalid', 'invalid']
 
 	resp = client.post(API_PREFIX + '/scenario', json=data)
-	assert '200 OK' == resp.status
+	assert resp.status == '400 BAD REQUEST'
+
+	data['content'] = ['00:00:00>CRE TEST A320 0 0 0 0', '00:00:00 > CRE TEST A320 0 0 0 0']
+
+	resp = client.post(API_PREFIX + '/scenario', json=data)
+	assert resp.status == '201 CREATED'
+
+	data['start_new'] = True
+	data['start_dtmult'] = 1.23
+
+	resp = client.post(API_PREFIX + '/scenario', json=data)
+	assert resp.status == '200 OK'
+
+	assert bb.CLIENT_SIM.last_scenario == 'new-scenario.scn', 'Expected the filename to be loaded'
+	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
