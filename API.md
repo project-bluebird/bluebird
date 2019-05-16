@@ -38,7 +38,7 @@ Notes:
 
 ### Application endpoints
 
-- [Episode Info](#episode-info)
+- [Episode Log](#episode-logfile)
 
 ---
 
@@ -408,27 +408,6 @@ Returns:
 - `404 Not Found` - Aircraft was not found
 
 ---
-
-## Episode Info
-
-Returns information for the current episode
-
-```javascript
-GET /api/v1/epinfo  
-```
-
-Returns:
-
-- `200 Ok` - Returns the following data:
-
-```javascript
-{
-  "cur_ep_file": <full path to episode log file>,
-  "cur_ep_id": <episode id>,
-  "inst_id": <application instance id>,
-  "log_dir": <application log directory>
-}  
-```  
 
 ## Episode Logfile
 

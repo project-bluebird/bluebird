@@ -86,7 +86,7 @@ FLASK_API.add_resource(res.Scenario, '/scenario')
 FLASK_API.add_resource(res.Time, '/time')
 
 # Episode info
-FLASK_API.add_resource(res.EpInfo, '/epinfo')
+# FLASK_API.add_resource(res.EpInfo, '/epinfo')
 FLASK_API.add_resource(res.EpLog, '/eplog')
 
 # endregion
