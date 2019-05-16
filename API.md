@@ -39,6 +39,7 @@ Notes:
 ### Application endpoints
 
 - [Episode Log](#episode-logfile)
+- [Shutdown](#shutdown)
 
 ---
 
@@ -434,3 +435,16 @@ Returns:
 Where the `lines` array contains each line from the log file.
 
 - `404 Not Found` - No episode is being recorded  
+
+## Shutdown
+
+Shuts down the BlueBird server:
+
+```javascript
+POST /api/v1/shutdown
+```
+
+Returns:
+
+- `200 Ok` - Server is shutting down
+- `500 Internal Server Error` - Could not shutdown. Error data will be provided.
