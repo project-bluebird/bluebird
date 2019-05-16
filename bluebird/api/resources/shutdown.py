@@ -2,10 +2,13 @@
 Provides logic for the shutdown endpoint
 """
 
-# TODO Optionally shutdown any attached simulators
-
 from flask import jsonify, request
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
+
+import bluebird.client as bb_client
+
+PARSER = reqparse.RequestParser()
+PARSER.add_argument('stop_sim', type=bool, location='args', required=False)
 
 
 class Shutdown(Resource):
@@ -20,13 +23,21 @@ class Shutdown(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
+		parsed = PARSER.parse_args(strict=True)
+		stop_sim = not parsed['stop_sim'] is None
+
+		sim_quit_msg = ''
+		if stop_sim:
+			sim_quit = bb_client.CLIENT_SIM.quit()
+			sim_quit_msg = f'. (Sim exited ok: {sim_quit})'
+
 		try:
 			request.environ.get('werkzeug.server.shutdown')()
-		except Exception as exc:
-			resp = jsonify(f'Could not shutdown: {exc}')
+		except Exception as exc:  # pylint: disable=W0703
+			resp = jsonify(f'Could not shutdown: {exc}{sim_quit_msg}')
 			resp.status_code = 500
 			return resp
 
-		resp = jsonify('Shutting down')
+		resp = jsonify(f'Shutting down{sim_quit_msg}')
 		resp.status_code = 200
 		return resp

@@ -27,7 +27,7 @@ class EpLog(Resource):
 		"""
 
 		parsed = PARSER.parse_args(strict=True)
-		close_ep = False if parsed['close_ep'] is None else True
+		close_ep = not parsed['close_ep'] is None
 
 		ep_file_path = bb_logging.EP_FILE
 

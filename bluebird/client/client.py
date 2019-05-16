@@ -47,6 +47,7 @@ class ApiClient(Client):
 		self._reset_flag = False
 		self._echo_data = []
 		self._scn_response = None
+		self._awaiting_exit_resp = False
 
 	def start(self):
 		"""
@@ -130,7 +131,8 @@ class ApiClient(Client):
 
 				self.sender_id = route[0]
 				route.reverse()
-				pydata = msgpack.unpackb(data, object_hook=decode_ndarray, encoding='utf-8')
+				pydata = msgpack.unpackb(data, object_hook=decode_ndarray,
+				                         encoding='utf-8') if data else None
 
 				self._logger.debug('EVT :: {} :: {}'.format(eventname, pydata))
 
@@ -159,10 +161,11 @@ class ApiClient(Client):
 					self._reset_flag = True
 					self._logger.info('Received BlueSky simulation reset message')
 
-				# TODO Handle simulation exit before client
 				elif eventname == b'QUIT':
-					self._logger.info('Received sim exit')
-					self.signal_quit.emit()
+					if self._awaiting_exit_resp:
+						self._awaiting_exit_resp = False
+					else:
+						self._logger.error('Unhandled quit event from simulation')
 
 				elif eventname == b'SCENARIO':
 					self._scn_response = pydata
@@ -263,3 +266,14 @@ class ApiClient(Client):
 
 		bb_cache.AC_DATA.clear()
 		return None
+
+	def quit(self):
+		"""
+		Sends a shutdown message to the simulation server
+		:return:
+		"""
+
+		self._awaiting_exit_resp = True
+		self.send_event(b'QUIT', target=b'*')
+		time.sleep(25 / POLL_RATE)
+		return not bool(self._awaiting_exit_resp)
