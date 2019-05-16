@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `EPLOG` endpoint for pulling the logfile for the current episode
 - `SCENARIO` endpoint for uploading a new scenario
+- `SHUTDOWN` endpoint to stop BlueBird
 
 ### Changed
 
