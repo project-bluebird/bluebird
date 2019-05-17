@@ -57,6 +57,11 @@ class BlueBird:
 							f'BlueSky server of version {CLIENT_SIM.host_version} does not meet the minimum '
 							f'requirement ({min_bs_version})')
 			return False
+		if CLIENT_SIM.host_version.major > min_bs_version.major:
+			self._logger.error(
+							f'BlueSky server of version {CLIENT_SIM.host_version} has major version greater '
+							f'than supported in this version of client ({min_bs_version})')
+			return False
 
 		if reset_on_connect:
 			CLIENT_SIM.reset_sim()
