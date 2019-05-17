@@ -36,13 +36,11 @@ Notes:
 
 ### Running with Docker
 
-BlueBird can also be run through Docker. Easiest way is to run the provided script:
+BlueBird can also be run through Docker. Easiest way is to run with docker-compose:
 
 ```bash
-> ./run-docker.sh
+> docker-compose up -d
 ```
-
-This first creates a BlueSky image using the git sub-module, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see [docker-compose.yml](docker-compose.yml)).
 
 ### API Endpoints
 
@@ -77,16 +75,14 @@ To install development packages, pass the `--dev` option to the install script. 
 The unit test suite can be run with:
 
 ```bash
-> pytest [<optional-arguments>] ./tests/unit
+> pytest [<optional-arguments>] tests/
 ```
 
 You can also pass paths to individual modules or tests:
 
 ```bash
-> pytest [<optional-arguments>] ./tests/unit/test_api_commands.py::test_pos_command
+> pytest [<optional-arguments>] tests/unit/test_api_commands.py::test_pos_command
 ```
-
-TODO: Integration tests using BlueSky
 
 ### Code Style
 
