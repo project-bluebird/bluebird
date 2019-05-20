@@ -2,6 +2,7 @@
 Tests that no exceptions are thrown when modules are imported
 """
 
+# pylint: disable=unused-import
 import pytest
 
 _MODULES = ['bluebird', 'bluesky']
