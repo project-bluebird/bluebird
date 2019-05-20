@@ -22,8 +22,5 @@ class TestBasic:
 	def test_start(self):
 		pass
 
-	def test_failing(self):
-		assert False, 'Fail!'
-
 	def test_shutdown(self):
 		pass
