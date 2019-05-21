@@ -78,15 +78,23 @@ class AcDataCache(Cache):
 
 	def fill(self, data):
 
-		if isinstance(data, dict) and 'id' in data:
+		current_acids = set(self.store)
+		new_acids = set()
 
+		# Unsure if this is needed
+		if isinstance(data, dict) and 'id' in data:
 			for idx in range(len(data['id'])):
 				acid = data['id'][idx]
+				new_acids.add(acid)
 				ac_data = {'actype': data['actype'][idx], 'alt': int(data['alt'][idx]),
 				           'lat': round(data['lat'][idx], 5), 'lon': round(data['lon'][idx], 5),
 				           'gs': int(data['gs'][idx]), 'vs': int(data['vs'][idx])}
 
 				self.store[acid] = ac_data
+
+		# If any aircraft have been removed
+		for acid in current_acids - new_acids:
+			del self.store[acid]
 
 	def set_log_rate(self, new_speed, new_log=False):
 		"""

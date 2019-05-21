@@ -370,7 +370,7 @@ Returns:
 ```  
 
 - `400 Bad Request` - Aircraft ID was invalid, or no aircraft exist (when `?acid=ALL` specified)
-- `404 Not Found` - Aircraft was not found
+- `404 Not Found` - Aircraft was not found. It may have been removed after travelling outside an experiment area.
 
 ## Speed
 

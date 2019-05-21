@@ -36,13 +36,11 @@ Notes:
 
 ### Running with Docker
 
-BlueBird can also be run through Docker. Easiest way is to run the provided script:
+BlueBird can also be run through Docker. Easiest way is to run with docker-compose:
 
 ```bash
-> ./run-docker.sh
+> docker-compose up -d
 ```
-
-This first creates a BlueSky image using the git sub-module, then composes a pair of BlueSky/BlueBird containers with the appropriate networking and runs them (see [docker-compose.yml](docker-compose.yml)).
 
 ### API Endpoints
 
@@ -77,28 +75,36 @@ To install development packages, pass the `--dev` option to the install script. 
 The unit test suite can be run with:
 
 ```bash
-> pytest [<optional-arguments>] ./tests/unit
+> pytest [<optional-arguments>] tests
 ```
 
 You can also pass paths to individual modules or tests:
 
 ```bash
-> pytest [<optional-arguments>] ./tests/unit/test_api_commands.py::test_pos_command
+> pytest [<optional-arguments>] tests/unit/test_api_commands.py::test_pos_command
 ```
 
-TODO: Integration tests using BlueSky
+Integration tests with BlueSky will only be run in a CI environment, unless forced with the following flag:
+
+```bash
+> pytest tests/integration --run-integration
+```
+
+Integration tests require Docker to run.
 
 ### Code Style
 
 Linting can be run with the included `.pylintrc` file:
 
 ```bash
-> pylint --rcfile=.pylintrc [--enable=<msg>] ./bluebird
+> pylint --rcfile=.pylintrc [--enable=<msg>] <package or module>
 ```
 
-The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable` option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
+The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable`
+option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
 
-You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
+You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish
+to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
 
 ```bash
 pylint [<optional-arguments>] ./bluebird || pylint-exit $?
