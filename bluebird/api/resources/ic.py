@@ -27,8 +27,8 @@ class Ic(Resource):
 		parsed = PARSER.parse_args()
 		filename = parsed['filename']
 
-		if filename is None or not filename.lower().endswith('.scn'):
-			resp = jsonify(f'Invalid filename {filename}')
+		if filename is None:
+			resp = jsonify(f'No filename specified')
 			resp.status_code = 400
 			return resp
 
