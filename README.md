@@ -84,6 +84,14 @@ You can also pass paths to individual modules or tests:
 > pytest [<optional-arguments>] tests/unit/test_api_commands.py::test_pos_command
 ```
 
+Integration tests with BlueSky will only be run in a CI environment, unless forced with the following flag:
+
+```bash
+> pytest tests/integration --run-integration
+```
+
+Integration tests require Docker to run.
+
 ### Code Style
 
 Linting can be run with the included `.pylintrc` file:
