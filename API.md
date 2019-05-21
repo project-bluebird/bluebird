@@ -109,7 +109,7 @@ POST /api/v1/ic
 }
 ```  
 
-Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+Where the file path is relative to the BlueSky root directory. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
 
 Returns:
 
