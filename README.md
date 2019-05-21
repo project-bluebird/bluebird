@@ -75,7 +75,7 @@ To install development packages, pass the `--dev` option to the install script. 
 The unit test suite can be run with:
 
 ```bash
-> pytest [<optional-arguments>] tests/
+> pytest [<optional-arguments>] tests
 ```
 
 You can also pass paths to individual modules or tests:
@@ -97,12 +97,14 @@ Integration tests require Docker to run.
 Linting can be run with the included `.pylintrc` file:
 
 ```bash
-> pylint --rcfile=.pylintrc [--enable=<msg>] ./bluebird
+> pylint --rcfile=.pylintrc [--enable=<msg>] <package or module>
 ```
 
-The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable` option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
+The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable`
+option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
 
-You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
+You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish
+to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
 
 ```bash
 pylint [<optional-arguments>] ./bluebird || pylint-exit $?
