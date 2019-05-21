@@ -7,6 +7,10 @@ from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
 
+import bluebird.settings as settings
+
+from bluebird.api.resources.utils import process_stack_cmd
+
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
 PARSER.add_argument('multiplier', type=float, location='json', required=False)
@@ -48,6 +52,8 @@ class Ic(Resource):
 		if not err:
 			resp = jsonify(f'Scenario {fn_base} loaded')
 			resp.status_code = 200
+			if settings.MODE == 'agent':
+				resp = process_stack_cmd('HOLD')
 		else:
 			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
 			resp.status_code = 500

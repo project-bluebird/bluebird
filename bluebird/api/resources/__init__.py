@@ -22,6 +22,7 @@ from .op import Op
 from .reset import Reset
 from .scenario import Scenario
 from .time import Time
+from .step import Step
 
 # Application control
 from .epinfo import EpInfo
