@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Prevent any local logs from being copied when running inside Docker
 - Fix error when logging scenario file contents
+- [#50](https://github.com/alan-turing-institute/bluebird/issues/50) Remove aircraft from BlueBird once BlueSky removes them
 
 ## [1.1.3] - 2019-05-09
 
