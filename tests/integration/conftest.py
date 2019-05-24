@@ -3,14 +3,16 @@ Provides fixtures for integration tests
 """
 
 import os
-import subprocess
-import time
 
 import pytest
 import requests
+import subprocess
+import time
 from dotenv import load_dotenv
 
-MAX_RETRY_ATTEMPTS = 10
+from tests.integration import API_URL_BASE
+
+MAX_WAIT_SECONDS = 15
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -22,16 +24,20 @@ def fixture_wait_for_containers(docker_network_info):  # pylint: disable=unused-
 	:return:
 	"""
 
-	n_failed = 0
+	timeout = time.time() + MAX_WAIT_SECONDS
+
 	while True:
 		try:
-			requests.get('http://localhost:5001')
-			break
+			if requests.post(f'{API_URL_BASE}/reset').status_code == 200:
+				break
 		except requests.exceptions.ConnectionError:
-			n_failed += 1
-			if n_failed >= MAX_RETRY_ATTEMPTS:
-				raise requests.exceptions.ConnectionError('Couldn\'t connect to containers after timeout')
-			time.sleep(1)
+			pass
+
+		if time.time() > timeout:
+			raise requests.exceptions.ConnectionError("Couldn't connect to containers before the "
+			                                          "timeout")
+
+		time.sleep(1)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -55,4 +61,4 @@ def pre_integration_check(request):
 	                                   stderr=subprocess.DEVNULL)
 
 	if not docker_avail:
-		pytest.exit('Docker not detected')
+		pytest.exit('Docker not detected', 1)
