@@ -27,8 +27,8 @@ class SimMode(Resource):
 		new_mode = parsed['mode']
 
 		if not new_mode in settings.SIM_MODES:
-			available = ','.join(settings.SIM_MODES)
-			resp = jsonify(f'Mode \'{new_mode}\' not supported. Must be one of {available}')
+			available = ', '.join(settings.SIM_MODES)
+			resp = jsonify(f'Mode \'{new_mode}\' not supported. Must be one of: {available}')
 			resp.status_code = 400
 			return resp
 

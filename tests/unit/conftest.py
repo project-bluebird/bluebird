@@ -47,6 +47,7 @@ def patch_client_sim(monkeypatch):
 			self.last_scenario = None
 			self.last_dtmult = None
 			self.was_reset = False
+			self.was_stepped = False
 
 		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
 			self.last_stack_cmd = data
@@ -60,5 +61,8 @@ def patch_client_sim(monkeypatch):
 
 		def upload_new_scenario(self, name, lines):
 			return None
+
+		def step(self):
+			self.was_stepped = True
 
 	monkeypatch.setattr(bluebird.client, 'CLIENT_SIM', TestClient())

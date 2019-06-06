@@ -172,7 +172,7 @@ def test_scenario_endpoint(client, patch_client_sim):
 
 def test_change_mode(client):
 	"""
-
+	Tests the functionality of the simmode endpoint
 	:param client:
 	:return:
 	"""
@@ -189,3 +189,32 @@ def test_change_mode(client):
 
 	assert resp.status == '200 OK', 'Expected a valid mode to return 200'
 	assert settings.SIM_MODE == 'agent', 'Expected the final mode to be agent'
+
+
+def test_non_agent_mode_step(client, patch_client_sim):
+	"""
+	Tests that the sim is not stepped if in the sandbox mode
+	:return:
+	"""
+
+	client.post(API_PREFIX + '/simmode', json={'mode': 'sandbox'})
+	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
+
+	resp = client.post(f'{API_PREFIX}/step')
+	assert resp.status_code == 400, 'Expected a 400 BAD REQUEST'
+	assert not bb.CLIENT_SIM.was_stepped, 'Expected the simulation was not stepped forward'
+
+
+def test_agent_mode_step(client, patch_client_sim):
+	"""
+	Tests that the sim is stepped if in agent mode
+	:param use_agent_mode:
+	:return:
+	"""
+
+	client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	assert settings.SIM_MODE == 'agent', 'Expected the mode to be agent'
+
+	resp = client.post(f'{API_PREFIX}/step')
+	assert resp.status_code == 200, 'Expected a 200 response'
+	assert bb.CLIENT_SIM.was_stepped, 'Expected the simulation was stepped forward'
