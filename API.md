@@ -109,7 +109,9 @@ POST /api/v1/ic
 }
 ```  
 
-Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+Where the file path is relative to the BlueSky root directory. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+
+Note that the `.scn` extension will always be added if not specified, so the scenarios `test` and `test.scn` are equivalent.
 
 Returns:
 
@@ -151,6 +153,7 @@ POST /api/v1/scenario
 
 Notes:
 
+- The `.scn` extension will always be added if not specified, so the scenarios `test` and `test.scn` are equivalent.
 - Any existing scenario with the same name will be overwritten
 - Each line in `content` must contain a timestamp and a valid BlueSky command. The timestamp must be in the format `hh:mm:ss`
 - A small delay should be included between creating an aircraft and issuing commands to it

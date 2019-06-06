@@ -2,25 +2,16 @@
 Initial tests for Docker in Travis CI
 """
 
-import pytest
+import requests
+
+from tests.integration import API_URL_BASE
 
 
-def test_docker(docker_network_info):
-	assert True
-
-
-def test_skip():
-	pytest.skip('Test skip')
-
-
-@pytest.mark.incremental
-class TestBasic:
+def test_docker_basic():
 	"""
-	Test for teh incremental decorator. test_shutdown should not run and be marked as 'xFail'
+	Test basic request/response with the BlueBird container
+	:return:
 	"""
 
-	def test_start(self):
-		pass
-
-	def test_shutdown(self):
-		pass
+	resp = requests.get(f'{API_URL_BASE}/pos?acid=all')
+	assert resp.status_code == 400, 'Expected a 400 BAD REQUEST'

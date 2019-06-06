@@ -78,11 +78,6 @@ def test_ic_command(client, patch_client_sim):
 	resp = client.post(API_PREFIX + '/ic', json={})
 	assert resp.status == '400 BAD REQUEST'
 
-	filename = 'testeroni.test'
-
-	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
-	assert resp.status == '400 BAD REQUEST'
-
 	filename = 'testeroni.scn'
 
 	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})

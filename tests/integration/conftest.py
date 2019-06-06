@@ -3,10 +3,41 @@ Provides fixtures for integration tests
 """
 
 import os
-import subprocess
 
 import pytest
+import requests
+import subprocess
+import time
 from dotenv import load_dotenv
+
+from tests.integration import API_URL_BASE
+
+MAX_WAIT_SECONDS = 15
+
+
+@pytest.fixture(scope='function', autouse=True)
+def fixture_wait_for_containers(docker_network_info):  # pylint: disable=unused-argument
+	"""
+	Wait for the test containers to be available before continuing. Depends on the
+	docker_network_info fixture, to ensure that the containers are started first
+	:param docker_network_info:
+	:return:
+	"""
+
+	timeout = time.time() + MAX_WAIT_SECONDS
+
+	while True:
+		try:
+			if requests.post(f'{API_URL_BASE}/reset').status_code == 200:
+				break
+		except requests.exceptions.ConnectionError:
+			pass
+
+		if time.time() > timeout:
+			raise requests.exceptions.ConnectionError("Couldn't connect to containers before the "
+			                                          "timeout")
+
+		time.sleep(1)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -30,29 +61,4 @@ def pre_integration_check(request):
 	                                   stderr=subprocess.DEVNULL)
 
 	if not docker_avail:
-		pytest.exit('Docker not detected')
-
-
-def pytest_runtest_makereport(item, call):
-	"""
-	Mark the current item so the next incremental test will be xFailed
-	:param item:
-	:param call:
-	:return:
-	"""
-
-	if 'incremental' in item.keywords:
-		if call.excinfo:
-			item.parent.previous_failed = True
-
-
-def pytest_runtest_setup(item):
-	"""
-	xFail the test if the previous one has failed
-	:param item:
-	:return:
-	"""
-
-	if 'incremental' in item.keywords:
-		if getattr(item.parent, 'previous_failed', False):
-			pytest.xfail(f'Previous incremental test failed')
+		pytest.exit('Docker not detected', 1)

@@ -49,7 +49,8 @@ class Scenario(Resource):
 
 		parsed = PARSER.parse_args()
 
-		scn_name = parsed['scn_name']
+		scn_name = scn_base = parsed['scn_name']
+
 		if not scn_name.endswith('.scn'):
 			scn_name += '.scn'
 
@@ -76,11 +77,11 @@ class Scenario(Resource):
 				resp = jsonify(f'Could not start scenario after upload: {err}')
 				resp.status_code = 500
 			else:
-				resp = jsonify(f'Scenario {scn_name} uploaded and started')
+				resp = jsonify(f'Scenario {scn_base} uploaded and started')
 				resp.status_code = 200
 
 		else:
-			resp = jsonify(f'Scenario {scn_name} uploaded')
+			resp = jsonify(f'Scenario {scn_base} uploaded')
 			resp.status_code = 201
 
 		return resp
