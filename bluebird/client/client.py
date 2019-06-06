@@ -45,6 +45,7 @@ class ApiClient(Client):
 		self.timer = Timer(self.receive, POLL_RATE)
 
 		self._reset_flag = False
+		self._step_flag = False
 		self._echo_data = []
 		self._scn_response = None
 		self._awaiting_exit_resp = False
@@ -157,6 +158,9 @@ class ApiClient(Client):
 					elif not text.startswith('IC: Opened'):
 						self._echo_data.append(text)
 
+				elif eventname == b'STEP':
+					self._step_flag = True
+
 				elif eventname == b'RESET':
 					self._reset_flag = True
 					self._logger.info('Received BlueSky simulation reset message')
@@ -205,7 +209,9 @@ class ApiClient(Client):
 		time.sleep(25 / POLL_RATE)
 		resp = self._scn_response
 
-		return resp if (not resp or not resp == 'Ok') else None
+		if not resp == 'Ok':
+			return resp if resp else 'No response received'
+		return None
 
 	def load_scenario(self, filename, speed=1.0, start_paused=False):
 		"""
@@ -252,13 +258,12 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		self._scn_response = None
+		self._step_flag = False
 		self.send_event(b'STEP')
 
 		time.sleep(25 / POLL_RATE)
-		resp = self._scn_response
 
-		return resp if (not resp or not resp == 'Ok') else None
+		return False if not self._step_flag else None
 
 	def reset_sim(self):
 		"""
