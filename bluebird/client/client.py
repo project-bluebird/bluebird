@@ -207,11 +207,12 @@ class ApiClient(Client):
 
 		return resp if (not resp or not resp == 'Ok') else None
 
-	def load_scenario(self, filename, speed=1.0):
+	def load_scenario(self, filename, speed=1.0, start_paused=False):
 		"""
 		Load a scenario from a file
 		:param speed:
 		:param filename:
+		:param start_paused:
 		:return:
 		"""
 
@@ -229,6 +230,11 @@ class ApiClient(Client):
 		err = self._await_reset_confirmation()
 		if err:
 			return err
+
+		if start_paused:
+			err = self.send_stack_cmd('HOLD')
+			if err:
+				return err
 
 		bluebird.logging.bodge_file_content(filename)
 

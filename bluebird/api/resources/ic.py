@@ -6,10 +6,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
-
 import bluebird.settings as settings
-
-from bluebird.api.resources.utils import process_stack_cmd
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
@@ -36,7 +33,7 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		if not filename.endswith('.scn'):
+		if not filename.lower().endswith('.scn'):
 			filename += '.scn'
 
 		multiplier = parsed['multiplier']
@@ -47,13 +44,12 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed)
+		start_paused = settings.SIM_MODE == 'agent'
+		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed, start_paused=start_paused)
 
 		if not err:
 			resp = jsonify(f'Scenario {fn_base} loaded')
 			resp.status_code = 200
-			if settings.MODE == 'agent':
-				resp = process_stack_cmd('HOLD')
 		else:
 			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
 			resp.status_code = 500

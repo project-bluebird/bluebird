@@ -25,7 +25,7 @@ def _parse_args():
 	parser.add_argument('--reset_sim', action='store_true', help='Reset the simulation on '
 	                                                             'connection')
 	parser.add_argument('--log_rate', type=float, help='Log rate in sim-seconds')
-	parser.add_argument('--agent_mode', action='store_true', help='Run in agent mode') # Pause simulation on load/create scenario and use STEP to advance 
+	parser.add_argument('--agent_mode', action='store_true', help='Run in agent mode')
 	args = parser.parse_args()
 
 	if args.bluesky_host:
@@ -38,7 +38,7 @@ def _parse_args():
 			raise ValueError('Rate must be positive')
 
 	if args.agent_mode:
-		settings.MODE = 'agent'
+		settings.SIM_MODE = 'agent'
 
 	return args
 

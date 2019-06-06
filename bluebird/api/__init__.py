@@ -83,8 +83,8 @@ FLASK_API.add_resource(res.Ic, '/ic')
 FLASK_API.add_resource(res.Op, '/op')
 FLASK_API.add_resource(res.Reset, '/reset')
 FLASK_API.add_resource(res.Scenario, '/scenario')
-FLASK_API.add_resource(res.Time, '/time')
 FLASK_API.add_resource(res.Step, '/step')
+FLASK_API.add_resource(res.Time, '/time')
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
