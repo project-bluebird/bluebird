@@ -51,7 +51,7 @@ def patch_client_sim(monkeypatch):
 		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
 			self.last_stack_cmd = data
 
-		def load_scenario(self, filename, speed=1.0):
+		def load_scenario(self, filename, speed=1.0, start_paused=False):
 			self.last_scenario = filename
 			self.last_dtmult = speed
 

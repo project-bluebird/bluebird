@@ -21,7 +21,7 @@ class Step(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
-		if not settings.SIM_MODE == 'agent':
+		if settings.SIM_MODE != 'agent':
 			resp = jsonify('Must be in agent mode to use step')
 			resp.status_code = 400
 			return resp

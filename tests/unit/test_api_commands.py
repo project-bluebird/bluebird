@@ -12,6 +12,7 @@ import pytest
 
 import bluebird.api as bluebird_api
 import bluebird.client as bb
+import bluebird.settings as settings
 from bluebird.cache import AC_DATA
 from . import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
@@ -167,3 +168,24 @@ def test_scenario_endpoint(client, patch_client_sim):
 
 	assert bb.CLIENT_SIM.last_scenario == 'new-scenario.scn', 'Expected the filename to be loaded'
 	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
+
+
+def test_change_mode(client):
+	"""
+
+	:param client:
+	:return:
+	"""
+
+	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
+
+	data = {'mode': 'test'}
+	resp = client.post(API_PREFIX + '/simmode', json=data)
+
+	assert resp.status == '400 BAD REQUEST', 'Expected an invalid mode to return 400'
+
+	data['mode'] = 'agent'
+	resp = client.post(API_PREFIX + '/simmode', json=data)
+
+	assert resp.status == '200 OK', 'Expected a valid mode to return 200'
+	assert settings.SIM_MODE == 'agent', 'Expected the final mode to be agent'

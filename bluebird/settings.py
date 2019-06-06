@@ -21,7 +21,8 @@ CONSOLE_LOG_LEVEL = 'INFO'  # Change to 'DEBUG' if needed
 # Current modes:
 # sandbox - Default. Simulation runs normally
 # agent - Simulation starts paused and must be manually advanced with STEP
-SIM_MODE = 'sandbox'
+SIM_MODES = ['sandbox', 'agent']
+SIM_MODE = SIM_MODES[0]
 
 # BlueSky server settings
 
