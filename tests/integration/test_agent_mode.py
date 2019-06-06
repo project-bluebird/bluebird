@@ -21,8 +21,7 @@ def test_agent_mode():
 	resp = requests.get(f'{API_URL_BASE}/pos?acid=SCN1001')
 	assert resp.status_code == 200, 'Expected to get the aircraft position'
 
-	initial_lat = resp.json()['SCN1001']['lat']
-	initial_lon = resp.json()['SCN1001']['lon']
+	initial_sim_t = resp.json()['sim_t']
 
 	resp = requests.post(f'{API_URL_BASE}/dtmult', json={'multiplier': 5})
 	assert resp.status_code == 200, 'Expected DTMULT to be set'
@@ -33,8 +32,5 @@ def test_agent_mode():
 	resp = requests.get(f'{API_URL_BASE}/pos?acid=SCN1001')
 	assert resp.status_code == 200, 'Expected to get the aircraft position'
 
-	new_lat = resp.json()['SCN1001']['lat']
-	new_lon = resp.json()['SCN1001']['lon']
-
-	assert new_lat != initial_lat, 'Expected initial and final lat to differ'
-	assert new_lon != initial_lon, 'Expected initial and final lon to differ'
+	diff = resp.json()['sim_t'] - initial_sim_t
+	assert diff == 5, 'Expected the time diff to be 5 seconds'
