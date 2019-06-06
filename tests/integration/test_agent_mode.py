@@ -3,6 +3,7 @@ Tests for the agent mode
 """
 
 import requests
+import time
 
 from tests.integration import API_URL_BASE
 
@@ -23,14 +24,17 @@ def test_agent_mode():
 
 	initial_sim_t = resp.json()['sim_t']
 
-	resp = requests.post(f'{API_URL_BASE}/dtmult', json={'multiplier': 5})
+	resp = requests.post(f'{API_URL_BASE}/dtmult', json={'multiplier': 20})
 	assert resp.status_code == 200, 'Expected DTMULT to be set'
 
 	resp = requests.post(f'{API_URL_BASE}/step')
 	assert resp.status_code == 200, 'Expected the simulation was stepped'
+	
+	# Sleep for a second to ensure the internal state is updated
+	time.sleep(1)
 
 	resp = requests.get(f'{API_URL_BASE}/pos?acid=SCN1001')
 	assert resp.status_code == 200, 'Expected to get the aircraft position'
 
 	diff = resp.json()['sim_t'] - initial_sim_t
-	assert diff == 5, 'Expected the time diff to be 5 seconds'
+	assert 19 <= diff <= 21, 'Expected the time diff to be roughly 20 seconds'
