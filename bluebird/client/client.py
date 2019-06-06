@@ -246,6 +246,20 @@ class ApiClient(Client):
 
 		return None
 
+	def step(self):
+		"""
+		Steps the simulation forward
+		:return:
+		"""
+
+		self._scn_response = None
+		self.send_event(b'STEP')
+
+		time.sleep(25 / POLL_RATE)
+		resp = self._scn_response
+
+		return resp if (not resp or not resp == 'Ok') else None
+
 	def reset_sim(self):
 		"""
 		Resets the BlueSky sim and handles the response

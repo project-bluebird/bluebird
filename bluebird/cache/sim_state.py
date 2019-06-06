@@ -24,7 +24,6 @@ class SimState:
 	"""
 
 	def __init__(self):
-
 		self._logger = logging.getLogger(__name__)
 
 		self.timer = Timer(self._log, SIM_LOG_RATE)
@@ -57,6 +56,8 @@ class SimState:
 		self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, \
 		self.scn_name = data
 		self.sim_speed = round(self.sim_speed, 1)
+		if self.sim_state == 1:
+			self.sim_speed = 0.0
 		self.sim_t = round(self.sim_t)
 		self.sim_utc = self.sim_utc.split()[1]
 
