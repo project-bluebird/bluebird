@@ -20,7 +20,10 @@ from .hold import Hold
 from .ic import Ic
 from .op import Op
 from .reset import Reset
+from .scenario import Scenario
 from .time import Time
 
-# Episode info
+# Application control
 from .epinfo import EpInfo
+from .eplog import EpLog
+from .shutdown import Shutdown

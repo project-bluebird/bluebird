@@ -25,12 +25,15 @@ class Ic(Resource):
 		"""
 
 		parsed = PARSER.parse_args()
-		filename = parsed['filename']
+		filename = fn_base = parsed['filename']
 
-		if filename is None or not filename.lower().endswith('.scn'):
-			resp = jsonify(f'Invalid filename {filename}')
+		if not filename:
+			resp = jsonify(f'No filename specified')
 			resp.status_code = 400
 			return resp
+
+		if not filename.endswith('.scn'):
+			filename += '.scn'
 
 		multiplier = parsed['multiplier']
 		speed = multiplier if multiplier else 1.0
@@ -43,10 +46,10 @@ class Ic(Resource):
 		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed)
 
 		if not err:
-			resp = jsonify('Scenario file {} loaded'.format(filename))
+			resp = jsonify(f'Scenario {fn_base} loaded')
 			resp.status_code = 200
 		else:
-			resp = jsonify('Error: Could not load scenario {}. Error was: {}'.format(filename, err))
+			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
 			resp.status_code = 500
 
 		return resp

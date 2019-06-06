@@ -20,6 +20,7 @@ Notes:
 - [Pause Simulation](#pause-simulation-hold)
 - [Load Scenario](#load-scenario-ic)
 - [Resume Simulation](#resume-simulation-op)
+- [Create Scenario](#create-scenario)
 - [Reset Simulation](#reset-simulation)
 - [Simulation Time](#simulation-time)
 
@@ -37,7 +38,8 @@ Notes:
 
 ### Application endpoints
 
-- [Episode Info](#episode-info)
+- [Episode Log](#episode-logfile)
+- [Shutdown](#shutdown)
 
 ---
 
@@ -107,7 +109,9 @@ POST /api/v1/ic
 }
 ```  
 
-Where the file path is relative to the BlueSky root directory. The filename must end with `.scn`. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+Where the file path is relative to the BlueSky root directory. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
+
+Note that the `.scn` extension will always be added if not specified, so the scenarios `test` and `test.scn` are equivalent.
 
 Returns:
 
@@ -128,6 +132,38 @@ Returns:
 
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
+
+## Create Scenario
+
+Creates a scenario with the provided content:
+
+```javascript
+POST /api/v1/scenario
+{
+    "scn_name": "test",
+    "content": [
+        "00:00:00>CRE SWR39W A320 EHAM RWY18L * 0 0",
+        "00:00:01>SPD SWR39W 300",
+        "00:00:01>ALT SWR39W FL300"
+    ],
+    ["start_new": true],    // Optional: start the simulation after upload
+    ["start_dtmult": 5.0]   // Optional: simulation rate multiplier
+}
+```
+
+Notes:
+
+- The `.scn` extension will always be added if not specified, so the scenarios `test` and `test.scn` are equivalent.
+- Any existing scenario with the same name will be overwritten
+- Each line in `content` must contain a timestamp and a valid BlueSky command. The timestamp must be in the format `hh:mm:ss`
+- A small delay should be included between creating an aircraft and issuing commands to it
+
+Returns:  
+
+- `200 Ok` - Simulation was created and started
+- `201 Created` - Simulation was created
+- `400 Bad Request` - Error with simulation content
+- `500 Internal Server Error` - Simulation could not be uploaded, or could not be started after upload
 
 ## Reset Simulation
 
@@ -337,7 +373,7 @@ Returns:
 ```  
 
 - `400 Bad Request` - Aircraft ID was invalid, or no aircraft exist (when `?acid=ALL` specified)
-- `404 Not Found` - Aircraft was not found
+- `404 Not Found` - Aircraft was not found. It may have been removed after travelling outside an experiment area.
 
 ## Speed
 
@@ -377,13 +413,15 @@ Returns:
 
 ---
 
-## Episode Info
+## Episode Logfile
 
-Returns information for the current episode
+Returns the content of the current episode's logfile:
 
 ```javascript
-GET /api/v1/epinfo  
+GET /api/v1/eplog[?close_ep]
 ```
+
+The `close_ep` parameter can be used to close the episode and reset the simulator.
 
 Returns:
 
@@ -393,7 +431,23 @@ Returns:
 {
   "cur_ep_file": <full path to episode log file>,
   "cur_ep_id": <episode id>,
-  "inst_id": <application instance id>,
-  "log_dir": <application log directory>
-}  
-```  
+  "lines": [...]
+}
+```
+
+Where the `lines` array contains each line from the log file.
+
+- `404 Not Found` - No episode is being recorded  
+
+## Shutdown
+
+Shuts down the BlueBird server:
+
+```javascript
+POST /api/v1/shutdown
+```
+
+Returns:
+
+- `200 Ok` - Server is shutting down
+- `500 Internal Server Error` - Could not shutdown. Error data will be provided.

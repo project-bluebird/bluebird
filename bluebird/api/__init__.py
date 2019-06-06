@@ -51,7 +51,12 @@ def after_req(response):
 	"""
 
 	json = response.get_json()
+
+	if 'eplog' in request.url.lower():
+		json = 'EPLOG data'
+
 	LOGGER.info(f'RESP: {response.status_code} "{json if json else ""}"')
+
 	return response
 
 
@@ -77,10 +82,13 @@ FLASK_API.add_resource(res.Hold, '/hold')
 FLASK_API.add_resource(res.Ic, '/ic')
 FLASK_API.add_resource(res.Op, '/op')
 FLASK_API.add_resource(res.Reset, '/reset')
+FLASK_API.add_resource(res.Scenario, '/scenario')
 FLASK_API.add_resource(res.Time, '/time')
 
-# Episode info
-FLASK_API.add_resource(res.EpInfo, '/epinfo')
+# Application control
+# FLASK_API.add_resource(res.EpInfo, '/epinfo')
+FLASK_API.add_resource(res.EpLog, '/eplog')
+FLASK_API.add_resource(res.Shutdown, '/shutdown')
 
 # endregion
 

@@ -3,6 +3,9 @@
 
 General notes on developing with BlueSky / Flask etc.
 
+## BlueSky git submodule
+
+- Should only need updated when the file `bluesky/network/client.py` changes
 
 ## BlueSky 'SIMINFO' data
 

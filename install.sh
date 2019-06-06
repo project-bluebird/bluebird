@@ -95,6 +95,9 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
+printf "Setting up BlueSky submodule"
+git submodule update --init --recursive
+
 printf "Installation successful\n"
 printf "To run BlueBird locally:\n"
 printf "> source $venvname/bin/activate\n"
