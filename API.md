@@ -23,6 +23,7 @@ Notes:
 - [Create Scenario](#create-scenario)
 - [Reset Simulation](#reset-simulation)
 - [Simulation Time](#simulation-time)
+- [Simulation Step](#simulation-step-step)
 
 ### Aircraft endpoints
 
@@ -39,6 +40,7 @@ Notes:
 ### Application endpoints
 
 - [Episode Log](#episode-logfile)
+- [Simulator Mode](#simulator-mode)
 - [Shutdown](#shutdown)
 
 ---
@@ -197,6 +199,25 @@ Returns:
 ```
 
 - `500 Internal Server Error` - Time could not be retrieved - response will contain error info
+
+## Simulation Step (STEP)
+
+Step the simulation forward:
+
+```javascript
+POST /api/v1/step
+```
+
+Notes:
+
+- The simulation must be in `agent` mode otherwise an error will be returned
+- The timestep is based on `DTMULT`, so a setting of 5.0x will step forward 5 seconds
+
+Returns:
+
+- `200 Ok` - Simulation was stepped
+- `400 Bad Request` - If the request was not made while in `agent` mode 
+- `500 Internal Server Error` - Could not step - response will contain error info
 
 ---
 
@@ -438,6 +459,27 @@ Returns:
 Where the `lines` array contains each line from the log file.
 
 - `404 Not Found` - No episode is being recorded  
+
+## Simulator Mode
+
+Change the current simulator mode:
+
+```javascript
+POST /api/v1/simmode
+{
+    "mode": "agent"
+}
+```
+
+Notes:
+
+- Currently available modes are `sandbox` and `agent`
+- This affects any currently running simulation - ...
+
+Returns:
+
+- `200 Ok` - Mode was updated
+- `400 Bad Request` - Invalid mode specified
 
 ## Shutdown
 
