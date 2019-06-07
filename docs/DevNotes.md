@@ -5,7 +5,7 @@ General notes on developing with BlueSky / Flask etc.
 
 ## BlueSky git submodule
 
-- Should only need updated when the file `bluesky/network/client.py` changes
+Should only need updated when the file `bluesky/network/client.py` changes.
 
 ## BlueSky 'SIMINFO' data
 
@@ -17,7 +17,6 @@ Sim time (UTC timestamp)
 Number of aircraft
 Current scenario name
 ```
-
 
 ## BlueSky 'ACINFO' data
 
@@ -58,6 +57,7 @@ data['translvl']   = bs.traf.translvl
 data['asasn']  = bs.traf.asas.asasn
 data['asase']  = bs.traf.asas.asase
 ```
+
 ## BlueSky 'ROUTEDATA' data
 
 ```
@@ -71,5 +71,12 @@ data['wpalt']   = route.wpalt
 data['wpspd']   = route.wpspd
 data['wpname']  = route.wpname
 ```
-    
-   
+
+## Agent mode / step
+
+To use the `STEP` endpoint:
+
+- Start BlueBird in agent mode (`--agent_mode` flag)
+- Load a scenario. This will be loaded and put in `HOLD`
+- Set `DTMULT` to the required step size
+- Call the `STEP` endpoint   

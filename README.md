@@ -26,13 +26,14 @@ To run locally, first start a BlueSky simulation, then:
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>] [--reset_sim] [--log_rate=<rate>]
+(venv) > python ./run.py [--bluesky_host=<address>] [--agent_mode] [--reset_sim] [--log_rate=<rate>]
 ```
 
 Notes:
 - the `--dev` option will also install dependencies needed for developing BlueBird
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
 - If passed, `--reset_sim` will reset the simulation on connection
+- If passed, `--agent_mode` will start the simulation in agent mode
 
 ### Running with Docker
 
