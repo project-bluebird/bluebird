@@ -9,6 +9,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
+from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')
 
@@ -54,6 +55,9 @@ class Scenario(Resource):
 		if not scn_name.endswith('.scn'):
 			scn_name += '.scn'
 
+		if scn_name.startswith('scenario'):
+			scn_name = scn_name[len('scenario') + 1:]
+
 		content = parsed['content']
 		err = _validate_scenario(content)
 
@@ -61,6 +65,8 @@ class Scenario(Resource):
 			resp = jsonify(f'Invalid scenario content: {err}')
 			resp.status_code = 400
 			return resp
+
+		store_local_scn(scn_name, content)
 
 		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, content)
 
