@@ -32,7 +32,7 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		if not filename.endswith('.scn'):
+		if not filename.lower().endswith('.scn'):
 			filename += '.scn'
 
 		multiplier = parsed['multiplier']
