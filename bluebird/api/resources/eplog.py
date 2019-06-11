@@ -44,7 +44,7 @@ class EpLog(Resource):
 				return resp
 
 		full_ep_file = os.path.join(os.getcwd(), ep_file_path)
-		lines = tuple(open(full_ep_file))
+		lines = tuple(line.rstrip('\n') for line in open(full_ep_file))
 
 		resp = jsonify({'cur_ep_id': bb_logging.EP_ID, 'cur_ep_file': full_ep_file, 'lines': lines})
 		resp.status_code = 200
