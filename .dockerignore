@@ -25,6 +25,7 @@ logs/
 tests/
 venv/
 
-# Ignore all BlueSky content other than the code
+# Ignore all BlueSky content other than the code and the default scenarios
 bluesky/*
 !bluesky/bluesky/**
+!bluesky/scenario

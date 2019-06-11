@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2019-06-11
+
+### Changed
+
+- Include default BlueSky scenarios in the Docker image build
+- Remove extra `\n` at end of episode log lines (`EPLOG` endpoint)
+
+### Fixed
+
+- Fix docker compose file for running integration tests on Windows
+- [#62](https://github.com/alan-turing-institute/bluebird/issues/62) Episode file logging is broken for non-absolute file paths
+- [#63](https://github.com/alan-turing-institute/bluebird/issues/63) Upload scenario endpoint doesn't handle logging the file data
+
 ## [1.2.0] - 2019-06-06
 
 ### Added
@@ -56,7 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2019-04-17 - PR [#51](https://github.com/alan-turing-institute/bluebird/pull/51)
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
-[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...develop
+[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...develop
+[1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.1.3...1.2.0
 [1.1.3]: https://github.com/alan-turing-institute/bluebird/compare/1.1.1...1.1.3
 [1.1.1]: https://github.com/alan-turing-institute/bluebird/compare/1.1.0...1.1.1

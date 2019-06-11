@@ -86,6 +86,13 @@ def test_ic_command(client, patch_client_sim):
 
 	assert bb.CLIENT_SIM.last_scenario == filename, 'Expected the filename to be loaded'
 
+	filename = 'testeroni.SCN'
+
+	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
+	assert resp.status == '200 OK'
+
+	assert bb.CLIENT_SIM.last_scenario == filename, 'Expected the filename to be loaded'
+
 
 def test_reset_command(client, patch_client_sim):
 	"""

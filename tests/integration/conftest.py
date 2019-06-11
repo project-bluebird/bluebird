@@ -3,11 +3,11 @@ Provides fixtures for integration tests
 """
 
 import os
+import subprocess
+import time
 
 import pytest
 import requests
-import subprocess
-import time
 from dotenv import load_dotenv
 
 from tests.integration import API_URL_BASE
