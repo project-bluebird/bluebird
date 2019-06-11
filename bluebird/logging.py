@@ -39,6 +39,8 @@ LOG_CONFIG['handlers']['debug-file']['filename'] = os.path.join(INST_LOG_DIR, 'd
 # Set the logging config
 logging.config.dictConfig(LOG_CONFIG)
 
+_LOGGER = logging.getLogger('bluebird')
+
 # Setup episode logging
 
 EP_ID = EP_FILE = None
@@ -46,6 +48,24 @@ EP_LOGGER = logging.getLogger('episode')
 EP_LOGGER.setLevel(logging.DEBUG)
 
 _LOG_PREFIX = 'E'
+
+
+def store_local_scn(filename, content):
+	"""
+	Stores an uploaded scenario file locally so it can be logged later
+	:param filename:
+	:param content:
+	:return:
+	"""
+
+	if not filename.startswith('scenario'):
+		filename = os.path.join('scenario', filename)
+
+	filename = os.path.join('bluesky', filename)
+	_LOGGER.debug(f'Writing scenario file {filename}')
+
+	with open(filename, 'w') as scn_file:
+		scn_file.writelines(line + '\n' for line in content)
 
 
 # TODO: Remove this when we move away from loading files
