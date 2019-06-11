@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
 [Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...develop
-[1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
+[1.2.1]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.1.3...1.2.0
 [1.1.3]: https://github.com/alan-turing-institute/bluebird/compare/1.1.1...1.1.3
 [1.1.1]: https://github.com/alan-turing-institute/bluebird/compare/1.1.0...1.1.1
