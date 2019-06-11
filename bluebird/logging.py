@@ -58,6 +58,9 @@ def bodge_file_content(filename):
 	:return:
 	"""
 
+	if not filename.startswith('scenario'):
+		filename = os.path.join('scenario', filename)
+
 	prefix = {'PREFIX': _LOG_PREFIX}
 	EP_LOGGER.info(f"Scenario file loaded: {filename}. Contents are:", extra=prefix)
 	scn_file = os.path.join('bluesky', filename)
@@ -69,8 +72,9 @@ def bodge_file_content(filename):
 					continue
 				EP_LOGGER.info(line.lstrip().strip('\n'), extra=prefix)
 
-	except Exception as exc:  # pylint: disable=broad-except
+	except FileNotFoundError as exc:
 		EP_LOGGER.error(f'Could not log file contents', exc_info=exc, extra=prefix)
+		raise exc
 
 
 def close_episode_log(reason):
