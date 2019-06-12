@@ -5,6 +5,7 @@ Provides logic for the STEP API endpoint
 from flask import jsonify
 from flask_restful import Resource
 
+import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings as settings
 
@@ -34,5 +35,7 @@ class Step(Resource):
 		else:
 			resp = jsonify(f'Could not step simulations: {err}')
 			resp.status_code = 500
+
+		bb_cache.AC_DATA.log()
 
 		return resp
