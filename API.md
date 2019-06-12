@@ -474,12 +474,15 @@ POST /api/v1/simmode
 Notes:
 
 - Currently available modes are `sandbox` and `agent`
-- This affects any currently running simulation - ...
+- This affects any currently running simulation:
+    - Setting `agent` mode will pause the current simulation and the episode log
+    - Setting `sandbox` mode will resume the simulation and logging at the previous rate
 
 Returns:
 
 - `200 Ok` - Mode was updated
 - `400 Bad Request` - Invalid mode specified
+- `500 Internal Server Error` - Other error when changing mode (response will contain data)
 
 ## Shutdown
 

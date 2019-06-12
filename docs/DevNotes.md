@@ -71,12 +71,3 @@ data['wpalt']   = route.wpalt
 data['wpspd']   = route.wpspd
 data['wpname']  = route.wpname
 ```
-
-## Agent mode / step
-
-To use the `STEP` endpoint:
-
-- Start BlueBird in agent mode (`--agent_mode` flag)
-- Load a scenario. This will be loaded and put in `HOLD`
-- Set `DTMULT` to the required step size
-- Call the `STEP` endpoint   

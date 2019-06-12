@@ -25,7 +25,7 @@ def _parse_args():
 	parser.add_argument('--reset_sim', action='store_true', help='Reset the simulation on '
 	                                                             'connection')
 	parser.add_argument('--log_rate', type=float, help='Log rate in sim-seconds')
-	parser.add_argument('--agent_mode', action='store_true', help='Run in agent mode')
+	parser.add_argument('--sim_mode', type=str, help='Set the initial mode')
 	args = parser.parse_args()
 
 	if args.bluesky_host:
@@ -37,8 +37,12 @@ def _parse_args():
 		else:
 			raise ValueError('Rate must be positive')
 
-	if args.agent_mode:
-		settings.SIM_MODE = 'agent'
+	mode = args.sim_mode
+	if mode:
+		if not mode in settings.SIM_MODES:
+			available = ', '.join(settings.SIM_MODES)
+			raise ValueError(f'Mode \'{mode}\' not supported. Must be one of: {available}')
+		settings.SIM_MODE = mode
 
 	return args
 
@@ -56,9 +60,10 @@ def main():
 	:return:
 	"""
 
-	args = _parse_args()
 	load_dotenv(verbose=True, override=True)
 	bs_min_version = _get_min_bs_version()
+
+	args = _parse_args()
 
 	with BlueBird() as app:
 		if app.client_connect(bs_min_version, args.reset_sim):
