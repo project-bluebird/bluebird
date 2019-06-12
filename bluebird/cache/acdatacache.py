@@ -38,6 +38,9 @@ class AcDataCache(Cache):
 		self.timer = Timer(self.log, SIM_LOG_RATE)
 		self.timer.disabled = True
 
+		self.have_logged_aircraft = False
+		self.prev_log_sim_t = 0
+
 	def start(self):
 		"""
 		Starts the timer for logging
@@ -46,6 +49,14 @@ class AcDataCache(Cache):
 
 		self.timer.start()
 		TIMERS.append(self.timer)
+
+	def reset(self):
+		"""
+		Resets the cache for a new episode
+		:return
+		"""
+		self.timer.disabled = True
+		self.have_logged_aircraft = False
 
 	def get(self, key):
 		"""
@@ -138,16 +149,22 @@ class AcDataCache(Cache):
 			return
 
 	def log(self):
+		"""
+		Writes the current aircraft states to the episode log
+		:return:
+		"""
 
 		if not self.store:
 			return
 
-		prev_sim_t = bluebird.cache.SIM_STATE.prev_sim_t
 		sim_t = bluebird.cache.SIM_STATE.sim_t
 
-		# Don't log if the simulation hasn't advanced
-		if sim_t == prev_sim_t:
+		# Don't log if the simulation hasn't advanced, except if it is the initial log
+		if sim_t == self.prev_log_sim_t and self.have_logged_aircraft:
 			return
+
+		self.have_logged_aircraft = True
+		self.prev_log_sim_t = sim_t
 
 		# TODO Tidy this up
 		data = dict(self.store)

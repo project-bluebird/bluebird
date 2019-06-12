@@ -30,7 +30,6 @@ class SimState:
 
 		self.sim_speed = 0
 		self.sim_dt = 0
-		self.prev_sim_t = 0
 		self.sim_t = 0
 		self.sim_utc = ''
 		self.sim_state = 0
@@ -54,7 +53,6 @@ class SimState:
 		:return:
 		"""
 
-		self.prev_sim_t = self.sim_t
 		self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, \
 		self.scn_name = data
 		self.sim_speed = round(self.sim_speed, 1)

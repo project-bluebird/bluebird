@@ -1,14 +1,13 @@
 """
-Tests for the agent mode
+Tests for the agent mode and the STEP command
 """
 
 import requests
-import time
 
 from tests.integration import API_URL_BASE
 
 
-def test_agent_mode():
+def test_step_agent_mode():
 	"""
 	Tests that IC and STEP perform correctly in agent mode with BlueSky
 	"""
@@ -29,9 +28,6 @@ def test_agent_mode():
 
 	resp = requests.post(f'{API_URL_BASE}/step')
 	assert resp.status_code == 200, 'Expected the simulation was stepped'
-	
-	# Sleep for a second to ensure the internal state is updated
-	time.sleep(1)
 
 	resp = requests.get(f'{API_URL_BASE}/pos?acid=SCN1001')
 	assert resp.status_code == 200, 'Expected to get the aircraft position'

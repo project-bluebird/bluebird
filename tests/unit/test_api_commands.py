@@ -177,10 +177,11 @@ def test_scenario_endpoint(client, patch_client_sim):
 	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
 
 
-def test_change_mode(client):
+def test_change_mode(client, patch_client_sim):
 	"""
 	Tests the functionality of the simmode endpoint
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -201,6 +202,8 @@ def test_change_mode(client):
 def test_non_agent_mode_step(client, patch_client_sim):
 	"""
 	Tests that the sim is not stepped if in the sandbox mode
+	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -215,7 +218,8 @@ def test_non_agent_mode_step(client, patch_client_sim):
 def test_agent_mode_step(client, patch_client_sim):
 	"""
 	Tests that the sim is stepped if in agent mode
-	:param use_agent_mode:
+	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
