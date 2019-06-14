@@ -27,3 +27,4 @@ services:
       - 5001:5001
     environment:
       - BS_HOST=bluesky
+#      - SIM_MODE=agent
