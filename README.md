@@ -12,11 +12,6 @@ Future:
 - NATS Machine College 😊
 
 
-## Initial Prototype
-
-See [here](docs/InitialProto.md).
-
-
 ## Usage
 
 ### Running locally
@@ -26,13 +21,14 @@ To run locally, first start a BlueSky simulation, then:
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>] [--reset_sim] [--log_rate=<rate>]
+(venv) > python ./run.py [--bluesky_host=<address>] [--sim_mode=<mode>] [--reset_sim] [--log_rate=<rate>]
 ```
 
 Notes:
 - the `--dev` option will also install dependencies needed for developing BlueBird
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
 - If passed, `--reset_sim` will reset the simulation on connection
+- If passed, `--sim_mode` will start the simulation in a specific [mode](docs/SimulatorModes.md). 
 
 ### Running with Docker
 
@@ -41,6 +37,14 @@ BlueBird can also be run through Docker. Easiest way is to run with docker-compo
 ```bash
 > docker-compose up -d
 ```
+
+This will also pull and start a BlueSky simulation.
+
+You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host, and the `sandbox` mode by default. These can be overridden with environment variables:
+
+```bash
+> docker run --rm -e BS_HOST="1.2.3.4" -e SIM_MODE="agent" turinginst/bluebird:latest 
+``` 
 
 ### API Endpoints
 

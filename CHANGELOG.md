@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- BlueBird simulator [modes](docs/SimulatorModes.md)
+- `STEP` endpoint to manually step the simulation forwards when in agent mode
+- `SIMMODE` endpoint to allow switching between modes at runtime
+
+### Changed
+
+- Bump required BlueSky version to `1.2.0`
+- When in `agent` mode, aircraft data is only logged after each `STEP` command
+
 ## [1.2.1] - 2019-06-11
 
 ### Changed
