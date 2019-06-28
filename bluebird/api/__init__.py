@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flask_restful import Api
 
 from bluebird import settings
-from . import resources as res, static
+from . import resources as res
 
 
 class BlueBirdApi(Api):
@@ -95,7 +95,5 @@ FLASK_API.add_resource(res.Shutdown, '/shutdown')
 # endregion
 
 # region Static routes
-
-FLASK_APP.add_url_rule('/', 'index', static.readme, defaults={'root_path': FLASK_APP.root_path})
 
 # endregion

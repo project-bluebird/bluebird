@@ -8,6 +8,8 @@ defined, so we don't have any test dependencies on BlueSky.
 
 # pylint: disable=redefined-outer-name, unused-argument, no-member
 
+import os
+
 import pytest
 
 import bluebird.api as bluebird_api
@@ -175,6 +177,12 @@ def test_scenario_endpoint(client, patch_client_sim):
 
 	assert bb.CLIENT_SIM.last_scenario == 'new-scenario.scn', 'Expected the filename to be loaded'
 	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
+
+	# Remove the test file from the BlueSky submodule
+	try:
+		os.remove('bluesky/scenario/new-scenario.scn')
+	except OSError:
+		pass
 
 
 def test_change_mode(client, patch_client_sim):
