@@ -92,6 +92,10 @@ FLASK_API.add_resource(res.EpLog, '/eplog')
 FLASK_API.add_resource(res.SimMode, '/simmode')
 FLASK_API.add_resource(res.Shutdown, '/shutdown')
 
+# Metrics
+FLASK_API.add_resource(res.Metric, '/metric')
+FLASK_API.add_resource(res.MetricProviders, '/metricproviders')
+
 # endregion
 
 # region Static routes

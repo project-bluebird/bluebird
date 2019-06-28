@@ -10,26 +10,10 @@ defined, so we don't have any test dependencies on BlueSky.
 
 import os
 
-import pytest
-
-import bluebird.api as bluebird_api
 import bluebird.client as bb
 import bluebird.settings as settings
 from bluebird.cache import AC_DATA
 from . import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
-
-
-@pytest.fixture
-def client():
-	"""
-	Creates a Flask test client for BlueBird, and populates AC_DATA with the test data
-	:return:
-	"""
-
-	bluebird_api.FLASK_APP.config['TESTING'] = True
-	test_client = bluebird_api.FLASK_APP.test_client()
-
-	yield test_client
 
 
 def test_pos_command(client):
