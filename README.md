@@ -1,4 +1,6 @@
 
+[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/alan-turing-institute/bluebird)
+
 # BlueBird
 
 BlueBird is a web API for air traffic simulators.
