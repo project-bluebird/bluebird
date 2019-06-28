@@ -34,8 +34,12 @@ class AcDataCache(Cache):
 		self._logger = logging.getLogger(__name__)
 
 		# Periodically log the sim state to file. Starts disabled.
-		self.timer = Timer(self._log, SIM_LOG_RATE)
+		self._target_sim_speed = 1
+		self.timer = Timer(self.log, SIM_LOG_RATE)
 		self.timer.disabled = True
+
+		self.have_logged_aircraft = False
+		self.prev_log_sim_t = 0
 
 	def start(self):
 		"""
@@ -45,6 +49,14 @@ class AcDataCache(Cache):
 
 		self.timer.start()
 		TIMERS.append(self.timer)
+
+	def reset(self):
+		"""
+		Resets the cache for a new episode
+		:return
+		"""
+		self.timer.disabled = True
+		self.have_logged_aircraft = False
 
 	def get(self, key):
 		"""
@@ -96,14 +108,23 @@ class AcDataCache(Cache):
 		for acid in current_acids - new_acids:
 			del self.store[acid]
 
+	def resume_log(self):
+		"""
+		Resumes the episode log at the previous rate
+		:return:
+		"""
+		# TODO: Don't set DTMULT in sim files!
+		self.set_log_rate(self._target_sim_speed)
+
 	def set_log_rate(self, new_speed, new_log=False):
 		"""
 		Set the speed at which simulation data is logged at
-		:param new_log:
 		:param new_speed:
+		:param new_log:
 		:return:
 		"""
 
+		self._target_sim_speed = new_speed
 		sim_state = bluebird.cache.SIM_STATE
 		current_speed = sim_state.sim_speed
 
@@ -127,10 +148,23 @@ class AcDataCache(Cache):
 			self.timer.set_tickrate(rate)
 			return
 
-	def _log(self):
+	def log(self):
+		"""
+		Writes the current aircraft states to the episode log
+		:return:
+		"""
 
 		if not self.store:
 			return
+
+		sim_t = bluebird.cache.SIM_STATE.sim_t
+
+		# Don't log if the simulation hasn't advanced, except if it is the initial log
+		if sim_t == self.prev_log_sim_t and self.have_logged_aircraft:
+			return
+
+		self.have_logged_aircraft = True
+		self.prev_log_sim_t = sim_t
 
 		# TODO Tidy this up
 		data = dict(self.store)
@@ -142,6 +176,5 @@ class AcDataCache(Cache):
 				if isinstance(data[aircraft][prop], datetime.datetime):
 					data[aircraft][prop] = str(data[aircraft][prop].utcnow())
 
-		sim_t = bluebird.cache.SIM_STATE.sim_t
 		json_data = json.dumps(data, separators=(',', ':'))
 		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {json_data}', extra={'PREFIX': LOG_PREFIX})

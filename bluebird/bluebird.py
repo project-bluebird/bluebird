@@ -18,6 +18,7 @@ class BlueBird:
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
+		self._logger.info(f'BlueBird init. {settings.SIM_MODE} mode')
 
 	def __enter__(self):
 		return self

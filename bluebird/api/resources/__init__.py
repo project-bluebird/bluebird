@@ -21,9 +21,11 @@ from .ic import Ic
 from .op import Op
 from .reset import Reset
 from .scenario import Scenario
+from .step import Step
 from .time import Time
 
 # Application control
 from .epinfo import EpInfo
 from .eplog import EpLog
+from .simmode import SimMode
 from .shutdown import Shutdown

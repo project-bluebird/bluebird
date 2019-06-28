@@ -18,6 +18,12 @@ SIM_LOG_RATE = 0.2  # Rate (in sim-seconds) at which aircraft data is logged to 
 LOGS_ROOT = os.getenv('BB_LOGS_ROOT', 'logs')
 CONSOLE_LOG_LEVEL = 'INFO'  # Change to 'DEBUG' if needed
 
+# Current modes:
+# sandbox - Default. Simulation runs normally
+# agent - Simulation starts paused and must be manually advanced with STEP
+SIM_MODES = ['sandbox', 'agent']
+SIM_MODE = SIM_MODES[0]
+
 # BlueSky server settings
 
 BS_HOST = 'localhost'

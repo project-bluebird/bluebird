@@ -79,7 +79,6 @@ def test_check_acid():
 
 def test_process_ac_cmd(patch_client_sim):
 	# pylint: disable=unused-argument
-
 	"""
 	Tests that process_ac_cmd performs correctly
 	:param patch_client_sim:

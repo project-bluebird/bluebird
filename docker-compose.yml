@@ -1,3 +1,4 @@
+# Compose file for local development. Any changes to your copy of BlueBird will be included
 
 version: '3.7'
 
@@ -5,7 +6,7 @@ services:
   bluesky:
     container_name: bluesky
     image: turinginst/bluesky:${BS_MIN_VERSION}
-# Uncomment to include any local changes to BlueSky
+# Uncomment to also include any local changes to BlueSky
 #    volumes:
 #      - ./bluesky:/usr/src/app
     expose:
@@ -21,9 +22,9 @@ services:
       - bluesky
     build: .
     volumes:
-      - .:/usr/src/app
       - /usr/src/app/logs/ # Prevents any local logs being copied to the container
     ports:
       - 5001:5001
     environment:
       - BS_HOST=bluesky
+#      - SIM_MODE=agent

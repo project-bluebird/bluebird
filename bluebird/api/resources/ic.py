@@ -6,6 +6,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
+import bluebird.settings as settings
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
@@ -43,7 +44,8 @@ class Ic(Resource):
 			resp.status_code = 400
 			return resp
 
-		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed)
+		start_paused = settings.SIM_MODE == 'agent'
+		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed, start_paused=start_paused)
 
 		if not err:
 			resp = jsonify(f'Scenario {fn_base} loaded')
