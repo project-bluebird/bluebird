@@ -11,6 +11,8 @@ from . import config as cfg
 
 _WGS84 = Geod(ellps='WGS84')
 
+_ONE_NM = 1852  # Meters
+
 
 def _get_pos(acid):
 	assert isinstance(acid, str), 'Expected the input to be a string'
@@ -31,12 +33,13 @@ def vertical_separation(acid1, acid2):
 	alt2 = _get_pos(acid2)['alt']
 	vertical_sep = abs(alt1 - alt2)
 
-	if vertical_sep < cfg.VERT_MIN:
-		return cfg.VERT_SCORE
+	if vertical_sep < cfg.VERT_MIN_DIST:
+		return cfg.VERT_LOS_SCORE
 
-	if vertical_sep < cfg.VERT_WARN:
+	if vertical_sep < cfg.VERT_WARN_DIST:
 		# Linear score between the minimum and warning distances
-		return np.interp(vertical_sep, [cfg.VERT_MIN, cfg.VERT_WARN], [cfg.VERT_SCORE, 0])
+		return np.interp(vertical_sep,
+		                 [cfg.VERT_MIN_DIST, cfg.VERT_WARN_DIST], [cfg.VERT_LOS_SCORE, 0])
 
 	return 0
 
@@ -53,14 +56,14 @@ def horizontal_separation(acid1, acid2):
 	pos2 = _get_pos(acid2)
 
 	_, _, horizontal_sep_m = _WGS84.inv(pos1['lon'], pos1['lat'], pos2['lon'], pos2['lat'])
+	horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)
 
-	horizontal_sep_nm = horizontal_sep_m / 1852
+	if horizontal_sep_nm < cfg.HOR_MIN_DIST:
+		return round(cfg.HOR_LOS_SCORE, 1)
 
-	if horizontal_sep_nm < cfg.HOR_MIN:
-		return cfg.HOR_SCORE
-
-	if horizontal_sep_nm < cfg.HOR_WARN:
+	if horizontal_sep_nm < cfg.HOR_WARN_DIST:
 		# Linear score between the minimum and warning distances
-		return np.interp(horizontal_sep_nm, [cfg.HOR_MIN, cfg.HOR_WARN], [cfg.HOR_SCORE, 0])
+		return round(np.interp(horizontal_sep_nm,
+		                       [cfg.HOR_MIN_DIST, cfg.HOR_WARN_DIST], [cfg.HOR_LOS_SCORE, 0]), 1)
 
 	return 0
