@@ -42,6 +42,8 @@ Notes:
 - [Episode Log](#episode-logfile)
 - [Simulator Mode](#simulator-mode)
 - [Shutdown](#shutdown)
+- [Metrics](#metrics)
+- [MetricProviders](#metric-providers)
 
 ---
 
@@ -496,3 +498,46 @@ Returns:
 
 - `200 Ok` - Server is shutting down
 - `500 Internal Server Error` - Could not shutdown. Error data will be provided.
+
+## Metrics
+
+Calls a metric function. E.g.:
+
+```javascript
+GET /api/v1/metric?name=vertical_separation&args=SCN1001,SCN1002
+```
+
+Notes:
+
+- A full list of the included metrics in BlueBird is [here](docs/Metrics.md)
+
+Returns:
+
+- `200 Ok` - Result of the metric function:
+
+```javascript
+{
+    "vertical_separation": -1
+}
+```
+
+- `400 Bad Request` - Invalid arguments for the specified metric function, or the arguments were invalid. E.g. "Expected the aircraft to exist in the simulation"
+- `404 Not Found` - No metric found with the given name
+- `500 Internal Server Error` - No metrics available
+
+## Metric Providers
+
+Get a list of the available metric providers:
+
+```javascript
+GET /api/v1/metricproviders
+```
+
+Returns:
+
+- `200 Ok` - Dictionary of the available providers, and their versions:
+```javascript
+{
+    "BlueBirdProvider": "1.3.0-dev"
+}
+```
