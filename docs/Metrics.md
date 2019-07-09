@@ -16,7 +16,7 @@ Configuration parameters:
     
 Function: [vertical_separation(acid1, acid2)](../bluebird/metrics/bluebird/metrics.py)
 
-Params: IDs of two aircraft which exist in the simulation
+Parameters: IDs of two aircraft which exist in the simulation
 
 ## Horizontal Separation
 
@@ -31,4 +31,4 @@ Configuration parameters:
     
 Function: [horizontal_separation(acid1, acid2)](../bluebird/metrics/bluebird/metrics.py)
 
-Params: IDs of two aircraft which exist in the simulation
+Parameters: IDs of two aircraft which exist in the simulation
