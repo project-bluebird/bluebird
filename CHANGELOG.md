@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BlueBird simulator [modes](docs/SimulatorModes.md)
 - `STEP` endpoint to manually step the simulation forwards when in agent mode
 - `SIMMODE` endpoint to allow switching between modes at runtime
+- `SEED` endpoint to allow setting BlueSky's random seed
 
 ### Changed
 
