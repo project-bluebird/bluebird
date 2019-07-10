@@ -5,10 +5,12 @@ Provides logic for the scenario (create scenario) API endpoint
 import logging
 
 import re
+import time
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
+from bluebird.cache import AC_DATA
 from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')
@@ -19,7 +21,7 @@ PARSER.add_argument('content', type=str, location='json', required=True, action=
 PARSER.add_argument('start_new', type=bool, location='json', required=False)
 PARSER.add_argument('start_dtmult', type=float, location='json', required=False)
 
-_SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}\s?>\s?.*')
+_SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*')
 
 
 def _validate_scenario(scn_lines):
@@ -89,5 +91,9 @@ class Scenario(Resource):
 		else:
 			resp = jsonify(f'Scenario {scn_base} uploaded')
 			resp.status_code = 201
+
+		# Wait for the data store to be populated
+		while not len(AC_DATA.store):
+			time.sleep(0.1)
 
 		return resp

@@ -41,6 +41,8 @@ class AcDataCache(Cache):
 		self.have_logged_aircraft = False
 		self.prev_log_sim_t = 0
 
+		self.cleared_fls = {}
+
 	def start(self):
 		"""
 		Starts the timer for logging
@@ -55,6 +57,8 @@ class AcDataCache(Cache):
 		Resets the cache for a new episode
 		:return
 		"""
+		super().clear()
+		self.cleared_fls = {}
 		self.timer.disabled = True
 		self.have_logged_aircraft = False
 
