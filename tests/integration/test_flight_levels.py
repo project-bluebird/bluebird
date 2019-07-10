@@ -2,6 +2,8 @@
 Tests for the flight level commands
 """
 
+# pylint: disable=bad-continuation
+
 import requests
 
 from tests.integration import API_URL_BASE
@@ -24,7 +26,8 @@ def test_get_flight_levels():
 		            "00:00:00.1> ADDWPT AC0006,-3.22494198491,-2.70468585088,0.0,400.0",
 		            "00:00:00.1> LNAV AC0006 ON",
 		            "00:00:00.1> VNAV AC0006 ON"
-	            ], "start_new": True}
+	            ],
+	            "start_new": True}
 
 	resp = requests.post(f'{API_URL_BASE}/scenario', json=scn_data)
 	assert resp.status_code == 200, 'Expected the scenario to be uploaded'

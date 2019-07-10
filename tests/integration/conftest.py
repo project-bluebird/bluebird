@@ -51,8 +51,8 @@ def pre_integration_check(request):
 
 	load_dotenv(verbose=True, override=True)
 
-	should_skip = not (
-					os.getenv('CI', '').upper() == 'TRUE' or request.config.getoption("--run-integration"))
+	should_skip = not (os.getenv('CI', '').upper() == 'TRUE'
+	                   or request.config.getoption("--run-integration"))
 
 	if should_skip:
 		pytest.skip('Not running in CI, and --run-integration not specified')

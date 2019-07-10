@@ -138,7 +138,7 @@ def wait_for_data():
 	"""
 
 	timeout = time.time() + 1
-	while not len(AC_DATA.store):
+	while not AC_DATA.store:
 		time.sleep(0.1)
 		if time.time() > timeout:
 			_LOGGER.warning(
