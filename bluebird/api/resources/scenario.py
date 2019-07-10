@@ -5,12 +5,11 @@ Provides logic for the scenario (create scenario) API endpoint
 import logging
 
 import re
-import time
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import wait_for_data
 from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')
@@ -92,8 +91,6 @@ class Scenario(Resource):
 			resp = jsonify(f'Scenario {scn_base} uploaded')
 			resp.status_code = 201
 
-		# Wait for the data store to be populated
-		while not len(AC_DATA.store):
-			time.sleep(0.1)
+		wait_for_data()
 
 		return resp

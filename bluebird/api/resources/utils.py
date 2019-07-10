@@ -4,6 +4,7 @@ Contains utility functions for the API resources
 
 import logging
 
+import time
 from flask import jsonify
 from flask_restful import reqparse
 
@@ -127,3 +128,19 @@ def process_stack_cmd(cmd_str, success_code=200):
 		resp.status_code = success_code
 
 	return resp
+
+
+def wait_for_data():
+	"""
+	Waits for the aircraft data store to be repopulated after loading a new scenario. Give up after
+	1 second to handle scenarios which don't contain any aircraft (for whatever reason)
+	:return:
+	"""
+
+	timeout = time.time() + 1
+	while not len(AC_DATA.store):
+		time.sleep(0.1)
+		if time.time() > timeout:
+			_LOGGER.warning(
+							'No aircraft data received after loading. Scenario might not contain any aircraft')
+			break

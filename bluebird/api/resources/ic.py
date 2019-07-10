@@ -2,13 +2,12 @@
 Provides logic for the IC (initial condition) API endpoint
 """
 
-import time
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.client as bb_client
 import bluebird.settings as settings
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import wait_for_data
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=True)
@@ -56,8 +55,6 @@ class Ic(Resource):
 			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
 			resp.status_code = 500
 
-		# Wait for the data store to be populated
-		while not len(AC_DATA.store):
-			time.sleep(0.1)
+		wait_for_data()
 
 		return resp
