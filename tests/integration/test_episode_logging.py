@@ -47,7 +47,9 @@ def test_episode_logging_agent_mode():
 	assert len(updated_log) >= len(initial_log) + 2, 'Expected at least two more log lines'
 
 	match = re.search(r'C \[(\d)\] STEP', updated_log[-2])
-	assert match, 'Expected the step command to be logged'
+	if not match:
+		match = re.search(r'C \[(\d)\] STEP', updated_log[-3])
+		assert match is not None, 'Expected the step command to be logged'
 
 	init_t = int(match.group(1))
 
