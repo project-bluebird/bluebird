@@ -112,6 +112,10 @@ class AcDataCache(Cache):
 		for acid in current_acids - new_acids:
 			del self.store[acid]
 
+		# Set any initial cleared flight levels
+		for missing in current_acids - self.cleared_fls.keys():
+			self.cleared_fls[missing] = self.store[missing]['alt']
+
 	def resume_log(self):
 		"""
 		Resumes the episode log at the previous rate

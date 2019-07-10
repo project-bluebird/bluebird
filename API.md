@@ -275,6 +275,8 @@ GET /api/v1/alt?acid=<acid>
 Notes:
 
 - All returned flight levels are in meters
+- The requested flight level can only be returned if the aircraft has a defined route
+- The initial cleared flight level will be set to the initial altitude when the scenario is loaded
 
 Returns:
 

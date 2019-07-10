@@ -43,7 +43,7 @@ class Alt(Resource):
 
 		# Parse FL to meters
 		if isinstance(fl_cleared, str):
-			fl_cleared = int(fl_cleared[2:]) * 100 * 0.3048
+			fl_cleared = round(int(fl_cleared[2:]) * 100 * 0.3048)
 
 		AC_DATA.cleared_fls.update({acid: fl_cleared})
 
