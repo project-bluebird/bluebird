@@ -36,6 +36,7 @@ Notes:
 - [Position](#position-pos)
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
+- [Set Seed](#set-seed)
 
 ### Application endpoints
 
@@ -431,6 +432,23 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+## Set Seed
+
+Sets the random seed of the simulator. Must be a positive integer:
+
+```javascript
+POST /api/v1/seed
+{
+    "value": 1234
+}
+```
+
+Returns:
+
+- `200 Ok` - Seed was set
+- `400 Bad Request` - Invalid seed provided
+- `500 Internal Server Error` - Other error when setting seed (response will contain data)
 
 ---
 

@@ -110,9 +110,10 @@ def close_episode_log(reason):
 	EP_LOGGER.handlers.pop()
 
 
-def _start_episode_log():
+def _start_episode_log(sim_seed):
 	"""
 	Starts a new episode logfile
+	:param sim_seed:
 	:return:
 	"""
 
@@ -129,17 +130,17 @@ def _start_episode_log():
 	formatter = logging.Formatter('%(asctime)s %(PREFIX)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 	file_handler.setFormatter(formatter)
 	EP_LOGGER.addHandler(file_handler)
-	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE} Hz',
+	EP_LOGGER.info(f'Episode started. SIM_LOG_RATE is {SIM_LOG_RATE} Hz. Seed is {sim_seed}',
 	               extra={'PREFIX': _LOG_PREFIX})
 
 	return EP_ID
 
 
-def restart_episode_log():
+def restart_episode_log(sim_seed):
 	"""
 	Closes the current episode log and starts a new one. Returns the UUID of the new episode
 	:return:
 	"""
 
 	close_episode_log('episode logging restarted')
-	return _start_episode_log()
+	return _start_episode_log(sim_seed)

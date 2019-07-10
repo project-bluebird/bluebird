@@ -237,3 +237,36 @@ def test_agent_mode_step(client, patch_client_sim):
 	resp = client.post(f'{API_PREFIX}/step')
 	assert resp.status_code == 200, 'Expected a 200 response'
 	assert bb.CLIENT_SIM.was_stepped, 'Expected the simulation was stepped forward'
+
+
+def test_set_seed(client, patch_client_sim):
+	"""
+	Tests the functionality of the seed endpoint
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/seed')
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'test': 1234}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': 'test'}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': -123}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': 123}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '200 OK'
+	assert bb.CLIENT_SIM.seed == 123, ''
