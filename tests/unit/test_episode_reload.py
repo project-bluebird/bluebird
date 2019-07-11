@@ -73,7 +73,9 @@ def test_parse_lines_time():
 	"""
 
 	lines = ['2019-07-11 10:18:28 E Episode started. SIM_LOG_RATE is 0.2 Hz. Seed is 1234',
-	         '',
+	         'unused',
+	         'unused',
+	         'unused',
 	         r'2019-07-11 10:18:29 E Scenario file loaded: scenario\TEST.scn. Contents are:',
 	         '2019-07-11 10:18:29 E 00:00:00.00>CRE Kl204,B744,52,4,90,FL250,350',
 	         '2019-07-11 10:18:29 E 00:00:00.50>DEST KL204,EDDF',
@@ -83,7 +85,7 @@ def test_parse_lines_time():
 
 	data = parse_lines(lines, 99)
 	assert isinstance(data, dict), 'Expected data'
-	assert len(data['lines']) == 3, 'Expected only 3 commands'
+	assert len(data['lines']) == 3, 'Expected 3 commands'
 	assert 'ALT KL204 9144' in data['lines'][-1], ''
 
 

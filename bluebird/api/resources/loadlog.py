@@ -12,6 +12,7 @@ import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings
 from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data
+from bluebird.logging import store_local_scn
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=False)
@@ -48,6 +49,13 @@ class LoadLog(Resource):
 			resp.status_code = 400
 			return resp
 
+		# Reset now so the current episode log is closed
+		err = bb_client.CLIENT_SIM.reset_sim()
+
+		if err:
+			resp = jsonify(f'Simulation not reset: {err}')
+			resp.status_code = 500
+
 		if parsed['filename']:
 			if not os.path.exists(parsed['filename']):
 				resp = jsonify(f'Could not find episode file {parsed["filename"]}')
@@ -73,12 +81,6 @@ class LoadLog(Resource):
 
 		# All good - do the reload
 
-		err = bb_client.CLIENT_SIM.reset_sim()
-
-		if err:
-			resp = jsonify(f'Simulation not reset: {err}')
-			resp.status_code = 500
-
 		err = bb_client.CLIENT_SIM.send_stack_cmd(f'SEED {parsed_scn["seed"]}')
 
 		if err:
@@ -87,7 +89,9 @@ class LoadLog(Resource):
 
 		bb_client.CLIENT_SIM.seed = parsed_scn["seed"]
 
-		scn_name = f'reload-{str(uuid.uuid4())[:8]}'
+		scn_name = f'reloads/{str(uuid.uuid4())[:8]}.scn'
+
+		store_local_scn(scn_name, parsed_scn['lines'])
 		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, parsed_scn['lines'])
 
 		if err:

@@ -185,12 +185,12 @@ def parse_lines(lines, target_time=0):
 	if not lines:
 		return 'No more lines after parsing seed'
 
-	lines.pop(0)  # Unused
-	if not 'Scenario file loaded' in lines.pop(0):
-		return 'Couldn\'t find scenario content'
+	while not 'Scenario file loaded' in lines[0]:
+		lines.pop(0)
+		if not lines:
+			return 'Couldn\'t find scenario content'
 
-	if not lines:
-		return 'No more lines after parsing scenario name'
+	lines.pop(0)
 
 	while lines:
 		match = re.match(r'.*E.*>.*', lines[0])
@@ -206,7 +206,7 @@ def parse_lines(lines, target_time=0):
 		if 'Episode finished' in line:
 			return scn_data
 		match = re.match(r'.*C \[(\d+)\] (.*)$', line)
-		if match:
+		if match and not 'STEP' in line:
 			time_s = int(match.group(1))
 			if not target_time or time_s <= target_time:
 				cmd_time = time.strftime('%H:%M:%S', time.gmtime(time_s))
