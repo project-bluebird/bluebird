@@ -7,10 +7,24 @@ Populates BlueBird AC_DATA with some test aircraft information for use in testin
 
 import pytest
 
+import bluebird.api as bluebird_api
 import bluebird.cache
 import bluebird.client
 from bluebird.client.client import ApiClient
 from . import SIM_DATA, TEST_DATA
+
+
+@pytest.fixture
+def client():
+	"""
+	Creates a Flask test client for BlueBird
+	:return:
+	"""
+
+	bluebird_api.FLASK_APP.config['TESTING'] = True
+	test_client = bluebird_api.FLASK_APP.test_client()
+
+	yield test_client
 
 
 @pytest.fixture(scope='session', autouse=True)

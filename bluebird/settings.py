@@ -4,7 +4,13 @@ Default settings for the BlueBird app
 
 import os
 
+from semver import VersionInfo
+
 # BlueBird app settings
+
+with open('VERSION') as version_file:
+	version_str = version_file.read().strip()
+	VERSION = VersionInfo.parse(version_str)
 
 API_VERSION = 1
 
@@ -17,6 +23,9 @@ SIM_LOG_RATE = 0.2  # Rate (in sim-seconds) at which aircraft data is logged to 
 
 LOGS_ROOT = os.getenv('BB_LOGS_ROOT', 'logs')
 CONSOLE_LOG_LEVEL = 'INFO'  # Change to 'DEBUG' if needed
+
+# List of package names containing metrics providers
+METRICS_PROVIDERS = ['bluebird']
 
 # Current modes:
 # sandbox - Default. Simulation runs normally

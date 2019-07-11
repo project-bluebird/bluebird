@@ -2,7 +2,6 @@
 Tests that no exceptions are thrown when modules are imported
 """
 
-# pylint: disable=unused-import
 import pytest
 
 _MODULES = ['bluebird', 'bluesky']
@@ -16,6 +15,7 @@ def test_module_import(module):
 	"""
 
 	try:
+		# TODO Replace with importlib
 		__import__(module)
 	except ImportError as exc:
 		pytest.fail(str(exc))
@@ -28,6 +28,6 @@ def test_run_script_import():
 	"""
 
 	try:
-		import run
+		import run  # pylint: disable=unused-import
 	except ImportError as exc:
 		pytest.fail(str(exc))

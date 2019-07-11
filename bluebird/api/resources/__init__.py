@@ -29,3 +29,7 @@ from .epinfo import EpInfo
 from .eplog import EpLog
 from .simmode import SimMode
 from .shutdown import Shutdown
+
+# Metrics
+from .metrics import Metric
+from .metrics import MetricProviders

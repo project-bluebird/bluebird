@@ -8,6 +8,7 @@ from . import settings
 from .api import FLASK_APP
 from .cache import AC_DATA, SIM_STATE
 from .client import CLIENT_SIM
+from .metrics import setup_metrics
 from .utils import TIMERS
 
 
@@ -19,6 +20,8 @@ class BlueBird:
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
 		self._logger.info(f'BlueBird init. {settings.SIM_MODE} mode')
+
+		setup_metrics()
 
 	def __enter__(self):
 		return self
