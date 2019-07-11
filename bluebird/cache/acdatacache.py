@@ -41,6 +41,8 @@ class AcDataCache(Cache):
 		self.have_logged_aircraft = False
 		self.prev_log_sim_t = 0
 
+		self.cleared_fls = {}
+
 	def start(self):
 		"""
 		Starts the timer for logging
@@ -55,6 +57,8 @@ class AcDataCache(Cache):
 		Resets the cache for a new episode
 		:return
 		"""
+		super().clear()
+		self.cleared_fls = {}
 		self.timer.disabled = True
 		self.have_logged_aircraft = False
 
@@ -107,6 +111,10 @@ class AcDataCache(Cache):
 		# If any aircraft have been removed
 		for acid in current_acids - new_acids:
 			del self.store[acid]
+
+		# Set any initial cleared flight levels
+		for missing in current_acids - self.cleared_fls.keys():
+			self.cleared_fls[missing] = self.store[missing]['alt']
 
 	def resume_log(self):
 		"""

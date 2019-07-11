@@ -15,10 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SIMMODE` endpoint to allow switching between modes at runtime
 - `SEED` endpoint to allow setting BlueSky's random seed
 - Added basic aircraft separation metrics
+- Added `GET` option to the `ALT` endpoint, to return the 3 versions of the flight levels
 
 ### Changed
 
-- Bump required BlueSky version to `1.2.0`
+- Bump required BlueSky version to `1.3.0-dev`
 - When in `agent` mode, aircraft data is only logged after each `STEP` command
 
 ### Removed

@@ -250,7 +250,9 @@ Returns:
 
 ## Altitude
 
-Request that the aircraft alters its altitude:
+This has both `POST` and `GET` versions.
+
+`POST` - Request that the aircraft alters its altitude:
 
 ```javascript
 POST /api/v1/alt
@@ -266,6 +268,32 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+`GET` - Get the current, requested, and cleared flight levels for an aircraft:
+
+```javascript
+GET /api/v1/alt?acid=<acid>
+```
+
+Notes:
+
+- All returned flight levels are in meters
+- The requested flight level can only be returned if the aircraft has a defined route
+- The initial cleared flight level will be set to the initial altitude when the scenario is loaded
+
+Returns:
+
+- `200 Ok` - Data:
+
+```javascript
+{
+    "fl_current": 7620,
+    "fl_cleared": 4572,
+    "fl_requested": 2896
+}
+```
+
+- `400 Bad Request` - Aircraft ID was invalid, or does not exist in the simulation
 
 ## Create Aircraft (CRE)
 
