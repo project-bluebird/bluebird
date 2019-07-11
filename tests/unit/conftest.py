@@ -63,11 +63,14 @@ def patch_client_sim(monkeypatch):
 			self.was_reset = False
 			self.was_stepped = False
 			self.seed = None
+			self.scn_uploaded = False
 
 		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
+			self._logger.debug(f'STACK {data} response_expected={response_expected}')
 			self.last_stack_cmd = data
 
 		def load_scenario(self, filename, speed=1.0, start_paused=False):
+			self._logger.debug(f'load_scenario {filename} {speed} {start_paused}')
 			self.last_scenario = filename
 			self.last_dtmult = speed
 
@@ -75,7 +78,8 @@ def patch_client_sim(monkeypatch):
 			self.was_reset = True
 
 		def upload_new_scenario(self, name, lines):
-			return None
+			self._logger.debug(f'upload_new_scenario, {name}')
+			self.scn_uploaded = True
 
 		def step(self):
 			self.was_stepped = True

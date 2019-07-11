@@ -6,6 +6,7 @@ Tests for the episode log reloading feature
 
 import os
 
+import bluebird.client as bb_client
 from bluebird.api.resources.utils import parse_lines
 from . import API_PREFIX
 
@@ -86,10 +87,11 @@ def test_parse_lines_time():
 	assert 'ALT KL204 9144' in data['lines'][-1], ''
 
 
-def test_log_reload_from_lines(client):
+def test_log_reload_from_lines(client, patch_client_sim):
 	"""
 	Tests the episode reloading given a full logfile in the request
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -108,10 +110,11 @@ def test_log_reload_from_lines(client):
 	assert resp.status_code == 200, 'Expected a 200'
 
 
-def test_log_reload_from_file(client):
+def test_log_reload_from_file(client, patch_client_sim):
 	"""
 	Tests that the episode reloading works when given a logfile
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -129,6 +132,8 @@ def test_log_reload_from_file(client):
 def test_log_reload_full(client, patch_client_sim):
 	"""
 	Tests the full functionality of the log reloading
+	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -144,6 +149,12 @@ def test_log_reload_full(client, patch_client_sim):
 	resp = client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 400, 'Expected a 400 due to invalid time'
 
-	data['time'] = 123
+	data['time'] = 120
 	resp = client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 200, 'Expected a 200'
+
+	assert bb_client.CLIENT_SIM.was_reset, 'Expected that the simulator was reset'
+	assert bb_client.CLIENT_SIM.seed == 5678, 'Expected that the seed was set'
+	assert bb_client.CLIENT_SIM.scn_uploaded, 'Expected that the scenario was uploaded'
+	assert bb_client.CLIENT_SIM.last_scenario, 'Expected that the scenario was started'
+	assert bb_client.CLIENT_SIM.was_stepped, 'Expected that the simulation was stepped'

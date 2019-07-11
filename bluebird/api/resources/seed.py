@@ -31,6 +31,7 @@ class Seed(Resource):
 			resp.status_code = 400
 			return resp
 
+		# TODO Wrap this into a method
 		err = bb_client.CLIENT_SIM.send_stack_cmd(f'SEED {seed}')
 
 		if not err:

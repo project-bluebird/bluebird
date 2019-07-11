@@ -8,13 +8,14 @@ import uuid
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings
-from bluebird.api.resources.utils import parse_lines, validate_scenario
+from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=False)
-PARSER.add_argument('lines', type=str, location='json', required=False)
+PARSER.add_argument('lines', type=str, location='json', required=False, action='append')
 PARSER.add_argument('time', type=int, location='json', required=True)
 
 
@@ -84,7 +85,9 @@ class LoadLog(Resource):
 			resp = jsonify(f'Could not set seed {err}')
 			resp.status_code = 500
 
-		scn_name = f'reload-{uuid.uuid4()[:8]}'
+		bb_client.CLIENT_SIM.seed = parsed_scn["seed"]
+
+		scn_name = f'reload-{str(uuid.uuid4())[:8]}'
 		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, parsed_scn['lines'])
 
 		if err:
@@ -98,9 +101,24 @@ class LoadLog(Resource):
 			resp.status_code = 500
 			return resp
 
-		# DTMULT, then STEP
-		# Assert time?
-		# Assert positions? next(i for i in reversed(range(len(li))) if li[i] == 'a')
+		# Naive approach - set DTMULT to target, then STEP once...
+		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {target_time}')
 
-		# Only return after confirmation
-		pass
+		if err:
+			resp = jsonify(f'Could not change speed: {err}')
+			resp.status_code = 500
+			return resp
+
+		err = bb_client.CLIENT_SIM.step()
+
+		if err:
+			resp = jsonify(f'Could not step simulations: {err}')
+			resp.status_code = 500
+			return resp
+
+		bb_cache.AC_DATA.log()
+		wait_for_data()
+
+		resp = jsonify('Simulation reloaded')
+		resp.status_code = 200
+		return resp
