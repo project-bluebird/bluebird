@@ -3,9 +3,9 @@ Tests for the episode reloading
 """
 
 import requests
+import time
 
 from tests.integration import API_URL_BASE
-import time
 
 
 def test_episode_reload_basic():
@@ -51,20 +51,20 @@ def test_episode_reload_basic():
 	episode_file = resp.json()['cur_ep_file']
 	target_t = 60
 
+	start = time.time()
 	data = {'filename': episode_file, 'time': target_t}
 	resp = requests.post(f'{API_URL_BASE}/loadlog', json=data)
 	assert resp.status_code == 200, 'Expected the simulation was reloaded'
+	print(f'\n! Time for reload: {time.time() - start}')
 
 	print(f'\n! [{initial_t}] {initial_pos}')
 
-	start = time.time()
 	resp = requests.get(f'{API_URL_BASE}/pos?acid={test_acid}')
 	assert resp.status_code == 200, 'Expected to get the aircraft position'
-	print(f'\n! Time for reload: {time.time() - start}')
 
 	reloaded_t = resp.json()['sim_t']
 	reloaded_pos = resp.json()[test_acid]
 
 	print(f'\n! [{reloaded_t}] {reloaded_pos}')
 
-	assert reloaded_t == target_t, ''
+	assert reloaded_t == target_t, 'Expected the reloaded time to be at the target'

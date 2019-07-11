@@ -9,8 +9,8 @@ import time
 from flask import jsonify
 from flask_restful import reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client
-from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
 
 _LOGGER = logging.getLogger('bluebird')
@@ -63,7 +63,7 @@ def check_acid(string, assert_exists=True):
 
 	if assert_exists:
 		for acid in filter(None, string.split(',')):
-			if not AC_DATA.contains(acid):
+			if not bb_cache.AC_DATA.contains(acid):
 				resp = jsonify('AC {} not found'.format(acid))
 				resp.status_code = 404
 				return resp
@@ -141,11 +141,26 @@ def wait_for_data():
 	"""
 
 	timeout = time.time() + 1
-	while not AC_DATA.store:
+	while not bb_cache.AC_DATA.store:
 		time.sleep(0.1)
 		if time.time() > timeout:
 			_LOGGER.warning(
 							'No aircraft data received after loading. Scenario might not contain any aircraft')
+			break
+
+
+# TODO Refactor
+def wait_for_pause():
+	"""
+
+	:return:
+	"""
+
+	timeout = time.time() + 1
+	while not bb_cache.SIM_STATE.sim_state == 1:
+		time.sleep(0.1)
+		if time.time() > timeout:
+			_LOGGER.warning('failed')
 			break
 
 

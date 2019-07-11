@@ -2,6 +2,7 @@
 Provides logic for the Load Log API endpoint
 """
 
+import logging
 import os
 
 import uuid
@@ -11,8 +12,12 @@ from flask_restful import Resource, reqparse
 import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings
-from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data
+from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data, \
+	wait_for_pause
 from bluebird.logging import store_local_scn
+
+# TODO Add more debug logs
+_LOGGER = logging.getLogger(__name__)
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=False)
@@ -98,15 +103,19 @@ class LoadLog(Resource):
 			resp = jsonify(f'Error uploading scenario: {err}')
 			resp.status_code = 500
 
-		err = bb_client.CLIENT_SIM.load_scenario(scn_name)
+		err = bb_client.CLIENT_SIM.load_scenario(scn_name, start_paused=True)
 
 		if err:
 			resp = jsonify('Could not start scenario after upload')
 			resp.status_code = 500
 			return resp
 
+		wait_for_pause()
+		current_t = bb_cache.SIM_STATE.sim_t
+
 		# Naive approach - set DTMULT to target, then STEP once...
-		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {target_time}')
+		_LOGGER.debug(f'Stepping to {target_time} from {current_t}')
+		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {target_time-current_t}')
 
 		if err:
 			resp = jsonify(f'Could not change speed: {err}')
