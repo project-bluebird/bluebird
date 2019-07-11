@@ -56,6 +56,7 @@ def test_ic_command(client, patch_client_sim):
 	"""
 	Tests the /ic endpoint
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -84,6 +85,7 @@ def test_reset_command(client, patch_client_sim):
 	"""
 	Tests the /reset endpoint
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 

@@ -18,6 +18,7 @@ from .defwpt import DefWpt
 from .dtmult import DtMult
 from .hold import Hold
 from .ic import Ic
+from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
 from .seed import Seed
