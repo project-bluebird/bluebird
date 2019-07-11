@@ -44,6 +44,8 @@ class ApiClient(Client):
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, POLL_RATE)
 
+		self.seed = None
+
 		self._reset_flag = False
 		self._step_flag = False
 		self._echo_data = []
@@ -223,7 +225,7 @@ class ApiClient(Client):
 		"""
 
 		bb_cache.AC_DATA.reset()
-		episode_id = bluebird.logging.restart_episode_log()
+		episode_id = bluebird.logging.restart_episode_log(self.seed)
 		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 

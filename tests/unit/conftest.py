@@ -62,6 +62,7 @@ def patch_client_sim(monkeypatch):
 			self.last_dtmult = None
 			self.was_reset = False
 			self.was_stepped = False
+			self.seed = None
 
 		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
 			self.last_stack_cmd = data
