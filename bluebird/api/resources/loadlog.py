@@ -15,8 +15,8 @@ import bluebird.settings
 from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data, \
 	wait_for_pause
 from bluebird.logging import store_local_scn
+from bluebird.utils.timeutils import timeit
 
-# TODO Add more debug logs
 _LOGGER = logging.getLogger(__name__)
 
 PARSER = reqparse.RequestParser()
@@ -31,6 +31,7 @@ class LoadLog(Resource):
 	"""
 
 	@staticmethod
+	@timeit('LoadLog')
 	def post():
 		"""
 		Logic for POST events. Returns the simulator to a previous state given a logfile
@@ -54,7 +55,9 @@ class LoadLog(Resource):
 			resp.status_code = 400
 			return resp
 
-		prev_dt = bb_cache.SIM_STATE.sim_speed
+		prev_dt = bb_client.CLIENT_SIM.step_dt
+
+		_LOGGER.debug('Starting log reload')
 
 		# Reset now so the current episode log is closed
 		err = bb_client.CLIENT_SIM.reset_sim()
@@ -72,6 +75,7 @@ class LoadLog(Resource):
 		else:
 			lines = parsed['lines']
 
+		_LOGGER.debug('Parsing log content')
 		parsed_scn = parse_lines(lines, target_time)
 
 		if isinstance(parsed_scn, str):
@@ -88,6 +92,7 @@ class LoadLog(Resource):
 
 		# All good - do the reload
 
+		_LOGGER.debug('Setting the simulator seed')
 		err = bb_client.CLIENT_SIM.send_stack_cmd(f'SEED {parsed_scn["seed"]}')
 
 		if err:
@@ -98,6 +103,7 @@ class LoadLog(Resource):
 
 		scn_name = f'reloads/{str(uuid.uuid4())[:8]}.scn'
 
+		_LOGGER.debug('Uploading the new scenario')
 		store_local_scn(scn_name, parsed_scn['lines'])
 		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, parsed_scn['lines'])
 
@@ -105,6 +111,7 @@ class LoadLog(Resource):
 			resp = jsonify(f'Error uploading scenario: {err}')
 			resp.status_code = 500
 
+		_LOGGER.debug('Starting the new scenario')
 		err = bb_client.CLIENT_SIM.load_scenario(scn_name, start_paused=True)
 
 		if err:
@@ -112,18 +119,21 @@ class LoadLog(Resource):
 			resp.status_code = 500
 			return resp
 
+		_LOGGER.debug('Waiting for simulation to be paused')
 		wait_for_pause()
-		current_t = bb_cache.SIM_STATE.sim_t
+
+		diff = target_time - bb_cache.SIM_STATE.sim_t
 
 		# Naive approach - set DTMULT to target, then STEP once...
-		_LOGGER.debug(f'Stepping to {target_time} from {current_t}')
-		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {target_time-current_t}')
+		_LOGGER.debug(f'Time difference is {diff}. Stepping to {target_time}')
+		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {diff}')
 
 		if err:
 			resp = jsonify(f'Could not change speed: {err}')
 			resp.status_code = 500
 			return resp
 
+		_LOGGER.debug('Performing step')
 		err = bb_client.CLIENT_SIM.step()
 
 		if err:
@@ -131,8 +141,9 @@ class LoadLog(Resource):
 			resp.status_code = 500
 			return resp
 
-		bb_cache.AC_DATA.log()
+		_LOGGER.debug('Waiting for AC_DATA to catch up')
 		wait_for_data()
+		bb_cache.AC_DATA.log()
 
 		# Reset DTMULT to the previous value
 		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {prev_dt}')

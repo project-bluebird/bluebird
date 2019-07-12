@@ -152,7 +152,7 @@ def wait_for_data():
 # TODO Refactor
 def wait_for_pause():
 	"""
-
+	Waits for the simulation to be paused
 	:return:
 	"""
 
@@ -160,7 +160,7 @@ def wait_for_pause():
 	while not bb_cache.SIM_STATE.sim_state == 1:
 		time.sleep(0.1)
 		if time.time() > timeout:
-			_LOGGER.warning('failed')
+			_LOGGER.warning('Failed to pause in time')
 			break
 
 
