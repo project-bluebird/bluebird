@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0]
+
 ### Added
 
 - BlueBird simulator [modes](docs/SimulatorModes.md)
@@ -20,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Bump required BlueSky version to `1.3.0-dev`
+- Bump required BlueSky version to `1.2.1`
 - When in `agent` mode, aircraft data is only logged after each `STEP` command
 - Point BlueSky submodule at `tags/turing-1.2.1`
 
@@ -91,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2019-04-17 - PR [#51](https://github.com/alan-turing-institute/bluebird/pull/51)
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
-[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...develop
+[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.3.0...develop
+[1.3.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...1.3.0
 [1.2.1]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.1.3...1.2.0
 [1.1.3]: https://github.com/alan-turing-institute/bluebird/compare/1.1.1...1.1.3
