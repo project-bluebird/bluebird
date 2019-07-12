@@ -13,6 +13,7 @@ import bluebird.cache as bb_cache
 import bluebird.logging
 import bluebird.utils as bb_utils
 from bluebird.utils import Timer
+from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
@@ -45,6 +46,7 @@ class ApiClient(Client):
 		self.timer = Timer(self.receive, POLL_RATE)
 
 		self.seed = None
+		self.step_dt = 1
 
 		self._reset_flag = False
 		self._step_flag = False
@@ -195,6 +197,7 @@ class ApiClient(Client):
 			self._logger.error(exc)
 			return False
 
+	@timeit('Client')
 	def upload_new_scenario(self, name, lines):
 		"""
 		Uploads a new scenario file to the BlueSky simulation

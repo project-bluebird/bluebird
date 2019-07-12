@@ -19,6 +19,7 @@ Notes:
 - [Change Simulation Rate Multiplier](#change-simulation-rate-multiplier-dtmult)
 - [Pause Simulation](#pause-simulation-hold)
 - [Load Scenario](#load-scenario-ic)
+- [Reload from Log](#load-log)
 - [Resume Simulation](#resume-simulation-op)
 - [Create Scenario](#create-scenario)
 - [Reset Simulation](#reset-simulation)
@@ -124,6 +125,31 @@ Returns:
 - `400 Bad Request` - File extension or multiplier were invalid
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
+
+## Load Log
+
+Reload the simulation to a particular time in an episode logfile:
+
+```javascript
+POST /api/v1/loadlog
+{
+    ("filename": "/path/to/file.log" |
+    "lines": ["line1", "line2", ...]),
+    "time": 60
+}
+```
+
+Notes:
+
+- Either `filename` or `lines` must be specified
+- This API can only be used in agent mode
+- Only logfiles which have had their random seed set can be loaded
+
+Returns:
+
+- `200 Ok` - Simulation was reloaded
+- `400 Bad Request` - Invalid arguments or precondition. Response will contain more information
+- `500 Internal Server Error` - Error performing the reload. Response will contain more information
 
 ## Resume Simulation (OP)
 

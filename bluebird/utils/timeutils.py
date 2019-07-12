@@ -2,10 +2,14 @@
 Contains utility functions for dates and times
 """
 
+import logging
+
 import datetime
 import time
 
 from bluebird.settings import SIM_LOG_RATE
+
+_LOGGER = logging.getLogger(__name__)
 
 DEFAULT_LIFETIME = datetime.timedelta(seconds=10)
 
@@ -51,3 +55,22 @@ def log_rate(sim_speed):
 	"""
 
 	return round(SIM_LOG_RATE * sim_speed, 2)
+
+
+def timeit(prefix):
+	"""
+	Logs the execution time of the given method
+	:param prefix:
+	:return:
+	"""
+
+	def wrap(f):
+		def wrapped_f(*args, **kwargs):
+			start = time.time()
+			res = f(*args, **kwargs)
+			_LOGGER.debug(f'Method {prefix}.{f.__name__} took {time.time()-start:.2f}s to execute')
+			return res
+
+		return wrapped_f
+
+	return wrap

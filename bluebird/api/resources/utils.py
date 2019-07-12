@@ -4,15 +4,18 @@ Contains utility functions for the API resources
 
 import logging
 
+import re
 import time
 from flask import jsonify
 from flask_restful import reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client
-from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
 
 _LOGGER = logging.getLogger('bluebird')
+
+_SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -60,7 +63,7 @@ def check_acid(string, assert_exists=True):
 
 	if assert_exists:
 		for acid in filter(None, string.split(',')):
-			if not AC_DATA.contains(acid):
+			if not bb_cache.AC_DATA.contains(acid):
 				resp = jsonify('AC {} not found'.format(acid))
 				resp.status_code = 404
 				return resp
@@ -138,9 +141,91 @@ def wait_for_data():
 	"""
 
 	timeout = time.time() + 1
-	while not AC_DATA.store:
+	while not bb_cache.AC_DATA.store:
 		time.sleep(0.1)
 		if time.time() > timeout:
 			_LOGGER.warning(
 							'No aircraft data received after loading. Scenario might not contain any aircraft')
 			break
+
+
+# TODO Refactor
+def wait_for_pause():
+	"""
+	Waits for the simulation to be paused
+	:return:
+	"""
+
+	timeout = time.time() + 1
+	while not bb_cache.SIM_STATE.sim_state == 1:
+		time.sleep(0.1)
+		if time.time() > timeout:
+			_LOGGER.warning('Failed to pause in time')
+			break
+
+
+def validate_scenario(scn_lines):
+	"""
+	Checks that each line in the given list matches the requirements
+	:param scn_lines:
+	:return:
+	"""
+
+	for line in scn_lines:
+		if not _SCN_RE.match(line):
+			return f'Line \'{line}\' does not match the required format'
+
+	return None
+
+
+def parse_lines(lines, target_time=0):
+	"""
+	Parses the content of an episode file
+	:param lines:
+	:param target_time:
+	:return: String for errors or dict with parsed data
+	"""
+
+	if not lines:
+		return 'No lines provided'
+
+	lines = list(lines)  # Take a copy of the input
+
+	# Get the seed from the first line
+	match = re.match(r'.*Episode started.*Seed is (\d+)', lines.pop(0))
+	if not match:
+		return 'Episode seed was not set'
+	scn_data = {'seed': int(match.group(1)), 'lines': []}
+
+	if not lines:
+		return 'No more lines after parsing seed'
+
+	while not 'Scenario file loaded' in lines[0]:
+		lines.pop(0)
+		if not lines:
+			return 'Couldn\'t find scenario content'
+
+	lines.pop(0)
+
+	while lines:
+		match = re.match(r'.*E.*>.*', lines[0])
+		if not match:
+			break
+		scn_data['lines'].append(lines.pop(0).split(' E ')[1])
+
+	if not lines:
+		return 'No more lines after parsing scenario content'
+
+	while lines:
+		line = lines.pop(0)
+		if 'Episode finished' in line:
+			return scn_data
+		match = re.match(r'.*C \[(\d+)\] (.*)$', line)
+		if match and not 'STEP' in line:
+			time_s = int(match.group(1))
+			if not target_time or time_s <= target_time:
+				cmd_time = time.strftime('%H:%M:%S', time.gmtime(time_s))
+				cmd_str = match.group(2)
+				scn_data['lines'].append(f'{cmd_time}> {cmd_str}')
+
+	return 'Could not find end of episode'

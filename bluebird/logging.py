@@ -64,6 +64,7 @@ def store_local_scn(filename, content):
 	filename = os.path.join('bluesky', filename)
 	_LOGGER.debug(f'Writing scenario file {filename}')
 
+	os.makedirs(os.path.dirname(filename), exist_ok=True)
 	with open(filename, 'w') as scn_file:
 		scn_file.writelines(line + '\n' for line in content)
 
@@ -107,6 +108,7 @@ def close_episode_log(reason):
 		return
 
 	EP_LOGGER.info(f'Episode finished ({reason})', extra={'PREFIX': _LOG_PREFIX})
+	EP_LOGGER.handlers[-1].close()
 	EP_LOGGER.handlers.pop()
 
 
