@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `STEP` endpoint to manually step the simulation forwards when in agent mode
 - `SIMMODE` endpoint to allow switching between modes at runtime
 - `SEED` endpoint to allow setting BlueSky's random seed
+- `LOADLOG` endpoint to reset the sim to a given point from a logfile
 - Added basic aircraft separation metrics
 - Added `GET` option to the `ALT` endpoint, to return the 3 versions of the flight levels
 

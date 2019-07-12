@@ -54,6 +54,8 @@ class LoadLog(Resource):
 			resp.status_code = 400
 			return resp
 
+		prev_dt = bb_cache.SIM_STATE.sim_speed
+
 		# Reset now so the current episode log is closed
 		err = bb_client.CLIENT_SIM.reset_sim()
 
@@ -131,6 +133,17 @@ class LoadLog(Resource):
 
 		bb_cache.AC_DATA.log()
 		wait_for_data()
+
+		# Reset DTMULT to the previous value
+		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {prev_dt}')
+
+		if err:
+			resp = jsonify(f'Episode reloaded, but could not reset DTMULT to previous value')
+			resp.status_code = 500
+			return resp
+
+		# TODO Do we want to check before/after positions here and check if the differences are
+		# acceptable?
 
 		resp = jsonify('Simulation reloaded')
 		resp.status_code = 200
