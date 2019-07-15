@@ -83,7 +83,7 @@ def test_episode_reload_basic():
 	                                    reloaded_pos['lon'], reloaded_pos['lat'])
 
 	# TODO Check the deltas are reasonable...
-	assert round(horizontal_sep_m / _ONE_NM) <= 10, \
+	assert round(horizontal_sep_m / _ONE_NM) <= 5, \
 		'Expected positions to roughly match'
 	assert abs(reloaded_pos['alt'] - initial_pos['alt']) <= 100 / _ONE_FT, \
 		'Expected altitudes to roughly match'
