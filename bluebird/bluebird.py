@@ -18,8 +18,8 @@ class BlueBird:
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
-		self._logger.info(f'BlueBird init. Sim type: {settings.SIM_TYPE.name},'
-		                  f'{settings.SIM_MODE} mode')
+		self._logger.info(f'BlueBird init - sim type: {settings.SIM_TYPE.name}, '
+		                  f'mode: {settings.SIM_MODE}')
 
 		# TODO Refactor these two into a single Simulation proxy class
 		self._sim_state = SimState()
@@ -63,7 +63,7 @@ class BlueBird:
 			self._sim_client.connect(hostname=settings.SIM_HOST, event_port=settings.BS_EVENT_PORT,
 			                         stream_port=settings.BS_STREAM_PORT, timeout=1)
 		except TimeoutError:
-			self._logger.error(f'Failed to connect to {sim_type} server at '
+			self._logger.error(f'Failed to connect to {sim_type.name} server at '
 			                   f'{settings.SIM_HOST}, exiting')
 			self._sim_client.stop()
 			return False
