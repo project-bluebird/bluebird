@@ -27,7 +27,7 @@ class BlueBird:
 
 		self._sim_client = None
 		self._timers = []
-		self._metrics_providers = setup_metrics()
+		self._metrics_providers = setup_metrics(self._ac_data)
 
 	def __enter__(self):
 		return self
