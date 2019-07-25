@@ -19,7 +19,7 @@ class BlueBird:
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
-		self._logger.info(f'BlueBird init. {settings.SIM_MODE} mode')
+		self._logger.info(f'BlueBird init. Sim type: {settings.SIM_TYPE.name}, {settings.SIM_MODE} mode')
 
 		setup_metrics()
 
@@ -38,7 +38,7 @@ class BlueBird:
 
 		CLIENT_SIM.stop()
 
-	def connect_to_sim(self, sim_type, min_sim_version, reset_on_connect):
+	def connect_to_sim(self, min_sim_version, reset_on_connect):
 		"""
 		Connect to the simulation server
 		:return: True if a connection was established with the server, false otherwise.
@@ -47,6 +47,8 @@ class BlueBird:
 		CLIENT_SIM.start()
 
 		self._logger.info('Connecting to client...')
+
+		sim_type = settings.SIM_TYPE
 
 		try:
 			# TODO Will need to refactor the host_event port into kwargs

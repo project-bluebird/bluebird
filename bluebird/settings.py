@@ -3,6 +3,7 @@ Default settings for the BlueBird app
 """
 
 import os
+from enum import IntEnum
 
 from semver import VersionInfo
 
@@ -30,13 +31,30 @@ METRICS_PROVIDERS = ['bluebird']
 # Current modes:
 # sandbox - Default. Simulation runs normally
 # agent - Simulation starts paused and must be manually advanced with STEP
+# TODO Enum-ify this
 SIM_MODES = ['sandbox', 'agent']
 SIM_MODE = SIM_MODES[0]
 
+
 # Simulator app settings
 
-SIM_TYPES = ['BlueSky', 'MachColl']
+class SimType(IntEnum):
+	"""
+	Supported simulators
+	"""
 
+	BlueSky = 1
+	MachColl = 2
+
+	@classmethod
+	def _missing_(cls, value):
+		for member in cls:
+			if SimType(member).name.lower() == value.lower():
+				return member
+		raise ValueError(f'SimType has no value \"{value}\"')
+
+
+SIM_TYPE = SimType.BlueSky
 SIM_HOST = 'localhost'
 
 # BlueSky specific settings

@@ -17,12 +17,10 @@ def _parse_args():
 	:return:
 	"""
 
-	# TODO Add verb for selecting bluesky/nats sim. Default to bluesky if not specified
-
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--sim-type', type=str, default='bluesky',
-	                    help=f'The type of simulator to connect to. Supported values are:'
-	                         f'{", ".join(settings.SIM_TYPES)}')
+	parser.add_argument('--sim-type', type=str,
+	                    help=f'The type of simulator to connect to. Supported values are: '
+	                         f'{", ".join([x.name for x in settings.SimType])}')
 	parser.add_argument('--sim-host', type=str, help='Hostname or IP of the simulation to '
 	                                                 'connect to')
 	parser.add_argument('--reset-sim', action='store_true', help='Reset the simulation on '
@@ -31,9 +29,8 @@ def _parse_args():
 	parser.add_argument('--sim-mode', type=str, help='Set the initial mode')
 	args = parser.parse_args()
 
-	sim_type = args.sim_type.lower()
-	if sim_type not in [x.lower() for x in settings.SIM_TYPES]:
-		raise ValueError(f'Error: Supported simulators are: {", ".join(settings.SIM_TYPES)}')
+	if args.sim_type:
+		settings.SIM_TYPE = settings.SimType(args.sim_type)
 
 	if args.sim_host:
 		settings.SIM_HOST = args.sim_host
@@ -70,14 +67,14 @@ def main():
 	args = _parse_args()
 	load_dotenv(verbose=True, override=True)
 
-	if args.sim_type == 'bluesky':
+	if settings.SIM_TYPE == settings.SimType.BlueSky:
 		min_sim_version = _get_min_bs_version()
 	else:
 		# TODO Need to check version of MachColl
 		min_sim_version = VersionInfo.parse('0.0.0')
 
 	with BlueBird() as app:
-		if app.connect_to_sim(args.sim_type, min_sim_version, args.reset_sim):
+		if app.connect_to_sim(min_sim_version, args.reset_sim):
 			# Run the Flask app. Blocks here until it exits
 			app.run()
 
