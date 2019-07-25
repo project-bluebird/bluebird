@@ -38,10 +38,10 @@ class BlueBird:
 
 		CLIENT_SIM.stop()
 
-	def client_connect(self, min_bs_version, reset_on_connect):
+	def connect_to_sim(self, sim_type, min_sim_version, reset_on_connect):
 		"""
-		Connect to the (BlueSky) simulation client
-		:return: True if a connection was established with the client, false otherwise.
+		Connect to the simulation server
+		:return: True if a connection was established with the server, false otherwise.
 		"""
 
 		CLIENT_SIM.start()
@@ -49,22 +49,24 @@ class BlueBird:
 		self._logger.info('Connecting to client...')
 
 		try:
-			CLIENT_SIM.connect(hostname=settings.BS_HOST, event_port=settings.BS_EVENT_PORT,
+			# TODO Will need to refactor the host_event port into kwargs
+			CLIENT_SIM.connect(hostname=settings.SIM_HOST, event_port=settings.BS_EVENT_PORT,
 			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
 		except TimeoutError:
-			self._logger.error(f'Failed to connect to BlueSky server at {settings.BS_HOST}, exiting')
+			self._logger.error(f'Failed to connect to {sim_type} server at '
+			                   f'{settings.SIM_HOST}, exiting')
 			CLIENT_SIM.stop()
 			return False
 
-		if CLIENT_SIM.host_version < min_bs_version:
+		if CLIENT_SIM.host_version < min_sim_version:
 			self._logger.error(
 							f'BlueSky server of version {CLIENT_SIM.host_version} does not meet the minimum '
-							f'requirement ({min_bs_version})')
+							f'requirement ({min_sim_version})')
 			return False
-		if CLIENT_SIM.host_version.major > min_bs_version.major:
+		if CLIENT_SIM.host_version.major > min_sim_version.major:
 			self._logger.error(
 							f'BlueSky server of version {CLIENT_SIM.host_version} has major version greater '
-							f'than supported in this version of client ({min_bs_version})')
+							f'than supported in this version of client ({min_sim_version})')
 			return False
 
 		if reset_on_connect:

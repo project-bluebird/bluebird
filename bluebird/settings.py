@@ -9,8 +9,8 @@ from semver import VersionInfo
 # BlueBird app settings
 
 with open('VERSION') as version_file:
-	version_str = version_file.read().strip()
-	VERSION = VersionInfo.parse(version_str)
+	_VERSION_STR = version_file.read().strip()
+	VERSION = VersionInfo.parse(_VERSION_STR)
 
 API_VERSION = 1
 
@@ -33,8 +33,13 @@ METRICS_PROVIDERS = ['bluebird']
 SIM_MODES = ['sandbox', 'agent']
 SIM_MODE = SIM_MODES[0]
 
-# BlueSky server settings
+# Simulator app settings
 
-BS_HOST = 'localhost'
+SIM_TYPES = ['BlueSky', 'MachColl']
+
+SIM_HOST = 'localhost'
+
+# BlueSky specific settings
+
 BS_EVENT_PORT = 9000
 BS_STREAM_PORT = 9001
