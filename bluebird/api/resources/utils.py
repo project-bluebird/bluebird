@@ -157,7 +157,7 @@ def wait_for_pause():
 	"""
 
 	timeout = time.time() + 1
-	while not bb_cache.SIM_STATE.sim_state == 1:
+	while bb_cache.SIM_STATE.sim_state != 1:
 		time.sleep(0.1)
 		if time.time() > timeout:
 			_LOGGER.warning('Failed to pause in time')
