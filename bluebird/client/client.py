@@ -263,7 +263,7 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		init_t = bluebird.cache.SIM_STATE.sim_t
+		init_t = float(bluebird.cache.SIM_STATE.sim_t)
 		bluebird.logging.EP_LOGGER.debug(f'[{init_t}] STEP', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._step_flag = False
