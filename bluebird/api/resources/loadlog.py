@@ -5,6 +5,8 @@ Provides logic for the Load Log API endpoint
 import logging
 import os
 
+import re
+import time
 import uuid
 from flask import jsonify
 from flask_restful import Resource, reqparse
@@ -12,8 +14,7 @@ from flask_restful import Resource, reqparse
 import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings
-from bluebird.api.resources.utils import parse_lines, validate_scenario, wait_for_data, \
-	wait_for_pause
+from bluebird.api.resources.utils import validate_scenario, wait_for_data, wait_for_pause
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 
@@ -23,6 +24,59 @@ PARSER = reqparse.RequestParser()
 PARSER.add_argument('filename', type=str, location='json', required=False)
 PARSER.add_argument('lines', type=str, location='json', required=False, action='append')
 PARSER.add_argument('time', type=int, location='json', required=True)
+
+
+def parse_lines(lines, target_time=0):
+	"""
+	Parses the content of an episode file
+	:param lines:
+	:param target_time:
+	:return: String for errors or dict with parsed data
+	"""
+
+	if not lines:
+		return 'No lines provided'
+
+	lines = list(lines)  # Take a copy of the input
+
+	# Get the seed from the first line
+	match = re.match(r'.*Episode started.*Seed is (\d+)', lines.pop(0))
+	if not match:
+		return 'Episode seed was not set'
+	scn_data = {'seed': int(match.group(1)), 'lines': []}
+
+	if not lines:
+		return 'No more lines after parsing seed'
+
+	while not 'Scenario file loaded' in lines[0]:
+		lines.pop(0)
+		if not lines:
+			return 'Couldn\'t find scenario content'
+
+	lines.pop(0)
+
+	while lines:
+		match = re.match(r'.*E.*>.*', lines[0])
+		if not match:
+			break
+		scn_data['lines'].append(lines.pop(0).split(' E ')[1])
+
+	if not lines:
+		return 'No more lines after parsing scenario content'
+
+	while lines:
+		line = lines.pop(0)
+		if 'Episode finished' in line:
+			return scn_data
+		match = re.match(r'.*C \[(\d+)\] (.*)$', line)
+		if match and not 'STEP' in line:
+			time_s = int(match.group(1))
+			if not target_time or time_s <= target_time:
+				cmd_time = time.strftime('%H:%M:%S', time.gmtime(time_s))
+				cmd_str = match.group(2)
+				scn_data['lines'].append(f'{cmd_time}> {cmd_str}')
+
+	return 'Could not find end of episode'
 
 
 class LoadLog(Resource):

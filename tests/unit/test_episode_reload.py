@@ -7,7 +7,7 @@ Tests for the episode log reloading feature
 import os
 
 import bluebird.client as bb_client
-from bluebird.api.resources.utils import parse_lines
+from bluebird.api.resources.loadlog import parse_lines
 from . import API_PREFIX
 
 
