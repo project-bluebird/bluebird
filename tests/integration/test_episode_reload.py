@@ -77,7 +77,7 @@ def test_episode_reload_basic():
 	reloaded_t = resp.json()['sim_t']
 	reloaded_pos = resp.json()[test_acid]
 
-	assert reloaded_t == initial_t, 'Expected the reloaded time to be at the target'
+	assert abs(reloaded_t - initial_t) <= 1, 'Expected the reloaded time to be at the target'
 
 	_, _, horizontal_sep_m = _WGS84.inv(initial_pos['lon'], initial_pos['lat'],
 	                                    reloaded_pos['lon'], reloaded_pos['lat'])
