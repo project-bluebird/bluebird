@@ -14,7 +14,7 @@ from flask_restful import Resource, reqparse
 import bluebird.cache as bb_cache
 import bluebird.client as bb_client
 import bluebird.settings
-from bluebird.api.resources.utils import validate_scenario, wait_for_data, wait_for_pause
+from bluebird.api.resources.utils import check_ac_data, validate_scenario, wait_until_eq
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 
@@ -174,7 +174,10 @@ class LoadLog(Resource):
 			return resp
 
 		_LOGGER.debug('Waiting for simulation to be paused')
-		wait_for_pause()
+		if not wait_until_eq(bb_cache.SIM_STATE.sim_state, 1):
+			resp = jsonify(f'Could not pause simulation after starting new scenario')
+			resp.status_code = 500
+			return resp
 
 		diff = target_time - bb_cache.SIM_STATE.sim_t
 
@@ -196,7 +199,10 @@ class LoadLog(Resource):
 			return resp
 
 		_LOGGER.debug('Waiting for AC_DATA to catch up')
-		wait_for_data()
+		err_resp = check_ac_data()
+		if err_resp:
+			return err_resp
+
 		bb_cache.AC_DATA.log()
 
 		# Reset DTMULT to the previous value

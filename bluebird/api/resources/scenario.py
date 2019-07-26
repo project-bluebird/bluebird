@@ -7,8 +7,9 @@ import logging
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client as bb_client
-from bluebird.api.resources.utils import wait_for_data, validate_scenario
+from bluebird.api.resources.utils import validate_scenario, wait_until_eq
 from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')
@@ -66,14 +67,20 @@ class Scenario(Resource):
 			if err:
 				resp = jsonify(f'Could not start scenario after upload: {err}')
 				resp.status_code = 500
-			else:
-				resp = jsonify(f'Scenario {scn_base} uploaded and started')
-				resp.status_code = 200
+				return resp
+
+			if not wait_until_eq(bb_cache.AC_DATA.store, True):
+				resp = jsonify(
+								'No aircraft data received after loading. Scenario might not contain any '
+								'aircraft')
+				resp.status_code = 500
+				return resp
+
+			resp = jsonify(f'Scenario {scn_base} uploaded and started')
+			resp.status_code = 200
 
 		else:
 			resp = jsonify(f'Scenario {scn_base} uploaded')
 			resp.status_code = 201
-
-		wait_for_data()
 
 		return resp

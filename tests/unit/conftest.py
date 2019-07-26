@@ -73,6 +73,7 @@ def patch_client_sim(monkeypatch):
 			self._logger.debug(f'load_scenario {filename} {speed} {start_paused}')
 			self.last_scenario = filename
 			self.last_dtmult = speed
+			bluebird.cache.AC_DATA.fill(TEST_DATA)
 
 		def reset_sim(self):
 			self.was_reset = True
