@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump required BlueSky version to `1.2.1`
 - When in `agent` mode, aircraft data is only logged after each `STEP` command
 - Point BlueSky submodule at `tags/turing-1.2.1`
+- Scenarios containing no aircraft are now treated as invalid
 
 ### Removed
 
