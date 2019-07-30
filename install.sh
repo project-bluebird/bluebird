@@ -71,7 +71,7 @@ fi
 # Create a virtual environment.
 printf "Creating virtual environment: $venvname\n"
 pip3 install --upgrade virtualenv
-virtualenv -p python3.6 $venvname
+virtualenv -p python3 $venvname
 
 printf "Activating virtual environment\n"
 source $venvname/bin/activate
