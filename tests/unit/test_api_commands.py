@@ -264,3 +264,23 @@ def test_set_seed(client, patch_client_sim):
 	data = {'value': 2 ** 32}
 	resp = client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '400 BAD REQUEST'
+
+
+def test_alt_fl_parsing(client, patch_client_sim):
+	"""
+	Tests that we correctly parse FL to meters in the ALT endpoint
+	:return:
+	"""
+
+	acid = TEST_ACIDS[0]
+	data = {'acid': acid, 'alt': 'FL120'}
+
+	resp = client.post(API_PREFIX + '/alt', json=data)
+	assert resp.status_code == 200, 'Expected OK'
+	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 3658', 'Expected ALT to match'
+
+	data['alt'] = '12345'
+
+	resp = client.post(API_PREFIX + '/alt', json=data)
+	assert resp.status_code == 200, 'Expected OK'
+	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 12345', 'Expected ALT to match'
