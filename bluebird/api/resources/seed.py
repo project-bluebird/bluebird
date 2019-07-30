@@ -26,8 +26,8 @@ class Seed(Resource):
 		parsed = PARSER.parse_args()
 		seed = parsed['value']
 
-		if not seed or seed < 0:
-			resp = jsonify(f'Invalid seed specified. Must be a positive integer')
+		if not seed or seed < 0 or int(seed) >> 32:
+			resp = jsonify(f'Invalid seed specified. Must be a positive integer less than 2^32')
 			resp.status_code = 400
 			return resp
 

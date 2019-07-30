@@ -256,3 +256,11 @@ def test_set_seed(client, patch_client_sim):
 	resp = client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '200 OK'
 	assert bb.CLIENT_SIM.seed == 123, ''
+
+	data = {'value': 2 ** 32 - 1}
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '200 OK'
+
+	data = {'value': 2 ** 32}
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
