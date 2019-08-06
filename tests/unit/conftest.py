@@ -11,9 +11,9 @@ import pytest
 import bluebird.api as bluebird_api
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL, bb_app
 from bluebird.cache import AcDataCache, SimState
-from bluebird.client.client import ApiClient
 from bluebird.logging import _LOGGER
 from bluebird.metrics import setup_metrics
+from bluebird.simclient.bluesky.blueskyclient import BlueSkyClient
 from tests.unit import SIM_DATA, TEST_DATA
 
 
@@ -44,7 +44,7 @@ def test_flask_client():
 	sim_state = SimState()
 	ac_data = AcDataCache(sim_state)
 
-	class TestBlueSkyClient(ApiClient):
+	class TestBlueSkyClient(BlueSkyClient):
 		"""
 		Mock BlueSky client for use in testing
 		"""
