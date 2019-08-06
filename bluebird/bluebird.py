@@ -45,14 +45,20 @@ class BlueBird:
 
 		self._sim_client.stop()
 
+	def setup_sim_client(self):
+		"""
+		Setup the simulation client class
+		:return:
+		"""
+
+		self._sim_client = setup_sim_client(self.sim_state, self.ac_data)
+		self._timers.extend(self._sim_client.start_timers())
+
 	def connect_to_sim(self, min_sim_version, reset_on_connect):
 		"""
 		Connect to the simulation server
 		:return: True if a connection was established with the server, false otherwise.
 		"""
-
-		self._sim_client = setup_sim_client(self.sim_state, self.ac_data)
-		self._timers.extend(self._sim_client.start_timers())
 
 		self._logger.info('Connecting to client...')
 

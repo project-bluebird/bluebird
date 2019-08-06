@@ -74,6 +74,7 @@ def main():
 		min_sim_version = VersionInfo.parse('0.0.0')
 
 	with BlueBird() as app:
+		app.setup_sim_client()
 		if app.connect_to_sim(min_sim_version, args.reset_sim):
 			# Run the Flask app. Blocks here until it exits
 			app.run()
