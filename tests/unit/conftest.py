@@ -9,11 +9,13 @@ patched version of BlueBird.
 import pytest
 
 import bluebird.api as bluebird_api
+import bluebird.simclient.bluesky
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL, bb_app
 from bluebird.cache import AcDataCache, SimState
 from bluebird.logging import _LOGGER
 from bluebird.metrics import setup_metrics
 from bluebird.simclient.bluesky.blueskyclient import BlueSkyClient
+from bluebird.simclient.bluesky.simclient import SimClient
 from tests.unit import SIM_DATA, TEST_DATA
 
 
@@ -79,6 +81,9 @@ def test_flask_client():
 		def step(self):
 			self.was_stepped = True
 
+	# Replace the client class defintion with the test one
+	bluebird.simclient.bluesky.blueskyclient.BlueSkyClient = TestBlueSkyClient
+
 	class TestBlueBird:
 		# pylint: disable=too-few-public-methods
 		"""
@@ -88,7 +93,7 @@ def test_flask_client():
 		def __init__(self, sim_state, ac_data):
 			self.sim_state = sim_state
 			self.ac_data = ac_data
-			self.sim_client = TestBlueSkyClient()
+			self.sim_client = SimClient(self.sim_state, self.ac_data)
 			self.metrics_providers = setup_metrics(self.ac_data)
 
 	with bluebird_api.FLASK_APP.app_context() as ctx:
