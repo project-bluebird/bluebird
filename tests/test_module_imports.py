@@ -2,6 +2,8 @@
 Tests that no exceptions are thrown when modules are imported
 """
 
+import importlib
+
 import pytest
 
 _MODULES = ['bluebird', 'bluesky']
@@ -14,11 +16,7 @@ def test_module_import(module):
 	:return:
 	"""
 
-	try:
-		# TODO Replace with importlib
-		__import__(module)
-	except ImportError as exc:
-		pytest.fail(str(exc))
+	importlib.import_module(module)
 
 
 def test_run_script_import():
