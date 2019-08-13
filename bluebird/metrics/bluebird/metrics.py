@@ -31,7 +31,11 @@ def vertical_separation(acid1, acid2):
 
 	alt1 = _get_pos(acid1)['alt']
 	alt2 = _get_pos(acid2)['alt']
-	vertical_sep = abs(alt1 - alt2)
+	vertical_sep_metres = abs(alt1 - alt2)
+
+	# convert to feet
+	SCALE_METRES_TO_FEET = 3.280839895
+	vertical_sep = vertical_sep_metres * SCALE_METRES_TO_FEET
 
 	if vertical_sep < cfg.VERT_MIN_DIST:
 		return cfg.VERT_LOS_SCORE
