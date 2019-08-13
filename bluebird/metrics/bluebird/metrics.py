@@ -105,10 +105,4 @@ def aircraft_separation(acid1, acid2):
 	horizontal_sep = _horizontal_separation(acid1, acid2)
 	vertical_sep = _vertical_separation(acid1, acid2)
 
-	if horizontal_sep == 0 and vertical_sep == 0:
-		return 0
-
-	if horizontal_sep == -1 and vertical_sep == -1:
-		return -1
-
 	return max(horizontal_sep, vertical_sep)
