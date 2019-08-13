@@ -34,14 +34,14 @@ def vertical_separation(acid1, acid2):
 	alt2 = _get_pos(acid2)['alt']
 	vertical_sep_metres = abs(alt1 - alt2)
 
-	vertical_sep = vertical_sep_metres * _SCALE_METRES_TO_FEET
+	vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
 
-	if vertical_sep < cfg.VERT_MIN_DIST:
+	if vertical_sep_ft < cfg.VERT_MIN_DIST:
 		return cfg.VERT_LOS_SCORE
 
-	if vertical_sep < cfg.VERT_WARN_DIST:
+	if vertical_sep_ft < cfg.VERT_WARN_DIST:
 		# Linear score between the minimum and warning distances
-		return np.interp(vertical_sep,
+		return np.interp(vertical_sep_ft,
 		                 [cfg.VERT_MIN_DIST, cfg.VERT_WARN_DIST], [cfg.VERT_LOS_SCORE, 0])
 
 	return 0
@@ -70,3 +70,23 @@ def horizontal_separation(acid1, acid2):
 		                       [cfg.HOR_MIN_DIST, cfg.HOR_WARN_DIST], [cfg.HOR_LOS_SCORE, 0]), 1)
 
 	return 0
+
+
+def separation_metric(acid1, acid2):
+	"""
+	Combined score based on horizontal and vertical separation.
+	:param acid1:
+	:param acid2:
+	:return:
+	"""
+	horizontal_sep = horizontal_separation(acid1, acid2)
+	vertical_sep = vertical_separation(acid1, acid2)
+
+	if horizontal_sep == 0 and vertical_sep == 0:
+		return 0
+
+	if horizontal_sep == -1 and vertical_sep == -1:
+		return -1
+
+	else:
+		max(horizontal_sep, vertical_sep)
