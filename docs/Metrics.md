@@ -1,34 +1,21 @@
 
 # BlueBird Metrics
 
-Configuration values for these can be set in [this](../bluebird/metrics/bluebird/config.py) config file.
+Configuration values for these can be set in [this](../bluebird/metrics/bluebird/config.py) config file. The two warning distances are configurable, however the minimum distances should be left constant.
 
-## Vertical Separation
+## Aircraft Separation
 
-Name: `vertical_separation`
+Name: `aircraft_separation`
 
-Description: Returns a value representing the vertical separation "score" between two aircraft.
-
-Configuration parameters:
-- `VERT_LOS_SCORE` - Score below the minimum separation
-- `VERT_MIN_DIST` - Minimum distance 
-- `VERT_WARN_DIST` - Warning distance
-    
-Function: [vertical_separation(acid1, acid2)](../bluebird/metrics/bluebird/metrics.py)
-
-Parameters: IDs of two aircraft which exist in the simulation
-
-## Horizontal Separation
-
-Name: `horizontal_separation`
-
-Description: Returns a value representing the horizontal separation "score" between two aircraft.
+Description: Returns a value representing the separation "score" between two aircraft.
 
 Configuration parameters:
-- `HOR_LOS_SCORE` - Score below the minimum separation
-- `HOR_MIN_DIST` - Minimum distance 
-- `HOR_WARN_DIST` - Warning distance
-    
-Function: [horizontal_separation(acid1, acid2)](../bluebird/metrics/bluebird/metrics.py)
+- `LOS_SCORE` - Score below the minimum separation
+- `VERT_MIN_DIST` - Minimum vertical distance (should be constant)
+- `VERT_WARN_DIST` - Vertical warning distance
+- `HOR_MIN_DIST` - Minimum horizontal distance (should be constant)
+- `HOR_WARN_DIST` - Horizontal warning distance
+
+Function: [aircraft_separation(acid1, acid2)](../bluebird/metrics/bluebird/metrics.py)
 
 Parameters: IDs of two aircraft which exist in the simulation
