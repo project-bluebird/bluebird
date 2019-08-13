@@ -88,5 +88,4 @@ def separation_metric(acid1, acid2):
 	if horizontal_sep == -1 and vertical_sep == -1:
 		return -1
 
-	else:
-		max(horizontal_sep, vertical_sep)
+	return max(horizontal_sep, vertical_sep)
