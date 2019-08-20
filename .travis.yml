@@ -4,6 +4,8 @@ branches:
   - /^release\/.*$/
   - /^hotfix\/.*$/
 
+dist: bionic
+
 language: python
 python:
   - "3.7"
