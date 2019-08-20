@@ -6,12 +6,16 @@ branches:
 
 language: python
 python:
-  - "3.6"
+  - "3.7"
 
 before_install:
   - "git pull --all"
   - "echo $PWD"
   - "export BLUEBIRD_HOME=$PWD"
+
+before_install:
+  - pip install black
+  - black --check bluebird/ tests/ run.py
 
 install:
   - pip install -r requirements.txt

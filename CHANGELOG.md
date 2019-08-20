@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added support for the MachColl simulator
+- Added [black](https://black.readthedocs.io/en/stable/index.html) formatter to requirements and CI script
 
 ### Changed
 
+- Python 3.7+ is now required
+- Changed `indent-string` from tabs to 4 spaces in `.pylintrc`
 - Replaced underscores with dashes in all of the CLI options
 
 ## [1.3.0] - 2019-09-24
