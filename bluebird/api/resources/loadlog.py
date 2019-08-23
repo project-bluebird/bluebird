@@ -104,8 +104,8 @@ class LoadLog(Resource):
 			return resp
 
 		target_time = parsed['time']
-		if target_time < 0:
-			resp = jsonify('Target time must be positive')
+		if target_time <= 0:
+			resp = jsonify('Target time must be greater than 0')
 			resp.status_code = 400
 			return resp
 
@@ -174,11 +174,11 @@ class LoadLog(Resource):
 			resp = jsonify(f'Error uploading scenario: {err}')
 			resp.status_code = 500
 
-		_LOGGER.debug('Starting the new scenario')
+		_LOGGER.info('Starting the new scenario')
 		err = bb_client.CLIENT_SIM.load_scenario(scn_name, start_paused=True)
 
 		if err:
-			resp = jsonify('Could not start scenario after upload')
+			resp = jsonify(f'Could not start scenario after upload: {err}')
 			resp.status_code = 500
 			return resp
 
@@ -189,23 +189,25 @@ class LoadLog(Resource):
 			return resp
 
 		diff = target_time - bb_cache.SIM_STATE.sim_t
+		if diff:
+			# Naive approach - set DTMULT to target, then STEP once...
+			_LOGGER.debug(f'Time difference is {diff}. Stepping to {target_time}')
+			err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {diff}')
 
-		# Naive approach - set DTMULT to target, then STEP once...
-		_LOGGER.debug(f'Time difference is {diff}. Stepping to {target_time}')
-		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {diff}')
+			if err:
+				resp = jsonify(f'Could not change speed: {err}')
+				resp.status_code = 500
+				return resp
 
-		if err:
-			resp = jsonify(f'Could not change speed: {err}')
-			resp.status_code = 500
-			return resp
+			_LOGGER.debug('Performing step')
+			err = bb_client.CLIENT_SIM.step()
 
-		_LOGGER.debug('Performing step')
-		err = bb_client.CLIENT_SIM.step()
-
-		if err:
-			resp = jsonify(f'Could not step simulations: {err}')
-			resp.status_code = 500
-			return resp
+			if err:
+				resp = jsonify(f'Could not step simulation: {err}')
+				resp.status_code = 500
+				return resp
+		else:
+			_LOGGER.debug(f"Simulation already at required time")
 
 		_LOGGER.debug('Waiting for AC_DATA to catch up')
 		err_resp = check_ac_data()
