@@ -268,7 +268,7 @@ def test_set_seed(client, patch_client_sim):
 
 def test_alt_fl_parsing(client, patch_client_sim):
 	"""
-	Tests that we correctly parse FL to meters in the ALT endpoint
+	Tests that we correctly parse the altitude argument
 	:return:
 	"""
 
@@ -277,7 +277,7 @@ def test_alt_fl_parsing(client, patch_client_sim):
 
 	resp = client.post(API_PREFIX + '/alt', json=data)
 	assert resp.status_code == 200, 'Expected OK'
-	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 3658', 'Expected ALT to match'
+	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 FL120', 'Expected ALT to match'
 
 	data['alt'] = '12345'
 
