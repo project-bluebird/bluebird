@@ -137,6 +137,15 @@ class LoadLog(Resource):
 			resp.status_code = 400
 			return resp
 
+		# Assert that the requested time is not past the end of the log
+		last_data = next(x for x in reversed(lines) if re.match(r'.*A \[(\d+)\] (.*)$', x))
+		last_time = int(re.search(r'\[(.*)]', last_data).group(1))
+
+		if target_time > last_time:
+			resp = jsonify(f'Error: Target time was greater than the latest time in the log')
+			resp.status_code = 400
+			return resp
+
 		err = validate_scenario(parsed_scn['lines'])
 
 		if err:
