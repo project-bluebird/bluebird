@@ -21,6 +21,7 @@ from .ic import Ic
 from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
+from .sectors import Sectors
 from .seed import Seed
 from .scenario import Scenario
 from .step import Step

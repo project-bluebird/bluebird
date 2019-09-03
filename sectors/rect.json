@@ -1,0 +1,13 @@
+{
+    "sectors": [
+        {
+            "name": "RECT1",
+            "min_lat": 0,
+            "max_lat": 1,
+            "min_lon": 0,
+            "max_lon": 1,
+            "min_alt": 10000,
+            "max_alt": 25000
+        }
+    ]
+}

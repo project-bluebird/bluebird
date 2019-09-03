@@ -2,6 +2,7 @@
 Entry point for the BlueBird app
 """
 
+import json
 import os
 
 import argparse
@@ -26,6 +27,7 @@ def _parse_args():
 	                                                             'connection')
 	parser.add_argument('--log_rate', type=float, help='Log rate in sim-seconds')
 	parser.add_argument('--sim_mode', type=str, help='Set the initial mode')
+	parser.add_argument('--sectors', type=str, help='Loads sectors from the specified file')
 	args = parser.parse_args()
 
 	if args.bluesky_host:
@@ -44,8 +46,28 @@ def _parse_args():
 			raise ValueError(f'Mode \'{mode}\' not supported. Must be one of: {available}')
 		settings.SIM_MODE = mode
 
+	if args.sectors:
+		settings.SECTORS = _load_sector_data(args.sectors)
+
 	return args
 
+def _load_sector_data(filename) -> list:
+	"""
+	Load sector data from a given file
+
+	:param filename:
+	:return:
+	:rtype: list
+	"""
+
+	with open(filename) as file:
+		data = json.load(file)
+
+	for sector in data['sectors']:
+		if not all(k in sector for k in settings.SECTOR_KEYS):
+			raise ValueError('Missing key in sector data')
+
+	return data['sectors']
 
 def _get_min_bs_version():
 	bs_min_version = os.getenv('BS_MIN_VERSION')

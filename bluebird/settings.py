@@ -33,6 +33,9 @@ METRICS_PROVIDERS = ['bluebird']
 SIM_MODES = ['sandbox', 'agent']
 SIM_MODE = SIM_MODES[0]
 
+SECTOR_KEYS = ["name", "min_lat", "max_lat", "min_lon", "max_lon", "min_alt", "max_alt"]
+SECTORS = []
+
 # BlueSky server settings
 
 BS_HOST = 'localhost'
