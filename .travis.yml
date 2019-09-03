@@ -1,16 +1,18 @@
-
 branches:
   only:
   - master
   - /^release\/.*$/
   - /^hotfix\/.*$/
+  - /^issue\/.*$/
 
 language: python
 python:
   - "3.6"
 
-services:
-  - docker
+before_install:
+  - "git pull --all"
+  - "echo $PWD"
+  - "export BLUEBIRD_HOME=$PWD"
 
 install:
   - pip install -r requirements.txt
@@ -19,3 +21,6 @@ install:
 script:
   - pytest -rs --ignore=./tests/integration ./tests
   - pytest -rs  ./tests/integration
+
+after_success:
+  - "bash $BLUEBIRD_HOME/.travis-build.sh"
