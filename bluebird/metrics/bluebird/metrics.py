@@ -28,6 +28,8 @@ from pyproj import Geod
 
 from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
+import bluebird.settings as settings
+
 from . import config as cfg
 
 _WGS84 = Geod(ellps='WGS84')
@@ -39,24 +41,21 @@ _SCALE_METRES_TO_FEET = 3.280839895
 
 def _get_pos(acid):
 	assert isinstance(acid, str), 'Expected the input to be a string'
-	assert is_acid(acid), 'Expected the input to be a valid ACID'
-	assert AC_DATA.contains(acid), 'Expected the aircraft to exist in the simulation'
+	assert is_acid(acid), f'Expected the input to be a valid ACID (given {acid})'
+	assert AC_DATA.contains(acid), \
+		f'Expected the aircraft \'{acid}\' to exist in the simulation'
 	return AC_DATA.get(acid)[acid]
 
 
-def _vertical_separation(acid1, acid2):
+def _vertical_separation(alt1_ft, alt2_ft):
 	"""
 	Basic vertical separation metric
-	:param acid1:
-	:param acid2:
+	:param alt1:
+	:param alt2:
 	:return:
 	"""
 
-	alt1 = _get_pos(acid1)['alt']
-	alt2 = _get_pos(acid2)['alt']
-	vertical_sep_metres = abs(alt1 - alt2)
-
-	vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
+	vertical_sep_ft = abs(alt1_ft - alt2_ft)
 
 	if vertical_sep_ft < cfg.VERT_MIN_DIST:
 		return cfg.LOS_SCORE
@@ -69,16 +68,13 @@ def _vertical_separation(acid1, acid2):
 	return 0
 
 
-def _horizontal_separation(acid1, acid2):
+def _horizontal_separation(pos1, pos2):
 	"""
 	Basic horizontal separation metric
-	:param acid1:
-	:param acid2:
+	:param pos1:
+	:param pos2:
 	:return:
 	"""
-
-	pos1 = _get_pos(acid1)
-	pos2 = _get_pos(acid2)
 
 	_, _, horizontal_sep_m = _WGS84.inv(pos1['lon'], pos1['lat'], pos2['lon'], pos2['lat'])
 	horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)
@@ -94,6 +90,12 @@ def _horizontal_separation(acid1, acid2):
 	return 0
 
 
+def is_inside(sector, lat, lon, alt):
+	return \
+		((sector['min_lat'] <= lat) and (lat <= sector['max_lat'])) and \
+		((sector['min_lon'] <= lon) and (lon <= sector['max_lon'])) and \
+		((sector['min_alt'] <= alt) and (alt <= sector['max_alt']))
+
 def aircraft_separation(acid1, acid2):
 	"""
 	Combined score based on horizontal and vertical separation.
@@ -102,7 +104,20 @@ def aircraft_separation(acid1, acid2):
 	:return:
 	"""
 
-	horizontal_sep = _horizontal_separation(acid1, acid2)
-	vertical_sep = _vertical_separation(acid1, acid2)
+	pos1 = _get_pos(acid1)
+	pos2 = _get_pos(acid2)
+	alt1_ft = _get_pos(acid1)['alt'] * _SCALE_METRES_TO_FEET
+	alt2_ft = _get_pos(acid2)['alt'] * _SCALE_METRES_TO_FEET
+
+	if settings.SECTOR_IDX != -1:
+		sector = settings.SECTORS[settings.SECTOR_IDX]
+
+		ac1_inside = is_inside(sector, pos1['lat'], pos1['lon'], alt1_ft)
+		ac2_inside = is_inside(sector, pos2['lat'], pos2['lon'], alt2_ft)
+		if not ac1_inside or not ac2_inside:
+			return 'One or both aircraft are outside the active sector'
+
+	horizontal_sep = _horizontal_separation(pos1, pos2)
+	vertical_sep = _vertical_separation(alt1_ft, alt2_ft)
 
 	return max(horizontal_sep, vertical_sep)

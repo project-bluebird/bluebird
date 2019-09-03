@@ -50,6 +50,11 @@ class Metric(Resource):
 
 			result = provider(metric, *args)
 
+			if isinstance(result, str):
+				resp = jsonify(f'Metric function returned: {result}')
+				resp.status_code = 400
+				return resp
+
 		except AttributeError:
 
 			resp = jsonify(
