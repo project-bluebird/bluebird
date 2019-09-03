@@ -28,7 +28,7 @@ from pyproj import Geod
 
 from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
-import bluebird.settings as settings
+from bluebird.sectors.utils import point_inside_sector
 
 from . import config as cfg
 
@@ -90,12 +90,6 @@ def _horizontal_separation(pos1, pos2):
 	return 0
 
 
-def is_inside(sector, lat, lon, alt):
-	return \
-		((sector['min_lat'] <= lat) and (lat <= sector['max_lat'])) and \
-		((sector['min_lon'] <= lon) and (lon <= sector['max_lon'])) and \
-		((sector['min_alt'] <= alt) and (alt <= sector['max_alt']))
-
 def aircraft_separation(acid1, acid2):
 	"""
 	Combined score based on horizontal and vertical separation.
@@ -106,18 +100,16 @@ def aircraft_separation(acid1, acid2):
 
 	pos1 = _get_pos(acid1)
 	pos2 = _get_pos(acid2)
-	alt1_ft = _get_pos(acid1)['alt'] * _SCALE_METRES_TO_FEET
-	alt2_ft = _get_pos(acid2)['alt'] * _SCALE_METRES_TO_FEET
 
-	if settings.SECTOR_IDX != -1:
-		sector = settings.SECTORS[settings.SECTOR_IDX]
-
-		ac1_inside = is_inside(sector, pos1['lat'], pos1['lon'], alt1_ft)
-		ac2_inside = is_inside(sector, pos2['lat'], pos2['lon'], alt2_ft)
-		if not ac1_inside or not ac2_inside:
-			return 'One or both aircraft are outside the active sector'
+	ac1_inside = point_inside_sector(pos1)
+	ac2_inside = point_inside_sector(pos2)
+	if not ac1_inside or not ac2_inside:
+		return 'One or both aircraft are outside the active sector'
 
 	horizontal_sep = _horizontal_separation(pos1, pos2)
+	
+	alt1_ft = pos1['alt'] * _SCALE_METRES_TO_FEET
+	alt2_ft = pos2['alt'] * _SCALE_METRES_TO_FEET
 	vertical_sep = _vertical_separation(alt1_ft, alt2_ft)
 
 	return max(horizontal_sep, vertical_sep)

@@ -9,7 +9,7 @@ from .api import FLASK_APP
 from .cache import AC_DATA, SIM_STATE
 from .client import CLIENT_SIM
 from .metrics import setup_metrics
-from .sectors import set_active_sector
+from .sectors.utils import set_active_sector, create_bluesky_areas
 from .utils import TIMERS
 
 
@@ -71,6 +71,8 @@ class BlueBird:
 
 		if reset_on_connect:
 			CLIENT_SIM.reset_sim()
+			# Only (re-)draw sectors if we have just reset
+			create_bluesky_areas()
 
 		SIM_STATE.start()
 		return True
