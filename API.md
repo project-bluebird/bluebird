@@ -25,6 +25,7 @@ Notes:
 - [Reset Simulation](#reset-simulation)
 - [Simulation Time](#simulation-time)
 - [Simulation Step](#simulation-step-step)
+- [Sectors](#sectors)
 
 ### Aircraft endpoints
 
@@ -247,6 +248,18 @@ Returns:
 - `200 Ok` - Simulation was stepped
 - `400 Bad Request` - If the request was not made while in `agent` mode 
 - `500 Internal Server Error` - Could not step - response will contain error info
+
+## Sectors
+
+Get the defined sectors:
+
+```javascript
+GET /api/v1/sectors
+```
+
+Returns:
+
+- `200 OK` - Sector data returned. May be empty if no sectors are defined.
 
 ---
 
