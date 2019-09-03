@@ -8,6 +8,15 @@
             "max_lon": 1,
             "min_alt": 10000,
             "max_alt": 25000
+        },
+        {
+            "name": "RECT2",
+            "min_lat": 1,
+            "max_lat": 2,
+            "min_lon": 1,
+            "max_lon": 2,
+            "min_alt": 10000,
+            "max_alt": 25000
         }
     ]
 }

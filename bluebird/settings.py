@@ -36,6 +36,11 @@ SIM_MODE = SIM_MODES[0]
 SECTOR_KEYS = ["name", "min_lat", "max_lat", "min_lon", "max_lon", "min_alt", "max_alt"]
 SECTORS = []
 
+# Debug
+# os.environ["BB_SECTOR_IDX"] = "0"
+
+SECTOR_IDX = int(os.getenv('BB_SECTOR_IDX', '-1'))
+
 # BlueSky server settings
 
 BS_HOST = 'localhost'
