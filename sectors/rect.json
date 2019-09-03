@@ -1,31 +1,31 @@
 {
     "sectors": [
         {
-            "name": "RECT1",
+            "name": "RECT0",
             "min_lat": 0,
-            "max_lat": 1,
             "min_lon": 0,
+            "max_lat": 1,
             "max_lon": 1,
             "min_alt": 10000,
             "max_alt": 25000
         },
         {
-            "name": "RECT2",
-            "min_lat": 1,
-            "max_lat": 2,
+            "name": "RECT1",
+            "min_lat": 0,
             "min_lon": 1,
+            "max_lat": 1,
             "max_lon": 2,
             "min_alt": 10000,
             "max_alt": 25000
         },
-	{
-	   "name": "RECT3",
-	   "min_lat": 2,
-	   "max_lat": 3,
-	   "min_lon": 2,
-	   "max_lon": 3,
-	   "min_alt": 10000,
-	   "max_alt": 25000
-	}
+        {
+            "name": "RECT2",
+            "min_lat": 0,
+            "min_lon": 2,
+            "max_lat": 1,
+            "max_lon": 3,
+            "min_alt": 10000,
+            "max_alt": 25000
+        }
     ]
 }
