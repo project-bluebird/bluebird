@@ -11,6 +11,7 @@ from flask_restful import reqparse
 
 import bluebird.cache as bb_cache
 import bluebird.client
+from bluebird.sectors.utils import point_inside_sector
 from bluebird.utils.strings import is_acid
 
 _LOGGER = logging.getLogger('bluebird')
@@ -65,6 +66,10 @@ def check_acid(string, assert_exists=True):
 		for acid in filter(None, string.split(',')):
 			if not bb_cache.AC_DATA.contains(acid):
 				resp = jsonify('AC {} not found'.format(acid))
+				resp.status_code = 404
+				return resp
+			if not point_inside_sector(bb_cache.AC_DATA.get(acid)):
+				resp = jsonify(f'AC {acid} is not inside the active sector')
 				resp.status_code = 404
 				return resp
 
