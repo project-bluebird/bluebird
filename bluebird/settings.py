@@ -42,6 +42,10 @@ SECTORS = []
 # Note: -1 causes sectors to be ignored, even if we define them
 SECTOR_IDX = int(os.getenv('BB_SECTOR_IDX', '-1'))
 
+# Random chance to ignore the sector check
+RANDOM_CHANCE = 0.05
+ENABLE_RANDOM_CHANCE = True
+
 # BlueSky server settings
 
 BS_HOST = 'localhost'
