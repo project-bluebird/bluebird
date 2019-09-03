@@ -23,14 +23,16 @@ To run locally, first start a BlueSky simulation, then:
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>] [--sim_mode=<mode>] [--reset_sim] [--log_rate=<rate>]
+(venv) > python ./run.py [--bluesky_host=<address>] [--sim_mode=<mode>] [--reset_sim] [--log_rate=<rate>] [--sectors=<sector file>]
 ```
 
 Notes:
+
 - the `--dev` option will also install dependencies needed for developing BlueBird
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
 - If passed, `--reset_sim` will reset the simulation on connection
 - If passed, `--sim_mode` will start the simulation in a specific [mode](docs/SimulatorModes.md). 
+- If specified `--sectors` will load the specified sectors from the provided JSON file. The default included file is `sectors/rect.json`. Only cubic areas are supported for now.
 
 ### Running with Docker
 
