@@ -39,6 +39,7 @@ SECTORS = []
 # Debug
 # os.environ["BB_SECTOR_IDX"] = "0"
 
+# Note: -1 causes sectors to be ignored, even if we define them
 SECTOR_IDX = int(os.getenv('BB_SECTOR_IDX', '-1'))
 
 # BlueSky server settings
