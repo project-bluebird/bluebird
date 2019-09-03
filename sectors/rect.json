@@ -17,6 +17,15 @@
             "max_lon": 2,
             "min_alt": 10000,
             "max_alt": 25000
-        }
+        },
+	{
+	   "name": "RECT3",
+	   "min_lat": 2,
+	   "max_lat": 3,
+	   "min_lon": 2,
+	   "max_lon": 3,
+	   "min_alt": 10000,
+	   "max_alt": 25000
+	}
     ]
 }

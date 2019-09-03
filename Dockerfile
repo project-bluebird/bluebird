@@ -18,4 +18,5 @@ RUN mv bluesky/bluesky/* bluesky/ && \
 ENV FLASK_ENV=development
 ENV BB_LOGS_ROOT="/var/log/bluebird"
 
-CMD python ./run.py --bluesky_host=$BS_HOST --sim_mode=$SIM_MODE
+CMD python ./run.py --bluesky_host=$BS_HOST --sim_mode=$SIM_MODE --sectors=sectors/rect.json
+
