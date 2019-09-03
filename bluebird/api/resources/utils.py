@@ -3,6 +3,7 @@ Contains utility functions for the API resources
 """
 
 import logging
+import random
 
 import re
 import time
@@ -13,6 +14,7 @@ import bluebird.cache as bb_cache
 import bluebird.client
 from bluebird.sectors.utils import point_inside_sector
 from bluebird.utils.strings import is_acid
+import bluebird.settings as settings
 
 _LOGGER = logging.getLogger('bluebird')
 
@@ -43,6 +45,11 @@ def generate_arg_parser(_req_args, opt_args=None):
 	return parser
 
 
+def random_chance():
+	return settings.ENABLE_RANDOM_CHANCE and \
+		random.choices((True, False), (settings.RANDOM_CHANCE, 1 - settings.RANDOM_CHANCE))[0]
+
+
 def check_acid(string, assert_exists=True):
 	"""
 	Checks that the given string is a valid ACID, and that it exists in the current simulation.
@@ -68,7 +75,12 @@ def check_acid(string, assert_exists=True):
 				resp = jsonify('AC {} not found'.format(acid))
 				resp.status_code = 404
 				return resp
-			if not point_inside_sector(bb_cache.AC_DATA.get(acid)):
+			point = bb_cache.AC_DATA.get(acid)[acid]
+			if not point_inside_sector(point):
+				# Random chance of accepting the command
+				if random_chance():
+					_LOGGER.info(f'Accepted a command for another sector!')
+					continue
 				resp = jsonify(f'AC {acid} is not inside the active sector')
 				resp.status_code = 404
 				return resp
