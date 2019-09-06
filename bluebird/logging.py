@@ -27,6 +27,10 @@ def log_name_time():
 
 INSTANCE_ID = uuid.uuid1()
 INST_LOG_DIR = os.path.join(LOGS_ROOT, f'{log_name_time()}_{INSTANCE_ID}')
+
+if os.getenv('DOCKER', '').upper() == 'TRUE':
+    INST_LOG_DIR += f"-{os.getenv('HOSTNAME')}"
+
 os.mkdir(INST_LOG_DIR)
 
 with open('bluebird/logging_config.json') as f:
