@@ -89,7 +89,8 @@ def main():
 
 	with BlueBird() as app:
 		if app.client_connect(bs_min_version, args.reset_sim):
-			# Run the Flask app. Blocks here until it exits
+			# Run the Flask app. Blocks here until it exits. Note - any code after this
+			# exits might not be executed
 			app.run()
 
 

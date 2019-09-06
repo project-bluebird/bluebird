@@ -17,6 +17,7 @@ from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
+
 CMD_LOG_PREFIX = 'C'
 
 # The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
@@ -53,6 +54,7 @@ class ApiClient(Client):
 		self._echo_data = []
 		self._scn_response = None
 		self._awaiting_exit_resp = False
+		self._last_stream_time = None
 
 	def start(self):
 		"""
@@ -184,6 +186,9 @@ class ApiClient(Client):
 					self.event(eventname, pydata, self.sender_id)
 
 			if socks.get(self.stream_in) == zmq.POLLIN:
+
+				self._last_stream_time = time.time()
+
 				msg = self.stream_in.recv_multipart()
 
 				strmname = msg[0][:-5]
@@ -191,6 +196,10 @@ class ApiClient(Client):
 				pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
 
 				self.stream(strmname, pydata, sender_id)
+		
+			# TODO: This should be based on the stream frequency
+			if self._last_stream_time and time.time() - self._last_stream_time > 1:
+				raise TimeoutError('Lost connection to BlueSky')
 
 			return True
 
