@@ -3,6 +3,10 @@ Contains the BlueBird class
 """
 
 import logging
+import os
+import signal
+import threading
+import time
 
 from . import settings
 from .api import FLASK_APP
@@ -10,13 +14,15 @@ from .cache import AC_DATA, SIM_STATE
 from .client import CLIENT_SIM
 from .metrics import setup_metrics
 from .sectors.utils import set_active_sector, create_bluesky_areas
-from .utils import TIMERS
+from .utils import TIMERS, check_timers
 
 
 class BlueBird:
 	"""
 	The BlueBird API client.
 	"""
+
+	exit_flag: bool = False
 
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
@@ -39,6 +45,7 @@ class BlueBird:
 			timer.stop()
 
 		CLIENT_SIM.stop()
+		BlueBird.exit_flag = True
 
 	def client_connect(self, min_bs_version, reset_on_connect):
 		"""
@@ -85,5 +92,37 @@ class BlueBird:
 		self._logger.debug("Starting Flask app")
 
 		AC_DATA.start()
-		FLASK_APP.run(host=settings.BB_HOST, port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
-		              use_reloader=False)
+		flask_thread = threading.Thread(target=FLASK_APP.run, kwargs={"host": settings.BB_HOST,
+		"port": settings.BB_PORT, "debug": settings.FLASK_DEBUG, "use_reloader": False})
+
+		flask_thread.start()
+
+		try:
+			while flask_thread.isAlive() and not check_timers():
+				time.sleep(0.1)
+		except KeyboardInterrupt:
+			self._logger.info('Ctrl+C - exiting')
+			_proc_killer()
+			return
+
+		err = check_timers()
+		if err:
+			exc_type, exc_value, exc_traceback = err
+			_proc_killer()
+			raise exc_type(exc_value).with_traceback(exc_traceback)
+
+
+def _proc_killer():
+	"""
+	Starts another thread which waits for BlueBird.exit_flag to be set, then sends
+	SIGINT to our own process. This is apparently the easiest way to clean things up and
+	cause the Flask server to exit if you decide to run it in another thread ¯\_(ツ)_/¯
+	"""
+
+	def killer():
+		while not BlueBird.exit_flag:
+			time.sleep(0.1)
+		os.kill(os.getpid(), signal.SIGINT)
+
+	thread = threading.Thread(target=killer)
+	thread.start()

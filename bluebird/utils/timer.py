@@ -2,8 +2,11 @@
 Contains a utility Timer class
 """
 
+import logging
+import sys
+import time
+
 from threading import Event, Thread
-from time import sleep
 
 
 class Timer(Thread):
@@ -27,16 +30,29 @@ class Timer(Thread):
 		self._sleep_time = 1 / tickrate
 
 		self.disabled = False
+		self._exited = False
+
+		self._logger = logging.getLogger(f'{__name__}[{method.__module__}.{method.__name__}]')
+		self.exc_info = None
 
 	def run(self):
 		"""
 		Start the timer
 		"""
 
-		while not self._event.is_set():
-			if not self.disabled:
-				self._cmd()
-			sleep(self._sleep_time)
+		self._logger.info('Thread starting')
+
+		try:
+			while not self._event.is_set():
+				if not self.disabled:
+					self._cmd()
+				time.sleep(self._sleep_time)
+		except Exception: # pylint: disable=broad-except
+			self._logger.error('Thread threw an exception')
+			self.exc_info = sys.exc_info()
+
+		self._logger.info('Thread exited')
+		self._exited = True
 
 	def set_tickrate(self, rate):
 		"""
@@ -54,6 +70,9 @@ class Timer(Thread):
 		"""
 
 		self._event.set()
+
+		while not self._exited:
+			pass
 
 	@staticmethod
 	def _check_rate(rate):
