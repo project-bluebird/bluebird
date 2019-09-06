@@ -103,11 +103,11 @@ def aircraft_separation(acid1, acid2):
 
 	ac1_inside = point_inside_sector(pos1)
 	ac2_inside = point_inside_sector(pos2)
-	if not ac1_inside or not ac2_inside:
-		return 'One or both aircraft are outside the active sector'
+	if not ac1_inside and not ac2_inside:
+		return 'Both the requested aircraft are outside the active sector'
 
 	horizontal_sep = _horizontal_separation(pos1, pos2)
-	
+
 	alt1_ft = pos1['alt'] * _SCALE_METRES_TO_FEET
 	alt2_ft = pos2['alt'] * _SCALE_METRES_TO_FEET
 	vertical_sep = _vertical_separation(alt1_ft, alt2_ft)
