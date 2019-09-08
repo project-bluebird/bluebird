@@ -51,6 +51,7 @@ class Ic(Resource):
 		if err:
 			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
 			resp.status_code = 500
+			return resp
 
 		err_resp = check_ac_data()
 		if err_resp:
