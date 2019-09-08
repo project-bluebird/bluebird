@@ -113,3 +113,44 @@ def aircraft_separation(acid1, acid2):
 	vertical_sep = _vertical_separation(alt1_ft, alt2_ft)
 
 	return max(horizontal_sep, vertical_sep)
+
+
+### Sector exit metric ###
+
+import logging
+import bluebird.sectors as bb_sectors
+from bluebird.sectors.utils import SectorWatcher
+
+_LOGGER = logging.getLogger(__name__)
+
+def _get_watcher() -> SectorWatcher:
+	if bb_sectors.WATCHER:
+		return bb_sectors.WATCHER
+	raise ValueError('Sectors are not being monitored')
+
+def sector_exit_impl(target_pos, actual_pos):
+	pass
+
+def sector_exit(acid):
+	"""
+	Metric score based on the aircraft's exit point from the sector
+	:param acid1:
+	"""
+
+	# Don't necessarily want to check AC_DATA - BlueSky may have already deleted the
+	# aircraft if it has travelled outside the experiment area
+	assert isinstance(acid, str), 'Expected the input to be a string'
+	assert is_acid(acid), f'Expected the input to be a valid ACID (given {acid})'	
+
+	exited = _get_watcher().check_exited(acid)
+
+	if isinstance(exited, str):
+		return exited
+
+	# We have the sector exit position!
+	_LOGGER.info(f'Aircraft {acid} exited at {exited}')
+
+	# TMP
+	return 0
+
+

@@ -13,7 +13,8 @@ from .api import FLASK_APP
 from .cache import AC_DATA, SIM_STATE
 from .client import CLIENT_SIM
 from .metrics import setup_metrics
-from .sectors.utils import set_active_sector, create_bluesky_areas
+from . import sectors
+from .sectors.utils import check_active_sector, create_bluesky_areas, create_bluesky_waypoints, SectorWatcher
 from .utils import TIMERS, check_timers
 
 
@@ -29,7 +30,8 @@ class BlueBird:
 		self._logger.info(f'BlueBird init. {settings.SIM_MODE} mode')
 
 		setup_metrics()
-		set_active_sector()
+		if check_active_sector():
+			sectors.WATCHER = SectorWatcher()
 
 	def __enter__(self):
 		return self
@@ -77,8 +79,11 @@ class BlueBird:
 
 		if reset_on_connect:
 			CLIENT_SIM.reset_sim()
-			# Only (re-)draw sectors if we have just reset
+
+		# Only (re-)draw sectors and waypoints if we are instance 0
+		if settings.SECTOR_IDX == 0:
 			create_bluesky_areas()
+			create_bluesky_waypoints()
 
 		SIM_STATE.start()
 		return True
@@ -91,6 +96,10 @@ class BlueBird:
 		self._logger.debug("Starting Flask app")
 
 		AC_DATA.start()
+
+		if sectors.WATCHER:
+			sectors.WATCHER.start()
+
 		flask_thread = threading.Thread(target=FLASK_APP.run, kwargs={"host": settings.BB_HOST,
 		"port": settings.BB_PORT, "debug": settings.FLASK_DEBUG, "use_reloader": False})
 

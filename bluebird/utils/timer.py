@@ -40,7 +40,7 @@ class Timer(Thread):
 		Start the timer
 		"""
 
-		self._logger.info('Thread starting')
+		self._logger.debug('Thread starting')
 
 		try:
 			while not self._event.is_set():
@@ -51,7 +51,7 @@ class Timer(Thread):
 			self._logger.error('Thread threw an exception')
 			self.exc_info = sys.exc_info()
 
-		self._logger.info('Thread exited')
+		self._logger.debug('Thread exited')
 		self._exited = True
 
 	def set_tickrate(self, rate):
