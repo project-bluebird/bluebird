@@ -113,7 +113,7 @@ class AcDataCache(Cache):
 			del self.store[acid]
 
 		# Set any initial cleared flight levels
-		for missing in current_acids - self.cleared_fls.keys():
+		for missing in self.store.keys()  - self.cleared_fls.keys():
 			self.cleared_fls[missing] = self.store[missing]['alt']
 
 	def resume_log(self):
