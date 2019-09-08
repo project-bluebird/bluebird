@@ -62,7 +62,6 @@ class BlueBird:
 			                   stream_port=settings.BS_STREAM_PORT, timeout=1)
 		except TimeoutError:
 			self._logger.error(f'Failed to connect to BlueSky server at {settings.BS_HOST}, exiting')
-			CLIENT_SIM.stop()
 			return False
 
 		if CLIENT_SIM.host_version < min_bs_version:
