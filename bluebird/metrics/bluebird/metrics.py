@@ -128,8 +128,31 @@ def _get_watcher() -> SectorWatcher:
 		return bb_sectors.WATCHER
 	raise ValueError('Sectors are not being monitored')
 
-def sector_exit_impl(target_pos, actual_pos):
-	pass
+# Constants
+c_h = 0
+C_h = 0
+c_v = 0
+C_v = 0
+
+def sector_exit_impl(target_exit, actual_exit):
+	
+	def v(d, c, C):
+		assert c < C, 'Expected ...'
+		if d < c:
+			return 0
+		if d > C:
+			return 1
+		return -(d-c)/(C-c)
+
+	_, _, horizontal_sep_m = _WGS84.inv(target_exit['lon'], target_exit['lat'], \
+		actual_exit['lon'], actual_exit['lat'])
+	v_h = v(horizontal_sep_m, c_h, C_h)
+
+	vertical_sep_m = abs(target_exit['alt'] - actual_exit['alt'])
+	v_v = v(vertical_sep_m, c_v, C_v)
+
+	return min(v_h, v_v)
+
 
 def sector_exit(acid):
 	"""
@@ -140,17 +163,17 @@ def sector_exit(acid):
 	# Don't necessarily want to check AC_DATA - BlueSky may have already deleted the
 	# aircraft if it has travelled outside the experiment area
 	assert isinstance(acid, str), 'Expected the input to be a string'
-	assert is_acid(acid), f'Expected the input to be a valid ACID (given {acid})'	
+	assert is_acid(acid), f'Expected the input to be a valid ACID (given {acid})'
 
-	exited = _get_watcher().check_exited(acid)
+	exit_loc = _get_watcher().check_exited(acid)
 
-	if isinstance(exited, str):
-		return exited
+	if isinstance(exit_loc, str):
+		return exit_loc
 
 	# We have the sector exit position!
-	_LOGGER.info(f'Aircraft {acid} exited at {exited}')
+	_LOGGER.info(f'Aircraft {acid} exited at {exit_loc}')
 
-	# TMP
-	return 0
+	# TODO Need to calculate what this should be from the aircraft's route
+	target_exit_loc = None
 
-
+	return sector_exit_impl(target_exit_loc, exit_loc)
