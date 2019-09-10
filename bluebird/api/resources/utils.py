@@ -76,14 +76,14 @@ def check_acid(string, assert_exists=True):
 				resp.status_code = 404
 				return resp
 			point = bb_cache.AC_DATA.get(acid)[acid]
-			if not point_inside_sector(point):
-				# Random chance of accepting the command
-				if random_chance():
-					_LOGGER.info(f'Accepted a command for another sector!')
-					continue
-				resp = jsonify(f'AC {acid} is not inside the active sector')
-				resp.status_code = 404
-				return resp
+			# if not point_inside_sector(point):
+			# 	# Random chance of accepting the command
+			# 	if random_chance():
+			# 		_LOGGER.info(f'Accepted a command for another sector!')
+			# 		continue
+			# 	resp = jsonify(f'AC {acid} is not inside the active sector')
+			# 	resp.status_code = 404
+			# 	return resp
 
 	return None
 
