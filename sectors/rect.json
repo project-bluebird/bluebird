@@ -1,6 +1,15 @@
 {
     "sectors": [
         {
+            "name": "RECTX",
+            "min_lat": 51.030139,
+            "min_lon": -3.12762,
+            "max_lat": 52.030139,
+            "max_lon": -1.12762,
+            "min_alt": 10000,
+            "max_alt": 40000
+        },
+        {
             "name": "RECT0",
             "min_lat": 51.030139,
             "min_lon": -3.12762,
