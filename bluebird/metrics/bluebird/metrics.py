@@ -141,7 +141,7 @@ def sector_exit_impl(target_exit, actual_exit):
 		if d < c:
 			return 0
 		if d > C:
-			return 1
+			return -1
 		return -(d-c)/(C-c)
 
 	_, _, horizontal_sep_m = _WGS84.inv(target_exit['lon'], target_exit['lat'], \
