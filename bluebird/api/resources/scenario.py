@@ -4,11 +4,12 @@ Provides logic for the scenario (create scenario) API endpoint
 
 import logging
 
-import re
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client as bb_client
+from bluebird.api.resources.utils import validate_scenario, wait_until_eq
 from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')
@@ -18,22 +19,6 @@ PARSER.add_argument('scn_name', type=str, location='json', required=True)
 PARSER.add_argument('content', type=str, location='json', required=True, action='append')
 PARSER.add_argument('start_new', type=bool, location='json', required=False)
 PARSER.add_argument('start_dtmult', type=float, location='json', required=False)
-
-_SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}\s?>\s?.*')
-
-
-def _validate_scenario(scn_lines):
-	"""
-	Checks that each line in the given list matches the requirements
-	:param scn_lines:
-	:return:
-	"""
-
-	for line in scn_lines:
-		if not _SCN_RE.match(line):
-			return f'Line \'{line}\' does not match the required format'
-
-	return None
 
 
 class Scenario(Resource):
@@ -59,7 +44,7 @@ class Scenario(Resource):
 			scn_name = scn_name[len('scenario') + 1:]
 
 		content = parsed['content']
-		err = _validate_scenario(content)
+		err = validate_scenario(content)
 
 		if err:
 			resp = jsonify(f'Invalid scenario content: {err}')
@@ -82,9 +67,17 @@ class Scenario(Resource):
 			if err:
 				resp = jsonify(f'Could not start scenario after upload: {err}')
 				resp.status_code = 500
-			else:
-				resp = jsonify(f'Scenario {scn_base} uploaded and started')
-				resp.status_code = 200
+				return resp
+
+			if not wait_until_eq(bb_cache.AC_DATA.store, True):
+				resp = jsonify(
+								'No aircraft data received after loading. Scenario might not contain any '
+								'aircraft')
+				resp.status_code = 500
+				return resp
+
+			resp = jsonify(f'Scenario {scn_base} uploaded and started')
+			resp.status_code = 200
 
 		else:
 			resp = jsonify(f'Scenario {scn_base} uploaded')

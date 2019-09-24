@@ -8,25 +8,12 @@ defined, so we don't have any test dependencies on BlueSky.
 
 # pylint: disable=redefined-outer-name, unused-argument, no-member
 
-import pytest
+import os
 
-import bluebird.api as bluebird_api
 import bluebird.client as bb
+import bluebird.settings as settings
 from bluebird.cache import AC_DATA
 from . import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
-
-
-@pytest.fixture
-def client():
-	"""
-	Creates a Flask test client for BlueBird, and populates AC_DATA with the test data
-	:return:
-	"""
-
-	bluebird_api.FLASK_APP.config['TESTING'] = True
-	test_client = bluebird_api.FLASK_APP.test_client()
-
-	yield test_client
 
 
 def test_pos_command(client):
@@ -69,6 +56,7 @@ def test_ic_command(client, patch_client_sim):
 	"""
 	Tests the /ic endpoint
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -97,6 +85,7 @@ def test_reset_command(client, patch_client_sim):
 	"""
 	Tests the /reset endpoint
 	:param client:
+	:param patch_client_sim:
 	:return:
 	"""
 
@@ -174,3 +163,124 @@ def test_scenario_endpoint(client, patch_client_sim):
 
 	assert bb.CLIENT_SIM.last_scenario == 'new-scenario.scn', 'Expected the filename to be loaded'
 	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
+
+	# Remove the test file from the BlueSky submodule
+	try:
+		os.remove('bluesky/scenario/new-scenario.scn')
+	except OSError:
+		pass
+
+
+def test_change_mode(client, patch_client_sim):
+	"""
+	Tests the functionality of the simmode endpoint
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
+
+	data = {'mode': 'test'}
+	resp = client.post(API_PREFIX + '/simmode', json=data)
+
+	assert resp.status == '400 BAD REQUEST', 'Expected an invalid mode to return 400'
+
+	data['mode'] = 'agent'
+	resp = client.post(API_PREFIX + '/simmode', json=data)
+
+	assert resp.status == '200 OK', 'Expected a valid mode to return 200'
+	assert settings.SIM_MODE == 'agent', 'Expected the final mode to be agent'
+
+
+def test_non_agent_mode_step(client, patch_client_sim):
+	"""
+	Tests that the sim is not stepped if in the sandbox mode
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	client.post(API_PREFIX + '/simmode', json={'mode': 'sandbox'})
+	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
+
+	resp = client.post(f'{API_PREFIX}/step')
+	assert resp.status_code == 400, 'Expected a 400 BAD REQUEST'
+	assert not bb.CLIENT_SIM.was_stepped, 'Expected the simulation was not stepped forward'
+
+
+def test_agent_mode_step(client, patch_client_sim):
+	"""
+	Tests that the sim is stepped if in agent mode
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	assert settings.SIM_MODE == 'agent', 'Expected the mode to be agent'
+
+	resp = client.post(f'{API_PREFIX}/step')
+	assert resp.status_code == 200, 'Expected a 200 response'
+	assert bb.CLIENT_SIM.was_stepped, 'Expected the simulation was stepped forward'
+
+
+def test_set_seed(client, patch_client_sim):
+	"""
+	Tests the functionality of the seed endpoint
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/seed')
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'test': 1234}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': 'test'}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': -123}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+	data = {'value': 123}
+
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '200 OK'
+	assert bb.CLIENT_SIM.seed == 123, ''
+
+	data = {'value': 2 ** 32 - 1}
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '200 OK'
+
+	data = {'value': 2 ** 32}
+	resp = client.post(API_PREFIX + '/seed', json=data)
+	assert resp.status == '400 BAD REQUEST'
+
+
+def test_alt_fl_parsing(client, patch_client_sim):
+	"""
+	Tests that we correctly parse the altitude argument
+	:return:
+	"""
+
+	acid = TEST_ACIDS[0]
+	data = {'acid': acid, 'alt': 'FL120'}
+
+	resp = client.post(API_PREFIX + '/alt', json=data)
+	assert resp.status_code == 200, 'Expected OK'
+	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 FL120', 'Expected ALT to match'
+
+	data['alt'] = '12345'
+
+	resp = client.post(API_PREFIX + '/alt', json=data)
+	assert resp.status_code == 200, 'Expected OK'
+	assert bb.CLIENT_SIM.last_stack_cmd == 'ALT TST1001 12345', 'Expected ALT to match'

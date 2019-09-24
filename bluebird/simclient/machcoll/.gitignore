@@ -1,0 +1,6 @@
+
+# Ensure we only include the SimClient class here - not any of the NATS files
+
+*
+!.gitignore
+!simclient.py

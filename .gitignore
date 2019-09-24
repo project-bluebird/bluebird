@@ -98,7 +98,7 @@ celerybeat-schedule
 # Environments
 .venv
 env/
-venv/
+venv*/
 ENV/
 env.bak/
 venv.bak/
@@ -275,10 +275,12 @@ fabric.properties
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.gitignore.io/api/git,flask,python,intellij
 
 .idea/
+.vscode/
+!tests/**/*.log
+

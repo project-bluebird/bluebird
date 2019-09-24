@@ -19,10 +19,12 @@ Notes:
 - [Change Simulation Rate Multiplier](#change-simulation-rate-multiplier-dtmult)
 - [Pause Simulation](#pause-simulation-hold)
 - [Load Scenario](#load-scenario-ic)
+- [Reload from Log](#load-log)
 - [Resume Simulation](#resume-simulation-op)
 - [Create Scenario](#create-scenario)
 - [Reset Simulation](#reset-simulation)
 - [Simulation Time](#simulation-time)
+- [Simulation Step](#simulation-step-step)
 
 ### Aircraft endpoints
 
@@ -35,11 +37,15 @@ Notes:
 - [Position](#position-pos)
 - [Speed](#speed)
 - [Vertical Speed](#vertical-speed)
+- [Set Seed](#set-seed)
 
 ### Application endpoints
 
 - [Episode Log](#episode-logfile)
+- [Simulator Mode](#simulator-mode)
 - [Shutdown](#shutdown)
+- [Metrics](#metrics)
+- [MetricProviders](#metric-providers)
 
 ---
 
@@ -120,6 +126,31 @@ Returns:
 - `500 Internal Server Error` - Could not load the scenario
 	- This could be due to the file not existing, or case-sensitivity of the given filename (some are named `*.scn`, while others are `*.SCN`)
 
+## Load Log
+
+Reload the simulation to a particular time in an episode logfile:
+
+```javascript
+POST /api/v1/loadlog
+{
+    ("filename": "/path/to/file.log" |
+    "lines": ["line1", "line2", ...]),
+    "time": 60
+}
+```
+
+Notes:
+
+- Either `filename` or `lines` must be specified
+- This API can only be used in agent mode
+- Only logfiles which have had their random seed set can be loaded
+
+Returns:
+
+- `200 Ok` - Simulation was reloaded
+- `400 Bad Request` - Invalid arguments or precondition. Response will contain more information
+- `500 Internal Server Error` - Error performing the reload. Response will contain more information
+
 ## Resume Simulation (OP)
 
 Resumes the simulation:
@@ -198,6 +229,25 @@ Returns:
 
 - `500 Internal Server Error` - Time could not be retrieved - response will contain error info
 
+## Simulation Step (STEP)
+
+Step the simulation forward:
+
+```javascript
+POST /api/v1/step
+```
+
+Notes:
+
+- The simulation must be in `agent` mode otherwise an error will be returned
+- The timestep is based on `DTMULT`, so a setting of 5.0x will step forward 5 seconds
+
+Returns:
+
+- `200 Ok` - Simulation was stepped
+- `400 Bad Request` - If the request was not made while in `agent` mode 
+- `500 Internal Server Error` - Could not step - response will contain error info
+
 ---
 
 ## Add Waypoint (ADDWPT)
@@ -226,7 +276,9 @@ Returns:
 
 ## Altitude
 
-Request that the aircraft alters its altitude:
+This has both `POST` and `GET` versions.
+
+`POST` - Request that the aircraft alters its altitude:
 
 ```javascript
 POST /api/v1/alt
@@ -242,6 +294,32 @@ Returns:
 - `200 Ok` - Command accepted
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
+
+`GET` - Get the current, requested, and cleared flight levels for an aircraft:
+
+```javascript
+GET /api/v1/alt?acid=<acid>
+```
+
+Notes:
+
+- All returned flight levels are in meters
+- The requested flight level can only be returned if the aircraft has a defined route
+- The initial cleared flight level will be set to the initial altitude when the scenario is loaded
+
+Returns:
+
+- `200 Ok` - Data:
+
+```javascript
+{
+    "fl_current": 7620,
+    "fl_cleared": 4572,
+    "fl_requested": 2896
+}
+```
+
+- `400 Bad Request` - Aircraft ID was invalid, or does not exist in the simulation
 
 ## Create Aircraft (CRE)
 
@@ -362,8 +440,8 @@ Returns:
 {
   "SCN1001": {				// The requested acid (aircraft ID)
     "actype": "B747"        		// Aircraft type
-    "alt": 6096,			// Altitude (ft)
-    "gs": 293.6780042365748,		// Ground speed (kts)
+    "alt": 6096,			// Altitude (m)
+    "gs": 293.6780042365748,		// Ground speed (m/s)
     "lat": 53.8,			// Latitude (deg)
     "lon": 2.0364214816067467,		// Longitude (deg)    
     "vs": 0				// Vertical speed (ft/min)
@@ -411,6 +489,23 @@ Returns:
 - `400 Bad Request` - Aircraft ID was invalid
 - `404 Not Found` - Aircraft was not found
 
+## Set Seed
+
+Sets the random seed of the simulator. Must be a positive integer:
+
+```javascript
+POST /api/v1/seed
+{
+    "value": 1234
+}
+```
+
+Returns:
+
+- `200 Ok` - Seed was set
+- `400 Bad Request` - Invalid seed provided
+- `500 Internal Server Error` - Other error when setting seed (response will contain data)
+
 ---
 
 ## Episode Logfile
@@ -439,6 +534,30 @@ Where the `lines` array contains each line from the log file.
 
 - `404 Not Found` - No episode is being recorded  
 
+## Simulator Mode
+
+Change the current simulator mode:
+
+```javascript
+POST /api/v1/simmode
+{
+    "mode": "agent"
+}
+```
+
+Notes:
+
+- Currently available modes are `sandbox` and `agent`
+- This affects any currently running simulation:
+    - Setting `agent` mode will pause the current simulation and the episode log
+    - Setting `sandbox` mode will resume the simulation and logging at the previous rate
+
+Returns:
+
+- `200 Ok` - Mode was updated
+- `400 Bad Request` - Invalid mode specified
+- `500 Internal Server Error` - Other error when changing mode (response will contain data)
+
 ## Shutdown
 
 Shuts down the BlueBird server:
@@ -451,3 +570,46 @@ Returns:
 
 - `200 Ok` - Server is shutting down
 - `500 Internal Server Error` - Could not shutdown. Error data will be provided.
+
+## Metrics
+
+Calls a metric function. E.g.:
+
+```javascript
+GET /api/v1/metric?name=vertical_separation&args=SCN1001,SCN1002
+```
+
+Notes:
+
+- A full list of the included metrics in BlueBird is [here](docs/Metrics.md)
+
+Returns:
+
+- `200 Ok` - Result of the metric function:
+
+```javascript
+{
+    "vertical_separation": -1
+}
+```
+
+- `400 Bad Request` - Invalid arguments for the specified metric function, or the arguments were invalid. E.g. "Expected the aircraft to exist in the simulation"
+- `404 Not Found` - No metric found with the given name
+- `500 Internal Server Error` - No metrics available
+
+## Metric Providers
+
+Get a list of the available metric providers:
+
+```javascript
+GET /api/v1/metricproviders
+```
+
+Returns:
+
+- `200 Ok` - Dictionary of the available providers, and their versions:
+```javascript
+{
+    "BlueBirdProvider": "1.3.0-dev"
+}
+```

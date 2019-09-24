@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flask_restful import Api
 
 from bluebird import settings
-from . import resources as res, static
+from . import resources as res
 
 
 class BlueBirdApi(Api):
@@ -80,20 +80,26 @@ FLASK_API.add_resource(res.DefWpt, '/defwpt')
 FLASK_API.add_resource(res.DtMult, '/dtmult')
 FLASK_API.add_resource(res.Hold, '/hold')
 FLASK_API.add_resource(res.Ic, '/ic')
+FLASK_API.add_resource(res.LoadLog, '/loadlog')
 FLASK_API.add_resource(res.Op, '/op')
 FLASK_API.add_resource(res.Reset, '/reset')
+FLASK_API.add_resource(res.Seed, '/seed')
 FLASK_API.add_resource(res.Scenario, '/scenario')
+FLASK_API.add_resource(res.Step, '/step')
 FLASK_API.add_resource(res.Time, '/time')
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
 FLASK_API.add_resource(res.EpLog, '/eplog')
+FLASK_API.add_resource(res.SimMode, '/simmode')
 FLASK_API.add_resource(res.Shutdown, '/shutdown')
+
+# Metrics
+FLASK_API.add_resource(res.Metric, '/metric')
+FLASK_API.add_resource(res.MetricProviders, '/metricproviders')
 
 # endregion
 
 # region Static routes
-
-FLASK_APP.add_url_rule('/', 'index', static.readme, defaults={'root_path': FLASK_APP.root_path})
 
 # endregion

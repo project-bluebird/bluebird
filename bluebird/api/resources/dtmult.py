@@ -43,4 +43,5 @@ class DtMult(Resource):
 			resp = jsonify(f'Could not change speed: {err}')
 			resp.status_code = 500
 
+		bb_client.CLIENT_SIM.step_dt = mult
 		return resp

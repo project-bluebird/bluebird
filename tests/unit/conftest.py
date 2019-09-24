@@ -7,10 +7,24 @@ Populates BlueBird AC_DATA with some test aircraft information for use in testin
 
 import pytest
 
+import bluebird.api as bluebird_api
 import bluebird.cache
 import bluebird.client
 from bluebird.client.client import ApiClient
 from . import SIM_DATA, TEST_DATA
+
+
+@pytest.fixture
+def client():
+	"""
+	Creates a Flask test client for BlueBird
+	:return:
+	"""
+
+	bluebird_api.FLASK_APP.config['TESTING'] = True
+	test_client = bluebird_api.FLASK_APP.test_client()
+
+	yield test_client
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -47,18 +61,28 @@ def patch_client_sim(monkeypatch):
 			self.last_scenario = None
 			self.last_dtmult = None
 			self.was_reset = False
+			self.was_stepped = False
+			self.seed = None
+			self.scn_uploaded = False
 
 		def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
+			self._logger.debug(f'STACK {data} response_expected={response_expected}')
 			self.last_stack_cmd = data
 
-		def load_scenario(self, filename, speed=1.0):
+		def load_scenario(self, filename, speed=1.0, start_paused=False):
+			self._logger.debug(f'load_scenario {filename} {speed} {start_paused}')
 			self.last_scenario = filename
 			self.last_dtmult = speed
+			bluebird.cache.AC_DATA.fill(TEST_DATA)
 
 		def reset_sim(self):
 			self.was_reset = True
 
 		def upload_new_scenario(self, name, lines):
-			return None
+			self._logger.debug(f'upload_new_scenario, {name}')
+			self.scn_uploaded = True
+
+		def step(self):
+			self.was_stepped = True
 
 	monkeypatch.setattr(bluebird.client, 'CLIENT_SIM', TestClient())

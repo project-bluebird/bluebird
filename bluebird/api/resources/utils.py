@@ -4,14 +4,18 @@ Contains utility functions for the API resources
 
 import logging
 
+import re
+import time
 from flask import jsonify
 from flask_restful import reqparse
 
+import bluebird.cache as bb_cache
 import bluebird.client
-from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
 
 _LOGGER = logging.getLogger('bluebird')
+
+_SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*')
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -59,7 +63,7 @@ def check_acid(string, assert_exists=True):
 
 	if assert_exists:
 		for acid in filter(None, string.split(',')):
-			if not AC_DATA.contains(acid):
+			if not bb_cache.AC_DATA.contains(acid):
 				resp = jsonify('AC {} not found'.format(acid))
 				resp.status_code = 404
 				return resp
@@ -127,3 +131,48 @@ def process_stack_cmd(cmd_str, success_code=200):
 		resp.status_code = success_code
 
 	return resp
+
+
+def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
+	"""
+	Waits for the given condition to be met
+	:param lhs:
+	:param rhs:
+	:param max_wait:
+	:return:
+	"""
+
+	timeout = time.time() + max_wait
+	while bool(lhs) != bool(rhs):
+		time.sleep(0.1)
+		if time.time() > timeout:
+			return False
+	return True
+
+
+def check_ac_data():
+	"""
+	Checks if the ac_data is populated after resetting or loading a new scenario
+	:return:
+	"""
+
+	if not wait_until_eq(bb_cache.AC_DATA.store, True):
+		resp = jsonify(
+						'No aircraft data received after loading. Scenario might not contain any aircraft')
+		resp.status_code = 500
+		return resp
+	return None
+
+
+def validate_scenario(scn_lines):
+	"""
+	Checks that each line in the given list matches the requirements
+	:param scn_lines:
+	:return:
+	"""
+
+	for line in scn_lines:
+		if not _SCN_RE.match(line):
+			return f'Line \'{line}\' does not match the required format'
+
+	return None

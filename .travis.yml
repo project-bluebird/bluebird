@@ -17,4 +17,5 @@ install:
   - pip install -r requirements-dev.txt
 
 script:
-  - pytest -rs tests
+  - pytest -rs --ignore=./tests/integration ./tests
+  - pytest -rs  ./tests/integration

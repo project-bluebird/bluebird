@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger('bluebird')
 _ROUTE_RE = re.compile(r'^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$')
 
 
-def _parse_route_data(route_data):
+def parse_route_data(route_data):
 	"""
 	Parse a list of strings containing route data into a keyed dictionary
 	:param route_data:
@@ -74,7 +74,7 @@ class ListRoute(Resource):
 			resp.status_code = 500
 			return resp
 
-		parsed_route = _parse_route_data(reply)
+		parsed_route = parse_route_data(reply)
 
 		if not isinstance(parsed_route, list):
 			resp = jsonify(f'Error: Could not parse route entry {parsed_route}')

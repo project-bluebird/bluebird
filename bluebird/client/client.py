@@ -13,6 +13,7 @@ import bluebird.cache as bb_cache
 import bluebird.logging
 import bluebird.utils as bb_utils
 from bluebird.utils import Timer
+from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
@@ -28,7 +29,7 @@ POLL_RATE = 50  # Hz
 IGNORED_EVENTS = [b'DEFWPT', b'DISPLAYFLAG', b'PANZOOM', b'SHAPE']
 
 # Tuple of strings which should not be considered error responses from BlueSky
-IGNORED_RESPONSES = ('TIME', 'DEFWPT', 'AREA')
+IGNORED_RESPONSES = ('TIME', 'DEFWPT', 'AREA', 'BlueSky Console Window')
 
 
 class ApiClient(Client):
@@ -44,7 +45,11 @@ class ApiClient(Client):
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, POLL_RATE)
 
+		self.seed = None
+		self.step_dt = 1
+
 		self._reset_flag = False
+		self._step_flag = False
 		self._echo_data = []
 		self._scn_response = None
 		self._awaiting_exit_resp = False
@@ -95,6 +100,7 @@ class ApiClient(Client):
 		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._echo_data = []
+		self._logger.debug(f'STACKCMD {data}')
 		self.send_event(b'STACKCMD', data, target)
 
 		time.sleep(25 / POLL_RATE)
@@ -157,6 +163,9 @@ class ApiClient(Client):
 					elif not text.startswith('IC: Opened'):
 						self._echo_data.append(text)
 
+				elif eventname == b'STEP':
+					self._step_flag = True
+
 				elif eventname == b'RESET':
 					self._reset_flag = True
 					self._logger.info('Received BlueSky simulation reset message')
@@ -189,6 +198,7 @@ class ApiClient(Client):
 			self._logger.error(exc)
 			return False
 
+	@timeit('Client')
 	def upload_new_scenario(self, name, lines):
 		"""
 		Uploads a new scenario file to the BlueSky simulation
@@ -205,18 +215,21 @@ class ApiClient(Client):
 		time.sleep(25 / POLL_RATE)
 		resp = self._scn_response
 
-		return resp if (not resp or not resp == 'Ok') else None
+		if not resp == 'Ok':
+			return resp if resp else 'No response received'
+		return None
 
-	def load_scenario(self, filename, speed=1.0):
+	def load_scenario(self, filename, speed=1.0, start_paused=False):
 		"""
 		Load a scenario from a file
 		:param speed:
 		:param filename:
+		:param start_paused:
 		:return:
 		"""
 
-		bb_cache.AC_DATA.timer.disabled = True
-		episode_id = bluebird.logging.restart_episode_log()
+		bb_cache.AC_DATA.reset()
+		episode_id = bluebird.logging.restart_episode_log(self.seed)
 		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
 		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
 
@@ -230,6 +243,11 @@ class ApiClient(Client):
 		if err:
 			return err
 
+		if start_paused:
+			err = self.send_stack_cmd('HOLD')
+			if err:
+				return err
+
 		bluebird.logging.bodge_file_content(filename)
 
 		if speed != 1.0:
@@ -237,6 +255,30 @@ class ApiClient(Client):
 			err = self.send_stack_cmd(cmd)
 			if err:
 				return err
+
+		return None
+
+	def step(self):
+		"""
+		Steps the simulation forward
+		:return:
+		"""
+
+		init_t = int(bluebird.cache.SIM_STATE.sim_t)
+		bluebird.logging.EP_LOGGER.debug(f'[{init_t}] STEP', extra={'PREFIX': CMD_LOG_PREFIX})
+
+		self._step_flag = False
+		self.send_event(b'STEP')
+
+		# Wait for the STEP response, and for the sim_t to have advanced
+		wait_t = 1 / POLL_RATE
+		total_t = 0
+		while not self._step_flag and (bluebird.cache.SIM_STATE.sim_t == init_t):
+			time.sleep(wait_t)
+			total_t += wait_t
+			if total_t >= 5:
+				return f'Error: Could not step. step_flag={self._step_flag} ' \
+				       f'sim_t={bluebird.cache.SIM_STATE.sim_t}'
 
 		return None
 

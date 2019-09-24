@@ -10,7 +10,7 @@ good-names=log
 
 [FORMAT]
 
-indent-string=\t
+indent-string='\t'
 
 [MESSAGES CONTROL]
 
