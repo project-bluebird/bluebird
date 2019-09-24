@@ -11,9 +11,11 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 cat /home/travis/.docker/config.json
 # If CI on master branch then tag with latest
 if [ $TRAVIS_BRANCH = "master" ]; then
+    RELEASE_VERSION=`git describe --tags`
+    echo $TAG_VERSION
     docker build --tag=bluebird .
-    docker tag bluebird turinginst/bluebird:latest
-    docker push turinginst/bluebird:latest
+    docker tag bluebird turinginst/bluebird:$TAG_VERSION
+    docker push turinginst/bluebird:$TAG_VERSION
 fi
 # If CI on release branch branch then tag with that release number
 if [[ $TRAVIS_BRANCH == release* ]]; then
