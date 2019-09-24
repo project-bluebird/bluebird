@@ -440,8 +440,8 @@ Returns:
 {
   "SCN1001": {				// The requested acid (aircraft ID)
     "actype": "B747"        		// Aircraft type
-    "alt": 6096,			// Altitude (ft)
-    "gs": 293.6780042365748,		// Ground speed (kts)
+    "alt": 6096,			// Altitude (m)
+    "gs": 293.6780042365748,		// Ground speed (m/s)
     "lat": 53.8,			// Latitude (deg)
     "lon": 2.0364214816067467,		// Longitude (deg)    
     "vs": 0				// Vertical speed (ft/min)

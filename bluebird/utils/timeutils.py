@@ -64,13 +64,13 @@ def timeit(prefix):
 	:return:
 	"""
 
-	def wrap(f):
-		def wrapped_f(*args, **kwargs):
+	def wrap(func):
+		def wrapped_func(*args, **kwargs):
 			start = time.time()
-			res = f(*args, **kwargs)
-			_LOGGER.debug(f'Method {prefix}.{f.__name__} took {time.time()-start:.2f}s to execute')
+			res = func(*args, **kwargs)
+			_LOGGER.debug(f'Method {prefix}.{func.__name__} took {time.time()-start:.2f}s to execute')
 			return res
 
-		return wrapped_f
+		return wrapped_func
 
 	return wrap

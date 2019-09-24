@@ -100,6 +100,7 @@ class ApiClient(Client):
 		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._echo_data = []
+		self._logger.debug(f'STACKCMD {data}')
 		self.send_event(b'STACKCMD', data, target)
 
 		time.sleep(25 / POLL_RATE)
@@ -263,7 +264,7 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		init_t = bluebird.cache.SIM_STATE.sim_t
+		init_t = int(bluebird.cache.SIM_STATE.sim_t)
 		bluebird.logging.EP_LOGGER.debug(f'[{init_t}] STEP', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._step_flag = False

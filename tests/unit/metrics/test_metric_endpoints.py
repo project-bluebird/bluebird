@@ -51,15 +51,15 @@ def test_metric_endpoint(client, patch_client_sim):
 	resp = client.get(f'{API_PREFIX}/metric?name=test')
 	assert resp.status == '404 NOT FOUND', 'Expected invalid metric to return 404'
 
-	resp = client.get(f'{API_PREFIX}/metric?name=vertical_separation')
+	resp = client.get(f'{API_PREFIX}/metric?name=aircraft_separation')
 	assert resp.status == '400 BAD REQUEST', 'Expected missing args to return 400'
 
-	resp = client.get(f'{API_PREFIX}/metric?name=vertical_separation&args=')
+	resp = client.get(f'{API_PREFIX}/metric?name=aircraft_separation&args=')
 	assert resp.status == '400 BAD REQUEST', 'Expected no args to return 400'
 
-	resp = client.get(f'{API_PREFIX}/metric?name=vertical_separation&args=test')
+	resp = client.get(f'{API_PREFIX}/metric?name=aircraft_separation&args=test')
 	assert resp.status == '400 BAD REQUEST', 'Expected wrong args type to return 400'
 
 	resp = client.get(
-					f'{API_PREFIX}/metric?name=vertical_separation&args={TEST_ACIDS[0]},{TEST_ACIDS[1]}')
+					f'{API_PREFIX}/metric?name=aircraft_separation&args={TEST_ACIDS[0]},{TEST_ACIDS[1]}')
 	assert resp.status == '200 OK', 'Expected valid args to return 200'

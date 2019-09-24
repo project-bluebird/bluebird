@@ -41,13 +41,15 @@ class Alt(Resource):
 		if resp is not None:
 			return resp
 
+		fl_cleared_feet_or_fl = fl_cleared
+
 		# Parse FL to meters
-		if isinstance(fl_cleared, str):
+		if fl_cleared.upper().startswith('FL'):
 			fl_cleared = round(int(fl_cleared[2:]) * 100 * 0.3048)
 
 		AC_DATA.cleared_fls.update({acid: fl_cleared})
 
-		cmd_str = f'ALT {acid} {fl_cleared} {vspd}'.strip()
+		cmd_str = f'ALT {acid} {fl_cleared_feet_or_fl} {vspd}'.strip()
 		return process_stack_cmd(cmd_str)
 
 	@staticmethod

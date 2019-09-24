@@ -7,7 +7,7 @@ Tests for the episode log reloading feature
 import os
 
 import bluebird.client as bb_client
-from bluebird.api.resources.utils import parse_lines
+from bluebird.api.resources.loadlog import parse_lines
 from . import API_PREFIX
 
 
@@ -160,3 +160,27 @@ def test_log_reload_full(client, patch_client_sim):
 	assert bb_client.CLIENT_SIM.scn_uploaded, 'Expected that the scenario was uploaded'
 	assert bb_client.CLIENT_SIM.last_scenario, 'Expected that the scenario was started'
 	assert bb_client.CLIENT_SIM.was_stepped, 'Expected that the simulation was stepped'
+
+
+def test_log_reload_invalid_time(client, patch_client_sim):
+	"""
+    Tests that an error is returned if a reload time was requested which is after the
+    last time in the log file
+	:param client:
+	:param patch_client_sim:
+	:return:
+	"""
+
+	resp = client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	assert resp.status_code == 200, 'Expected the mode to be agent'
+
+	resp = client.post(API_PREFIX + '/seed', json={'value': 1234})
+	assert resp.status_code == 200, 'Expected the seed to be set'
+
+	test_file = 'tests/unit/testEpisode.log'
+	assert os.path.isfile(test_file), ''
+	lines = tuple(open(test_file, 'r'))
+
+	data = {'lines': lines, 'time': 999}
+	resp = client.post(API_PREFIX + '/loadlog', json=data)
+	assert resp.status_code == 400, 'Expected a 400'

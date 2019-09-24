@@ -133,35 +133,35 @@ def process_stack_cmd(cmd_str, success_code=200):
 	return resp
 
 
-def wait_for_data():
+def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
 	"""
-	Waits for the aircraft data store to be repopulated after loading a new scenario. Give up after
-	1 second to handle scenarios which don't contain any aircraft (for whatever reason)
+	Waits for the given condition to be met
+	:param lhs:
+	:param rhs:
+	:param max_wait:
 	:return:
 	"""
 
-	timeout = time.time() + 1
-	while not bb_cache.AC_DATA.store:
+	timeout = time.time() + max_wait
+	while bool(lhs) != bool(rhs):
 		time.sleep(0.1)
 		if time.time() > timeout:
-			_LOGGER.warning(
-							'No aircraft data received after loading. Scenario might not contain any aircraft')
-			break
+			return False
+	return True
 
 
-# TODO Refactor
-def wait_for_pause():
+def check_ac_data():
 	"""
-	Waits for the simulation to be paused
+	Checks if the ac_data is populated after resetting or loading a new scenario
 	:return:
 	"""
 
-	timeout = time.time() + 1
-	while not bb_cache.SIM_STATE.sim_state == 1:
-		time.sleep(0.1)
-		if time.time() > timeout:
-			_LOGGER.warning('Failed to pause in time')
-			break
+	if not wait_until_eq(bb_cache.AC_DATA.store, True):
+		resp = jsonify(
+						'No aircraft data received after loading. Scenario might not contain any aircraft')
+		resp.status_code = 500
+		return resp
+	return None
 
 
 def validate_scenario(scn_lines):
@@ -176,56 +176,3 @@ def validate_scenario(scn_lines):
 			return f'Line \'{line}\' does not match the required format'
 
 	return None
-
-
-def parse_lines(lines, target_time=0):
-	"""
-	Parses the content of an episode file
-	:param lines:
-	:param target_time:
-	:return: String for errors or dict with parsed data
-	"""
-
-	if not lines:
-		return 'No lines provided'
-
-	lines = list(lines)  # Take a copy of the input
-
-	# Get the seed from the first line
-	match = re.match(r'.*Episode started.*Seed is (\d+)', lines.pop(0))
-	if not match:
-		return 'Episode seed was not set'
-	scn_data = {'seed': int(match.group(1)), 'lines': []}
-
-	if not lines:
-		return 'No more lines after parsing seed'
-
-	while not 'Scenario file loaded' in lines[0]:
-		lines.pop(0)
-		if not lines:
-			return 'Couldn\'t find scenario content'
-
-	lines.pop(0)
-
-	while lines:
-		match = re.match(r'.*E.*>.*', lines[0])
-		if not match:
-			break
-		scn_data['lines'].append(lines.pop(0).split(' E ')[1])
-
-	if not lines:
-		return 'No more lines after parsing scenario content'
-
-	while lines:
-		line = lines.pop(0)
-		if 'Episode finished' in line:
-			return scn_data
-		match = re.match(r'.*C \[(\d+)\] (.*)$', line)
-		if match and not 'STEP' in line:
-			time_s = int(match.group(1))
-			if not target_time or time_s <= target_time:
-				cmd_time = time.strftime('%H:%M:%S', time.gmtime(time_s))
-				cmd_str = match.group(2)
-				scn_data['lines'].append(f'{cmd_time}> {cmd_str}')
-
-	return 'Could not find end of episode'
