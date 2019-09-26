@@ -1,7 +1,10 @@
 #!/bin/bash
 set -ev
 # If CI on master branch then tag with latest
-if [ "$TRAVIS_BRANCH" = "master" ]; then
+echo $TRAVIS_BRANCH
+echo $TRAVIS_PULL_REQUEST
+
+if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] ; then
 
     cd $BLUEBIRD_HOME
 
