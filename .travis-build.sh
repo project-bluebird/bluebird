@@ -10,7 +10,7 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 # Although there is a warning, the creds are hashed on the travis end first
 cat /home/travis/.docker/config.json
 # If CI on master branch then tag with latest
-if [ $TRAVIS_BRANCH = "master" ]; then
+if [ "$TRAVIS_BRANCH" = "master" ]; then
     TAG_VERSION=`git describe --tags`
     echo $TAG_VERSION
     docker build --tag=bluebird .
