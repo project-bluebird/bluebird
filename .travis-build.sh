@@ -14,16 +14,7 @@ if [ $TRAVIS_BRANCH = "master" ]; then
     TAG_VERSION=`git describe --tags`
     echo $TAG_VERSION
     docker build --tag=bluebird .
-    docker tag bluebird turinginst/bluebird:$TAG_VERSION
-    docker push turinginst/bluebird:$TAG_VERSION
-fi
-# If CI on release branch branch then tag with that release number
-if [[ $TRAVIS_BRANCH == release* ]]; then
-    echo $TRAVIS_BRANCH
-    RELEASE_VERSION=`echo $TRAVIS_BRANCH | awk -F/ '{print $NF}'`
-    echo $RELEASE_VERSION
-    docker build --tag=bluebird .
-    for tag in {$RELEASE_VERSION,latest}; do
+    for tag in {$TAG_VERSION,latest}; do
         docker tag bluebird turinginst/bluebird:${tag}
         docker push turinginst/bluebird:${tag}
     done
