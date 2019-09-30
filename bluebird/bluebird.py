@@ -8,8 +8,8 @@ from bluebird import settings
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL
 from bluebird.cache import AcDataCache, SimState
-from bluebird.client import ApiClient
 from bluebird.metrics import setup_metrics
+from bluebird.simclient import setup_sim_client
 
 
 class BlueBird:
@@ -38,7 +38,7 @@ class BlueBird:
 		Stops the app and cleans up any threaded code
 		"""
 
-		self._logger.info("BlueBird stopping")
+		self._logger.info('BlueBird stopping')
 
 		for timer in self._timers:
 			timer.stop()
@@ -51,10 +51,9 @@ class BlueBird:
 		:return: True if a connection was established with the server, false otherwise.
 		"""
 
-		# TODO Need to use this to construct the correct client type
-		sim_type = settings.SIM_TYPE
+		sim_client = setup_sim_client()
 
-		self.sim_client = ApiClient(self.sim_state, self.ac_data)
+		# TODO Rename this
 		self._timers.append(self.sim_client.start_timer())
 
 		self._logger.info('Connecting to client...')

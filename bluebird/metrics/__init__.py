@@ -25,10 +25,9 @@ def setup_metrics(ac_data):
 			spec = importlib.util.find_spec(mod_path)
 			if spec is None:
 				raise ModuleNotFoundError(f'Can\'t find {mod_path}')
-			else:
-				module = importlib.util.module_from_spec(spec)
-				spec.loader.exec_module(module)
-				providers.append(getattr(module, 'Provider')(ac_data))
+			module = importlib.util.module_from_spec(spec)
+			spec.loader.exec_module(module)
+			providers.append(getattr(module, 'Provider')(ac_data))
 		except ModuleNotFoundError as exc:
 			_LOGGER.error(f'Couldn\'t import {mod_path}. Check the module exists')
 			raise exc

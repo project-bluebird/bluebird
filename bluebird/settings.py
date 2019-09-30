@@ -51,7 +51,8 @@ class SimType(IntEnum):
 		for member in cls:
 			if SimType(member).name.lower() == value.lower():
 				return member
-		raise ValueError(f'SimType has no value \"{value}\"')
+		raise ValueError(
+						f'SimType has no value \"{value}\". Options are - {", ".join(cls.__members__)}')
 
 
 SIM_TYPE = SimType.BlueSky
