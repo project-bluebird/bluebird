@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for the MachColl simulator
 - Added [black](https://black.readthedocs.io/en/stable/index.html) formatter to requirements and CI script
+- Added datacalsses to simplify handling of physical units
 
 ### Changed
 
