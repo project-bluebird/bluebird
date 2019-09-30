@@ -6,9 +6,9 @@ import pytest
 
 
 def test():
-	"""
+    """
 	Stub test
 	:return:
 	"""
 
-	pytest.skip('Not implemented')
+    pytest.skip("Not implemented")
