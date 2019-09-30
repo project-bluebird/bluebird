@@ -9,10 +9,10 @@ from tests.integration import API_URL_BASE
 
 def test_issue_62():
     """
-	Tests that we properly log the contents of a scenario file when the 'scenario/' prefix is not
-	specified
-	:return:
-	"""
+    Tests that we properly log the contents of a scenario file when the 'scenario/' prefix is not
+    specified
+    :return:
+    """
 
     resp = requests.post(f"{API_URL_BASE}/ic", json={"filename": "8.SCN"})
     assert resp.status_code == 200, "Expected the scenario to be loaded"

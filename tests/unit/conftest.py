@@ -22,9 +22,9 @@ from tests.unit import SIM_DATA, TEST_DATA
 @pytest.fixture(scope="function", autouse=True)
 def log_break():
     """
-	Adds a line break in the debug log file before each test
-	:return:
-	"""
+    Adds a line break in the debug log file before each test
+    :return:
+    """
 
     _LOGGER.debug(f"\n=== New test ===")
 
@@ -32,10 +32,10 @@ def log_break():
 @pytest.fixture
 def test_flask_client():
     """
-	Creates a Flask test client for BlueBird, and adds the needed dependencies to the
-	application config
-	:return:
-	"""
+    Creates a Flask test client for BlueBird, and adds the needed dependencies to the
+    application config
+    :return:
+    """
 
     assert (
         len({len(x) for x in TEST_DATA.values()}) == 1
@@ -49,8 +49,8 @@ def test_flask_client():
 
     class TestBlueSkyClient(BlueSkyClient):
         """
-		Mock BlueSky client for use in testing
-		"""
+        Mock BlueSky client for use in testing
+        """
 
         def __init__(self):
             super().__init__(sim_state, ac_data)
@@ -88,8 +88,8 @@ def test_flask_client():
     class TestBlueBird:
         # pylint: disable=too-few-public-methods
         """
-		Mock BlueBird app for testing
-		"""
+        Mock BlueBird app for testing
+        """
 
         def __init__(self, sim_state, ac_data):
             self.sim_state = sim_state

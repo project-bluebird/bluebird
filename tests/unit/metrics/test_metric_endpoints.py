@@ -17,9 +17,9 @@ from tests.unit import API_PREFIX, TEST_ACIDS
 @pytest.fixture(scope="module", autouse=True)
 def setup_metrics():
     """
-	Calls metrics setup once before this module is tested
-	:return:
-	"""
+    Calls metrics setup once before this module is tested
+    :return:
+    """
 
     ac_data = AcDataCache(SimState())
     bb_metrics.setup_metrics(ac_data)
@@ -27,10 +27,10 @@ def setup_metrics():
 
 def test_metric_providers(client):
     """
-	Tests we can get the available metric providers
-	:param client:
-	:return:
-	"""
+    Tests we can get the available metric providers
+    :param client:
+    :return:
+    """
 
     resp = client.get(f"{API_PREFIX}/metricproviders")
     assert resp.status == "200 OK"
@@ -45,9 +45,9 @@ def test_metric_providers(client):
 
 def test_metric_endpoint(client, patch_client_sim):
     """
-	Tests that invalid inputs are correctly handled
-	:return:
-	"""
+    Tests that invalid inputs are correctly handled
+    :return:
+    """
 
     resp = client.get(f"{API_PREFIX}/metric")
     assert resp.status == "400 BAD REQUEST", "Expected no args to return 400"

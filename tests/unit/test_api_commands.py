@@ -17,10 +17,10 @@ from tests.unit import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KE
 
 def test_pos_command(test_flask_client):
     """
-	Tests the /pos endpoint
-	:param test_flask_client:
-	:return:
-	"""
+    Tests the /pos endpoint
+    :param test_flask_client:
+    :return:
+    """
 
     resp = test_flask_client.get(API_PREFIX + "/pos")
     assert resp.status == "400 BAD REQUEST"
@@ -53,10 +53,10 @@ def test_pos_command(test_flask_client):
 
 def test_ic_command(test_flask_client):
     """
-	Tests the /ic endpoint
-	:param test_flask_client:
-	:return:
-	"""
+    Tests the /ic endpoint
+    :param test_flask_client:
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/ic")
     assert resp.status == "400 BAD REQUEST"
@@ -85,10 +85,10 @@ def test_ic_command(test_flask_client):
 
 def test_reset_command(test_flask_client):
     """
-	Tests the /reset endpoint
-	:param test_flask_client:
-	:return:
-	"""
+    Tests the /reset endpoint
+    :param test_flask_client:
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/reset")
     assert resp.status == "200 OK"
@@ -98,10 +98,10 @@ def test_reset_command(test_flask_client):
 
 def test_cre_new_aircraft(test_flask_client):
     """
-	Test the CRE endpoint handles new aircraft correctly
-	:param test_flask_client
-	:return:
-	"""
+    Test the CRE endpoint handles new aircraft correctly
+    :param test_flask_client
+    :return:
+    """
 
     acid = "TST1234"
     assert not bb_app().ac_data.contains(
@@ -124,10 +124,10 @@ def test_cre_new_aircraft(test_flask_client):
 
 def test_cre_existing_aircraft(test_flask_client):
     """
-	Test the CRE endpoint handles existing aircraft correctly
-	:param test_flask_client
-	:return:
-	"""
+    Test the CRE endpoint handles existing aircraft correctly
+    :param test_flask_client
+    :return:
+    """
 
     acid = TEST_ACIDS[0]
     assert bb_app().ac_data.get(acid) is not None, "Expected the test aircraft to exist"
@@ -148,10 +148,10 @@ def test_cre_existing_aircraft(test_flask_client):
 
 def test_scenario_endpoint(test_flask_client):
     """
-	Tests the create scenario endpoint
-	:param test_flask_client
-	:return:
-	"""
+    Tests the create scenario endpoint
+    :param test_flask_client
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/scenario")
     assert resp.status == "400 BAD REQUEST"
@@ -194,10 +194,10 @@ def test_scenario_endpoint(test_flask_client):
 
 def test_change_mode(test_flask_client):
     """
-	Tests the functionality of the simmode endpoint
-	:param test_flask_client
-	:return:
-	"""
+    Tests the functionality of the simmode endpoint
+    :param test_flask_client
+    :return:
+    """
 
     assert settings.SIM_MODE == "sandbox", "Expected the initial mode to be sandbox"
 
@@ -215,10 +215,10 @@ def test_change_mode(test_flask_client):
 
 def test_non_agent_mode_step(test_flask_client):
     """
-	Tests that the sim is not stepped if in the sandbox mode
-	:param test_flask_client
-	:return:
-	"""
+    Tests that the sim is not stepped if in the sandbox mode
+    :param test_flask_client
+    :return:
+    """
 
     test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "sandbox"})
     assert settings.SIM_MODE == "sandbox", "Expected the initial mode to be sandbox"
@@ -232,10 +232,10 @@ def test_non_agent_mode_step(test_flask_client):
 
 def test_agent_mode_step(test_flask_client):
     """
-	Tests that the sim is stepped if in agent mode
-	:param test_flask_client
-	:return:
-	"""
+    Tests that the sim is stepped if in agent mode
+    :param test_flask_client
+    :return:
+    """
 
     test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert settings.SIM_MODE == "agent", "Expected the mode to be agent"
@@ -249,10 +249,10 @@ def test_agent_mode_step(test_flask_client):
 
 def test_set_seed(test_flask_client):
     """
-	Tests the functionality of the seed endpoint
-	:param test_flask_client
-	:return:
-	"""
+    Tests the functionality of the seed endpoint
+    :param test_flask_client
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/seed")
     assert resp.status == "400 BAD REQUEST"
@@ -289,10 +289,10 @@ def test_set_seed(test_flask_client):
 
 def test_alt_fl_parsing(test_flask_client):
     """
-	Tests that we correctly parse the altitude argument
-	:param test_flask_client
-	:return:
-	"""
+    Tests that we correctly parse the altitude argument
+    :param test_flask_client
+    :return:
+    """
 
     acid = TEST_ACIDS[0]
     data = {"acid": acid, "alt": "FL120"}

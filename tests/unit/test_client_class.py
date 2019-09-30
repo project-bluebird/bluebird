@@ -7,8 +7,8 @@ import pytest
 
 def test():
     """
-	Stub test
-	:return:
-	"""
+    Stub test
+    :return:
+    """
 
     pytest.skip("Not implemented")

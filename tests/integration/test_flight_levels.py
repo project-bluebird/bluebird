@@ -11,9 +11,9 @@ from tests.integration import API_URL_BASE
 
 def test_get_flight_levels():
     """
-	Tests that the correct flight levels are returned
-	:return:
-	"""
+    Tests that the correct flight levels are returned
+    :return:
+    """
 
     resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"
@@ -75,9 +75,9 @@ def test_get_flight_levels():
 
 def test_initial_cleared_flight_level():
     """
-	Tests that the initial cleared flight level is set correctly
-	:return:
-	"""
+    Tests that the initial cleared flight level is set correctly
+    :return:
+    """
 
     resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"

@@ -10,8 +10,8 @@ from tests.integration import API_URL_BASE
 
 def test_episode_logging_agent_mode():
     """
-	Tests the the episode log is correctly populated when in agent mode
-	"""
+    Tests the the episode log is correctly populated when in agent mode
+    """
 
     resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"

@@ -16,18 +16,18 @@ from tests.unit import TEST_ACIDS, TEST_DATA
 @pytest.fixture
 def bb_provider():
     """
-	Yields a new Provider instance for each test
-	:return:
-	"""
+    Yields a new Provider instance for each test
+    :return:
+    """
 
     yield Provider()
 
 
 def _other_cfg():
     """
-	Second config available for testing
-	:return:
-	"""
+    Second config available for testing
+    :return:
+    """
 
     cfg.LOS_SCORE = -10
     cfg.VERT_WARN_DIST = 45_000
@@ -36,9 +36,9 @@ def _other_cfg():
 
 def test_metrics_setup():
     """
-	Tests that each provider can be imported and implements the MetricsProvider ABC fully
-	:return:
-	"""
+    Tests that each provider can be imported and implements the MetricsProvider ABC fully
+    :return:
+    """
 
     bb_metrics.setup_metrics()
     assert bb_metrics.METRIC_PROVIDERS, "Expected the providers to be loaded"
@@ -46,10 +46,10 @@ def test_metrics_setup():
 
 def test_invalid_inputs(bb_provider):
     """
-	Tests calling the basic metrics with invalid inputs
-	:param bb_provider:
-	:return:
-	"""
+    Tests calling the basic metrics with invalid inputs
+    :param bb_provider:
+    :return:
+    """
 
     metrics = ["aircraft_separation"]
 
@@ -63,11 +63,11 @@ def test_invalid_inputs(bb_provider):
 @pytest.mark.parametrize("config_fn", [None, _other_cfg])
 def test_aircraft_separation_values(bb_provider, config_fn):
     """
-	Test the basic aircraft separation endpoint
-	:param bb_provider:
-	:param config_fn:
-	:return:
-	"""
+    Test the basic aircraft separation endpoint
+    :param bb_provider:
+    :param config_fn:
+    :return:
+    """
 
     metric = "aircraft_separation"
     (A1, A2) = TEST_ACIDS

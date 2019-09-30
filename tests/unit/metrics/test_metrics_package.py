@@ -17,9 +17,9 @@ from tests.unit import TEST_ACIDS, TEST_DATA
 @pytest.fixture
 def test_ac_data():
     """
-	Yields a new AcDataCache instance for each test
-	:return:
-	"""
+    Yields a new AcDataCache instance for each test
+    :return:
+    """
 
     sim_state = SimState()
     ac_data = AcDataCache(sim_state)
@@ -29,19 +29,19 @@ def test_ac_data():
 @pytest.fixture
 def test_bb_provider(test_ac_data):
     """
-	Yields a new Provider instance for each test
-	:param test_ac_data:
-	:return:
-	"""
+    Yields a new Provider instance for each test
+    :param test_ac_data:
+    :return:
+    """
 
     yield Provider(test_ac_data)
 
 
 def _other_cfg():
     """
-	Second config available for testing
-	:return:
-	"""
+    Second config available for testing
+    :return:
+    """
 
     cfg.VERT_LOS_SCORE = -10
     cfg.VERT_MIN_DIST = 5_000
@@ -53,20 +53,20 @@ def _other_cfg():
 
 def test_metrics_setup(test_ac_data):
     """
-	Tests that each provider can be imported and implements the MetricsProvider ABC fully
-	:param test_ac_data:
-	:return:
-	"""
+    Tests that each provider can be imported and implements the MetricsProvider ABC fully
+    :param test_ac_data:
+    :return:
+    """
 
     assert setup_metrics(test_ac_data), "Expected the providers to be loaded"
 
 
 def test_invalid_inputs(test_bb_provider):
     """
-	Tests calling the basic metrics with invalid inputs
-	:param test_bb_provider:
-	:return:
-	"""
+    Tests calling the basic metrics with invalid inputs
+    :param test_bb_provider:
+    :return:
+    """
 
     metrics = ["vertical_separation", "horizontal_separation"]
 
@@ -80,12 +80,12 @@ def test_invalid_inputs(test_bb_provider):
 @pytest.mark.parametrize("config_fn", [None, _other_cfg])
 def test_vertical_separation_values(test_ac_data, test_bb_provider, config_fn):
     """
-	Test the basic vertical separation endpoint
-	:param test_ac_data:
-	:param test_bb_provider:
-	:param config_fn:
-	:return:
-	"""
+    Test the basic vertical separation endpoint
+    :param test_ac_data:
+    :param test_bb_provider:
+    :param config_fn:
+    :return:
+    """
 
     metric = "vertical_separation"
     (ac1, ac2) = TEST_ACIDS
@@ -129,12 +129,12 @@ def test_vertical_separation_values(test_ac_data, test_bb_provider, config_fn):
 @pytest.mark.parametrize("config_fn", [None, _other_cfg])
 def test_horizontal_separation_values(test_ac_data, test_bb_provider, config_fn):
     """
-	Test the basic horizontal separation endpoint
-	:param test_ac_data:
-	:param test_bb_provider:
-	:param config_fn:
-	:return:
-	"""
+    Test the basic horizontal separation endpoint
+    :param test_ac_data:
+    :param test_bb_provider:
+    :param config_fn:
+    :return:
+    """
 
     metric = "horizontal_separation"
     (ac1, ac2) = TEST_ACIDS

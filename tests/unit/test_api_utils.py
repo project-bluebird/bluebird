@@ -18,9 +18,9 @@ from tests.unit import TEST_ACIDS
 
 def test_generate_arg_parser():
     """
-	Tests that our generation of the argument parser is correct
-	:return:
-	"""
+    Tests that our generation of the argument parser is correct
+    :return:
+    """
 
     req_args = ["req1", "req2"]
     opt_args = ["opt1"]
@@ -56,10 +56,10 @@ def test_generate_arg_parser():
 
 def test_check_acid(test_flask_client):
     """
-	Tests that check_acid performs correctly
-	:param test_flask_client
-	:return:
-	"""
+    Tests that check_acid performs correctly
+    :param test_flask_client
+    :return:
+    """
 
     app = Flask(__name__)
 
@@ -104,10 +104,10 @@ def test_check_acid(test_flask_client):
 
 def test_process_ac_cmd(test_flask_client):
     """
-	Tests that process_ac_cmd performs correctly
-	:param test_flask_client:
-	:return:
-	"""
+    Tests that process_ac_cmd performs correctly
+    :param test_flask_client:
+    :return:
+    """
 
     cmd = "TST"
     acid = "TST1001"

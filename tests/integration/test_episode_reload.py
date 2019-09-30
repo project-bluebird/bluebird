@@ -14,9 +14,9 @@ _ONE_FT = 0.3048  # Meters
 
 def test_episode_reload_basic():
     """
-	Tests the basic functionality of the episode reloading
-	:return:
-	"""
+    Tests the basic functionality of the episode reloading
+    :return:
+    """
 
     test_acid = "KL204"
 

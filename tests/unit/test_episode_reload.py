@@ -15,9 +15,9 @@ from . import API_PREFIX
 
 def test_parse_lines():
     """
-	Tests the parsing of lines in an episode log
-	:return:
-	"""
+    Tests the parsing of lines in an episode log
+    :return:
+    """
 
     lines = []
     assert isinstance(parse_lines(lines), str), "Expected an error response"
@@ -78,9 +78,9 @@ def test_parse_lines():
 
 def test_parse_lines_time():
     """
-	Test commands after target time are ignored
-	:return:
-	"""
+    Test commands after target time are ignored
+    :return:
+    """
 
     lines = [
         "2019-07-11 10:18:28 E Episode started. SIM_LOG_RATE is 0.2 Hz. Seed is 1234",
@@ -103,10 +103,10 @@ def test_parse_lines_time():
 
 def test_log_reload_from_lines(test_flask_client):
     """
-	Tests the episode reloading given a full logfile in the request
-	:param test_flask_client
-	:return:
-	"""
+    Tests the episode reloading given a full logfile in the request
+    :param test_flask_client
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
@@ -125,10 +125,10 @@ def test_log_reload_from_lines(test_flask_client):
 
 def test_log_reload_from_file(test_flask_client):
     """
-	Tests that the episode reloading works when given a logfile
-	:param test_flask_client
-	:return:
-	"""
+    Tests that the episode reloading works when given a logfile
+    :param test_flask_client
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
@@ -143,10 +143,10 @@ def test_log_reload_from_file(test_flask_client):
 
 def test_log_reload_full(test_flask_client):
     """
-	Tests the full functionality of the log reloading
-	:param test_flask_client
-	:return:
-	"""
+    Tests the full functionality of the log reloading
+    :param test_flask_client
+    :return:
+    """
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
@@ -175,10 +175,10 @@ def test_log_reload_invalid_time(client, patch_client_sim):
     """
     Tests that an error is returned if a reload time was requested which is after the
     last time in the log file
-	:param client:
-	:param patch_client_sim:
-	:return:
-	"""
+    :param client:
+    :param patch_client_sim:
+    :return:
+    """
 
     resp = client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"

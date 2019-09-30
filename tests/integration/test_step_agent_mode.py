@@ -9,8 +9,8 @@ from tests.integration import API_URL_BASE
 
 def test_step_agent_mode():
     """
-	Tests that IC and STEP perform correctly in agent mode with BlueSky
-	"""
+    Tests that IC and STEP perform correctly in agent mode with BlueSky
+    """
 
     resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"
