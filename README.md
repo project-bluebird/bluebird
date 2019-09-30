@@ -3,34 +3,26 @@
 
 # BlueBird
 
-BlueBird is a web API for air traffic simulators.
-
-Currently supports:
-
-- [BlueSky](https://github.com/alan-turing-institute/bluesky)
-
-Future:
-
-- NATS Machine College 😊
-
+BlueBird is a web API for air traffic simulators. The only open-source simulator currently supported is [BlueSky](https://github.com/alan-turing-institute/bluesky).
 
 ## Usage
 
 ### Running locally
 
-To run locally, first start a BlueSky simulation, then:
+To run locally, first start a supported simulation server, then:
 
 ```bash
 > ./install.sh [--dev] [<venv_name>]
 > source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>] [--sim_mode=<mode>] [--reset_sim] [--log_rate=<rate>]
+(venv) > python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
 ```
 
 Notes:
+
 - the `--dev` option will also install dependencies needed for developing BlueBird
-- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
-- If passed, `--reset_sim` will reset the simulation on connection
-- If passed, `--sim_mode` will start the simulation in a specific [mode](docs/SimulatorModes.md). 
+- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
+- If passed, `--reset-sim` will reset the simulation on connection
+- If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
 
 ### Running with Docker
 
@@ -40,13 +32,13 @@ BlueBird can also be run through Docker. Easiest way is to run with docker-compo
 > docker-compose up -d
 ```
 
-This will also pull and start a BlueSky simulation.
+This will also pull and start a BlueSky simulator container.
 
 You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host, and the `sandbox` mode by default. These can be overridden with environment variables:
 
 ```bash
-> docker run --rm -e BS_HOST="1.2.3.4" -e SIM_MODE="agent" turinginst/bluebird:latest 
-``` 
+> docker run --rm -e BS_HOST="1.2.3.4" -e SIM_MODE="agent" turinginst/bluebird:latest
+```
 
 ### API Endpoints
 
@@ -62,7 +54,7 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_RATE` variable in the settings. This value represents the frequency of logging in terms of the simulator time. This can be set at startup with the `--log_rate` option.
+The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_RATE` variable in the settings. This value represents the frequency of logging in terms of the simulator time. This can be set at startup with the `--log-rate` option.
 
 The timestamps of the `logs/*` directories are the start times of the BlueBird app, whereas the timestamps in the episode file names are the start of each episode.
 

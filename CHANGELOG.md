@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added support for the MachColl simulator
+
+### Changed
+
+- Replaced underscores with dashes in all of the CLI options
+
 ## [1.3.0] - 2019-09-24
 
 ### Added
