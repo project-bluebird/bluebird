@@ -6,146 +6,157 @@ import logging
 
 import re
 import time
+from typing import List, Union, Optional, Tuple
+from http import HTTPStatus
 from flask import current_app, jsonify
 from flask_restful import reqparse
 
-from bluebird.utils.strings import is_acid
+import bluebird.settings as bb_settings
+from bluebird.cache import AcDataCache, SimState
+from bluebird.metrics.metrics_provider import MetricProvider
+from bluebird.simclient import AbstractSimClient
+from bluebird.utils.types import LatLon, Callsign
 
-_LOGGER = logging.getLogger(__package__)
+_LOGGER = logging.getLogger(__name__)
 
 # Name of the Flask config which contains the BlueBird instance
 FLASK_CONFIG_LABEL = "bluebird_app"
 
+# API label for aircraft callsigns. Historically this was "acid" for the BlueSky
+# simulator
+CALLSIGN_LABEL = "acid"
+
 _SCN_RE = re.compile(r"\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*")
 
 
-def bb_app():
+def parse_args(parser: reqparse.RequestParser) -> dict:
+    """
+    Parse the request arguments and return them as a dict
+    """
+    return dict(parser.parse_args(strict=True))
+
+
+RespTuple = Tuple[str, HTTPStatus]
+
+
+def internal_err_resp(err: str) -> RespTuple:
+    """
+    Generates a standard flask error response for a given error
+    """
+    return (err, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+def not_found_resp(err: str) -> RespTuple:
+    """
+    Generates a standard NOT_FOUND flask response
+    """
+    return (err, HTTPStatus.NOT_FOUND)
+
+
+def ok_resp(data: dict = None) -> RespTuple:
+    """
+    Generates a standard response
+    """
+    if data:
+        return (jsonify(data), HTTPStatus.OK)
+    return ("", HTTPStatus.OK)
+
+
+def not_implemented_resp() -> RespTuple:
+    """
+    Generates a standard response for APIs which are not implemented for the current
+    simulator
+    """
+    return (
+        f"API is not supported for the {bb_settings.SIM_TYPE.name} simulator",
+        HTTPStatus.NOT_IMPLEMENTED,
+    )
+
+
+def bad_request_resp(msg: str) -> RespTuple:
+    """
+    Generates a standard BAD_REQUEST response with the given message
+    """
+    return (msg, HTTPStatus.BAD_REQUEST)
+
+
+def checked_resp(err: Optional[str]) -> RespTuple:
+    """
+    Generates a standard OK or INTERNAL_SERVER_ERROR response depending on the value of
+    err
+    """
+    if err:
+        return internal_err_resp(err)
+    return ok_resp()
+
+
+def try_parse_lat_lon(args: dict) -> Union[LatLon, RespTuple]:
+    """
+    Attempts to parse a LatLon from an argument dict
+    :param args:
+    :return:
+    """
+    try:
+        return LatLon(args["lat"], args["lon"])
+    except AssertionError as exc:
+        return bad_request_resp(f"Invalid LatLon: {exc}")
+
+
+def _bb_app():
     """
     Gets the BlueBird app instance
-    :return:
     """
-
     # pylint: disable=protected-access
-    if not hasattr(bb_app, "_instance"):
-        bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
-    return bb_app._instance
+    if not hasattr(_bb_app, "_instance"):
+        _bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
+    return _bb_app._instance
 
 
-def generate_arg_parser(_req_args, opt_args=None):
+def sim_client() -> AbstractSimClient:
     """
-    Generates a flask_restful argument parser from the provided required and optional arguments. The
-    'acid' (aircraft ID) is always added as the first required parameter.
-    :param _req_args: Array of required arguments
-    :param opt_args: Array of optional arguments
+    Utility function to return the sim_client instance
+    """
+    return _bb_app().sim_client
+
+
+def ac_data() -> AcDataCache:
+    """
+    Utility function to return the ac_data instance
+    """
+    return _bb_app().ac_data
+
+
+def sim_state() -> SimState:
+    """
+    Utility function to return the sim_state instance
+    """
+    return _bb_app().sim_state
+
+
+def metrics_providers() -> List[MetricProvider]:
+    """
+    Utility function to return the metrics_providers instance
+    """
+    return _bb_app().metrics_providers
+
+
+# TODO Old version of this checked multiple strings at once - need to modify or change
+# usage
+# TODO Only directly check ac_data if settings.streaming
+def check_callsign_exists(callsign: Callsign) -> Optional[RespTuple]:
+    """
+    Asserts that the given callsign exists in the scenario
+    :param callsign:
     :return:
     """
 
-    req_args = _req_args.copy()
-    req_args.insert(0, "acid")
+    if not ac_data().store:
+        return bad_request_resp("No aircraft in the simulaton")
 
-    parser = reqparse.RequestParser()
-
-    for arg in req_args:
-        parser.add_argument(arg, type=str, location="json", required=True)
-
-    if opt_args is not None:
-        for arg in opt_args:
-            parser.add_argument(arg, type=str, location="json", required=False)
-
-    return parser
-
-
-def check_acid(string, assert_exists=True):
-    """
-    Checks that the given string is a valid ACID, and that it exists in the current simulation.
-    Returns a pre-filled Flask response object if the checks fail, or returns None otherwise.
-    :param string:
-    :param assert_exists: Whether to assert the aircraft already exists or not.
-    :return:
-    """
-
-    if not string:
-        resp = jsonify("No ACID provided")
-        resp.status_code = 400
-        return resp
-
-    if not is_acid(string):
-        resp = jsonify("Invalid ACID '{}'".format(string))
-        resp.status_code = 400
-        return resp
-
-    if assert_exists:
-        for acid in filter(None, string.split(",")):
-            if not bb_app().ac_data.contains(acid):
-                resp = jsonify("AC {} not found".format(acid))
-                resp.status_code = 404
-                return resp
+    if not ac_data().contains(str(callsign)):
+        return bad_request_resp("")
 
     return None
-
-
-# TODO Allow units to be defined?
-# TODO The parser has already been seeded with the required and optional arguments, can we infer
-# them here?
-# pylint: disable=too-many-arguments
-def process_ac_cmd(
-    cmd, parser, req_args, opt_args=None, assert_exists=True, success_code=200
-):
-    """
-    Generates a command string using the provided parser and arguments, then sends it to the
-    running simulation.
-    :param cmd: The name of the command to run
-    :param parser:
-    :param req_args:
-    :param opt_args:
-    :param assert_exists: Whether to assert the aircraft already exists or not.
-    :param success_code: Status code to return on success. Default is 200.
-    :return:
-    """
-
-    parsed = parser.parse_args(strict=True)
-    acid = parsed["acid"]
-
-    resp = check_acid(acid, assert_exists)
-    if resp is not None:
-        return resp
-
-    cmd_str = "{} {}".format(cmd, acid)
-
-    for arg in req_args:
-        cmd_str += " {{{}}}".format(arg)
-
-    cmd_str = cmd_str.format(**parsed)
-
-    if opt_args is not None:
-        for opt in opt_args:
-            if parsed[opt] is not None:
-                cmd_str += " {}".format(parsed[opt])
-
-    return process_stack_cmd(cmd_str, success_code)
-
-
-def process_stack_cmd(cmd_str, success_code=200):
-    """
-    Sends command to simulation and returns response.
-    :param cmd_str: a command string
-    :param success_code:
-    :return:
-    """
-
-    _LOGGER.debug("Sending stack command: {}".format(cmd_str))
-
-    error = bb_app().sim_client.send_stack_cmd(cmd_str)
-
-    if error:
-        resp = jsonify(f"Simulation returned: {error}")
-        resp.status_code = 500
-
-    else:
-        resp = jsonify("Command accepted")
-        resp.status_code = success_code
-
-    return resp
 
 
 def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
@@ -158,29 +169,31 @@ def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
     """
 
     timeout = time.time() + max_wait
+
     while bool(lhs) != bool(rhs):
         time.sleep(0.1)
         if time.time() > timeout:
             return False
+
     return True
 
 
-def check_ac_data():
+def check_ac_data() -> Optional[str]:
     """
     Checks if the ac_data is populated after resetting or loading a new scenario
     :return:
     """
 
-    if not wait_until_eq(bb_app().ac_data.store, True):
-        resp = jsonify(
-            "No aircraft data received after loading. Scenario might not contain any aircraft"
+    if not wait_until_eq(ac_data().store, True):
+        return (
+            "No aircraft data received after loading. Scenario might not contain any "
+            "aircraft"
         )
-        resp.status_code = 500
-        return resp
+
     return None
 
 
-def validate_scenario(scn_lines):
+def validate_scenario(scn_lines: List[str]) -> Optional[str]:
     """
     Checks that each line in the given list matches the requirements
     :param scn_lines:
