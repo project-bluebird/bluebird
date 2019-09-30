@@ -9,9 +9,7 @@ import time
 import msgpack
 import zmq
 
-import bluebird.cache as bb_cache
 import bluebird.logging
-import bluebird.utils as bb_utils
 from bluebird.utils import Timer
 from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
@@ -37,10 +35,13 @@ class ApiClient(Client):
 	Client class for the BlueSky simulator
 	"""
 
-	def __init__(self):
+	def __init__(self, sim_state, ac_data):
 		super(ApiClient, self).__init__(ACTIVE_NODE_TOPICS)
 
 		self._logger = logging.getLogger(__name__)
+
+		self._sim_state = sim_state
+		self._ac_data = ac_data
 
 		# Continually poll for the sim state
 		self.timer = Timer(self.receive, POLL_RATE)
@@ -54,14 +55,14 @@ class ApiClient(Client):
 		self._scn_response = None
 		self._awaiting_exit_resp = False
 
-	def start(self):
+	def start_timer(self):
 		"""
-		Start the client
+		Start the client timer
 		:return:
 		"""
 
 		self.timer.start()
-		bb_utils.TIMERS.append(self.timer)
+		return self.timer
 
 	def stop(self):
 		"""
@@ -79,12 +80,14 @@ class ApiClient(Client):
 		:param sender_id:
 		"""
 
+		# TODO Refactor these into two "update_x" methods of a Simulation proxy class
+
 		# Fill the cache with the aircraft data
 		if name == b'ACDATA':
-			bb_cache.AC_DATA.fill(data)
+			self._ac_data.fill(data)
 
 		elif name == b'SIMINFO':
-			bb_cache.SIM_STATE.update(data)
+			self._sim_state.update(data)
 
 		self.stream_received.emit(name, data, sender_id)
 
@@ -96,8 +99,8 @@ class ApiClient(Client):
 		:param target:
 		"""
 
-		sim_t = bb_cache.SIM_STATE.sim_t
-		bluebird.logging.EP_LOGGER.debug(f'[{sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
+		bluebird.logging.EP_LOGGER.debug(
+						f'[{self._sim_state.sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._echo_data = []
 		self._logger.debug(f'STACKCMD {data}')
@@ -228,10 +231,10 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		bb_cache.AC_DATA.reset()
+		self._ac_data.reset()
 		episode_id = bluebird.logging.restart_episode_log(self.seed)
 		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
-		bb_cache.AC_DATA.set_log_rate(speed, new_log=True)
+		self._ac_data.set_log_rate(speed, new_log=True)
 
 		self._reset_flag = False
 
@@ -264,7 +267,7 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		init_t = int(bluebird.cache.SIM_STATE.sim_t)
+		init_t = int(self._sim_state.sim_t)
 		bluebird.logging.EP_LOGGER.debug(f'[{init_t}] STEP', extra={'PREFIX': CMD_LOG_PREFIX})
 
 		self._step_flag = False
@@ -273,12 +276,12 @@ class ApiClient(Client):
 		# Wait for the STEP response, and for the sim_t to have advanced
 		wait_t = 1 / POLL_RATE
 		total_t = 0
-		while not self._step_flag and (bluebird.cache.SIM_STATE.sim_t == init_t):
+		while not self._step_flag and (self._sim_state.sim_t == init_t):
 			time.sleep(wait_t)
 			total_t += wait_t
 			if total_t >= 5:
 				return f'Error: Could not step. step_flag={self._step_flag} ' \
-				       f'sim_t={bluebird.cache.SIM_STATE.sim_t}'
+				       f'sim_t={self._sim_state.sim_t}'
 
 		return None
 
@@ -288,7 +291,7 @@ class ApiClient(Client):
 		:return:
 		"""
 
-		bb_cache.AC_DATA.timer.disabled = True
+		self._ac_data.timer.disabled = True
 		bluebird.logging.close_episode_log('sim reset')
 
 		self._reset_flag = False
@@ -306,7 +309,7 @@ class ApiClient(Client):
 		if not self._reset_flag:
 			return 'Did not receive reset confirmation in time!'
 
-		bb_cache.AC_DATA.clear()
+		self._ac_data.clear()
 		return None
 
 	def quit(self):

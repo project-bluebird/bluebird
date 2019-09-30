@@ -26,7 +26,6 @@ corresponding lower thresholds, that is: C_h = 10 nm, C_v = 2000 ft
 import numpy as np
 from pyproj import Geod
 
-from bluebird.cache import AC_DATA
 from bluebird.utils.strings import is_acid
 from . import config as cfg
 
@@ -37,25 +36,25 @@ _ONE_NM = 1852  # Meters
 _SCALE_METRES_TO_FEET = 3.280839895
 
 
-def _get_pos(acid):
+def _get_pos(ac_data, acid):
 	assert isinstance(acid, str), 'Expected the input to be a string'
 	assert is_acid(acid), 'Expected the input to be a valid ACID'
-	assert AC_DATA.contains(acid), 'Expected the aircraft to exist in the simulation'
-	return AC_DATA.get(acid)[acid]
+	assert ac_data.contains(acid), 'Expected the aircraft to exist in the simulation'
+	return ac_data.get(acid)[acid]
 
 
-def _vertical_separation(acid1, acid2):
+def _vertical_separation(ac_data, acid1, acid2):
 	"""
 	Basic vertical separation metric
+	:param ac_data:
 	:param acid1:
 	:param acid2:
 	:return:
 	"""
 
-	alt1 = _get_pos(acid1)['alt']
-	alt2 = _get_pos(acid2)['alt']
+	alt1 = _get_pos(ac_data, acid1)['alt']
+	alt2 = _get_pos(ac_data, acid2)['alt']
 	vertical_sep_metres = abs(alt1 - alt2)
-
 	vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
 
 	if vertical_sep_ft < cfg.VERT_MIN_DIST:
@@ -69,16 +68,18 @@ def _vertical_separation(acid1, acid2):
 	return 0
 
 
-def _horizontal_separation(acid1, acid2):
+def _horizontal_separation(ac_data, acid1, acid2):
+
 	"""
 	Basic horizontal separation metric
+	:param ac_data:
 	:param acid1:
 	:param acid2:
 	:return:
 	"""
 
-	pos1 = _get_pos(acid1)
-	pos2 = _get_pos(acid2)
+	pos1 = _get_pos(ac_data, acid1)
+	pos2 = _get_pos(ac_data, acid2)
 
 	_, _, horizontal_sep_m = _WGS84.inv(pos1['lon'], pos1['lat'], pos2['lon'], pos2['lat'])
 	horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)

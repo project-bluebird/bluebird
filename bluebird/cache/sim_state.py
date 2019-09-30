@@ -5,13 +5,14 @@ Module contains logic for storing the state of the remote simulation
 import logging
 
 from bluebird.settings import SIM_LOG_RATE
-from bluebird.utils import TIMERS, Timer
+from bluebird.utils import Timer
 
 # Note - BlueSky SIMINFO returns:
 # [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)), bs.traf.ntraf,
 # bs.sim.state, stack.get_scenname()]
 # [1.0015915889597933, 0.05, 3550.1500000041497, '2019-03-06 00:59:10', 2, 2, '']
 
+# TODO Make this an enum
 # BlueSky simulation states (OP renamed to RUN)
 BS_STATES = ['INIT', 'HOLD', 'RUN', 'END']
 
@@ -26,6 +27,7 @@ class SimState:
 	def __init__(self):
 		self._logger = logging.getLogger(__name__)
 
+		# TODO Can be private?
 		self.timer = Timer(self._log, SIM_LOG_RATE)
 
 		self.sim_speed = 0
@@ -36,15 +38,15 @@ class SimState:
 		self.ac_count = 0
 		self.scn_name = ''
 
-	def start(self):
+	def start_timer(self):
 		"""
 		Starts the timer for logging
 		:return:
 		"""
 
 		self.timer.start()
-		TIMERS.append(self.timer)
 		self._logger.info(f'Logging started. Initial SIM_LOG_RATE={SIM_LOG_RATE}')
+		return self.timer
 
 	def update(self, data):
 		"""

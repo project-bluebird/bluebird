@@ -10,15 +10,15 @@ import bluebird.settings as bb_settings
 
 _LOGGER = logging.getLogger(__package__)
 
-METRIC_PROVIDERS = []
 
-
-def setup_metrics():
+def setup_metrics(ac_data):
 	"""
-	Loads the metrics providers defined in the global settings
+	Loads the metrics providers defined in the global settings. Returns them as a list
+	:param ac_data:
 	:return:
 	"""
 
+	providers = []
 	for provider in bb_settings.METRICS_PROVIDERS:
 		mod_path = f'{__package__}.{provider}.provider'
 		try:
@@ -28,7 +28,9 @@ def setup_metrics():
 			else:
 				module = importlib.util.module_from_spec(spec)
 				spec.loader.exec_module(module)
-				METRIC_PROVIDERS.append(getattr(module, 'Provider')())
+				providers.append(getattr(module, 'Provider')(ac_data))
 		except ModuleNotFoundError as exc:
 			_LOGGER.error(f'Couldn\'t import {mod_path}. Check the module exists')
 			raise exc
+
+	return providers

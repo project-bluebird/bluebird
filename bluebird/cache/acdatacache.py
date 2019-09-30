@@ -7,12 +7,11 @@ import logging
 
 import datetime
 
-import bluebird.cache
 import bluebird.logging
+from bluebird.cache.base import Cache
 from bluebird.settings import SIM_LOG_RATE
-from bluebird.utils import TIMERS, Timer
+from bluebird.utils import Timer
 from bluebird.utils.timeutils import log_rate
-from .base import Cache
 
 LOG_PREFIX = 'A'
 
@@ -28,13 +27,16 @@ class AcDataCache(Cache):
 	Holds the most recent aircraft data
 	"""
 
-	def __init__(self):
+	def __init__(self, sim_state):
 		super().__init__()
 
 		self._logger = logging.getLogger(__name__)
 
+		self._sim_state = sim_state
+
 		# Periodically log the sim state to file. Starts disabled.
 		self._target_sim_speed = 1
+		# TODO Can be private?
 		self.timer = Timer(self.log, SIM_LOG_RATE)
 		self.timer.disabled = True
 
@@ -43,14 +45,14 @@ class AcDataCache(Cache):
 
 		self.cleared_fls = {}
 
-	def start(self):
+	def start_timer(self):
 		"""
 		Starts the timer for logging
 		:return:
 		"""
 
 		self.timer.start()
-		TIMERS.append(self.timer)
+		return self.timer
 
 	def reset(self):
 		"""
@@ -79,8 +81,7 @@ class AcDataCache(Cache):
 				data[acid] = super().get(acid)
 
 		if data is not None:
-			sim_state = bluebird.cache.SIM_STATE
-			data['sim_t'] = sim_state.sim_t
+			data['sim_t'] = self._sim_state.sim_t
 
 		return data
 
@@ -133,8 +134,7 @@ class AcDataCache(Cache):
 		"""
 
 		self._target_sim_speed = new_speed
-		sim_state = bluebird.cache.SIM_STATE
-		current_speed = sim_state.sim_speed
+		current_speed = self._sim_state.sim_speed
 
 		rate = log_rate(new_speed)
 
@@ -165,7 +165,7 @@ class AcDataCache(Cache):
 		if not self.store:
 			return
 
-		sim_t = bluebird.cache.SIM_STATE.sim_t
+		sim_t = self._sim_state.sim_t
 
 		# Don't log if the simulation hasn't advanced, except if it is the initial log
 		if sim_t == self.prev_log_sim_t and self.have_logged_aircraft:
