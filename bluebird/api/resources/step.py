@@ -10,31 +10,31 @@ from bluebird.api.resources.utils import bb_app
 
 
 class Step(Resource):
-	"""
+    """
 	Contains logic for the step endpoint
 	"""
 
-	@staticmethod
-	def post():
-		"""
+    @staticmethod
+    def post():
+        """
 		Logic for POST events.
 		:return: :class:`~flask.Response`
 		"""
 
-		if settings.SIM_MODE != 'agent':
-			resp = jsonify('Must be in agent mode to use step')
-			resp.status_code = 400
-			return resp
+        if settings.SIM_MODE != "agent":
+            resp = jsonify("Must be in agent mode to use step")
+            resp.status_code = 400
+            return resp
 
-		err = bb_app().sim_client.step()
+        err = bb_app().sim_client.step()
 
-		if not err:
-			resp = jsonify('Simulation stepped')
-			resp.status_code = 200
-		else:
-			resp = jsonify(f'Could not step simulations: {err}')
-			resp.status_code = 500
+        if not err:
+            resp = jsonify("Simulation stepped")
+            resp.status_code = 200
+        else:
+            resp = jsonify(f"Could not step simulations: {err}")
+            resp.status_code = 500
 
-		bb_app().ac_data.log()
+        bb_app().ac_data.log()
 
-		return resp
+        return resp

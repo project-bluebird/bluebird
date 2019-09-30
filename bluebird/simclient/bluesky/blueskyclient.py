@@ -7,7 +7,10 @@ import sys
 
 # Import BlueSky from the git submodule
 sys.path.append(
-				os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.abspath('./bluesky')))
+    os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), os.path.abspath("./bluesky")
+    )
+)
 
 import json
 import logging
@@ -22,214 +25,226 @@ from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
 
-CMD_LOG_PREFIX = 'C'
+CMD_LOG_PREFIX = "C"
 
 # The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
-ACTIVE_NODE_TOPICS = [b'ACDATA', b'SIMINFO']
+ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO"]
 
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
 
 # Events which should be ignored
-IGNORED_EVENTS = [b'DEFWPT', b'DISPLAYFLAG', b'PANZOOM', b'SHAPE']
+IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 
 # Tuple of strings which should not be considered error responses from BlueSky
-IGNORED_RESPONSES = ('TIME', 'DEFWPT', 'AREA', 'BlueSky Console Window')
+IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
 
 class BlueSkyClient(Client):
-	"""
+    """
 	Client class for the BlueSky simulator
 	"""
 
-	def __init__(self, sim_state, ac_data):
-		super().__init__(ACTIVE_NODE_TOPICS)
+    def __init__(self, sim_state, ac_data):
+        super().__init__(ACTIVE_NODE_TOPICS)
 
-		self._logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
-		self._sim_state = sim_state
-		self._ac_data = ac_data
+        self._sim_state = sim_state
+        self._ac_data = ac_data
 
-		# Continually poll for the sim state
-		self.timer = Timer(self.receive, POLL_RATE)
+        # Continually poll for the sim state
+        self.timer = Timer(self.receive, POLL_RATE)
 
-		self.seed = None
-		self.step_dt = 1
+        self.seed = None
+        self.step_dt = 1
 
-		self._reset_flag = False
-		self._step_flag = False
-		self._echo_data = []
-		self._scn_response = None
-		self._awaiting_exit_resp = False
+        self._reset_flag = False
+        self._step_flag = False
+        self._echo_data = []
+        self._scn_response = None
+        self._awaiting_exit_resp = False
 
-	def start_timer(self):
-		"""
+    def start_timer(self):
+        """
 		Start the client timer
 		:return:
 		"""
 
-		self.timer.start()
-		return self.timer
+        self.timer.start()
+        return self.timer
 
-	def stop(self):
-		"""
+    def stop(self):
+        """
 		Stop the client and disconnect
 		"""
 
-		self.timer.stop()
-		bluebird.logging.close_episode_log('client was stopped')
+        self.timer.stop()
+        bluebird.logging.close_episode_log("client was stopped")
 
-	def stream(self, name, data, sender_id):
-		"""
+    def stream(self, name, data, sender_id):
+        """
 		Method called to process data received on a stream
 		:param name:
 		:param data:
 		:param sender_id:
 		"""
 
-		# TODO Refactor these into two "update_x" methods of a Simulation proxy class
+        # TODO Refactor these into two "update_x" methods of a Simulation proxy class
 
-		# Fill the cache with the aircraft data
-		if name == b'ACDATA':
-			self._ac_data.fill(data)
+        # Fill the cache with the aircraft data
+        if name == b"ACDATA":
+            self._ac_data.fill(data)
 
-		elif name == b'SIMINFO':
-			self._sim_state.update(data)
+        elif name == b"SIMINFO":
+            self._sim_state.update(data)
 
-		self.stream_received.emit(name, data, sender_id)
+        self.stream_received.emit(name, data, sender_id)
 
-	def send_stack_cmd(self, data=None, response_expected=False, target=b'*'):
-		"""
+    def send_stack_cmd(self, data=None, response_expected=False, target=b"*"):
+        """
 		Send a command to the BlueSky simulation command stack
 		:param data:
 		:param response_expected:
 		:param target:
 		"""
 
-		bluebird.logging.EP_LOGGER.debug(
-						f'[{self._sim_state.sim_t}] {data}', extra={'PREFIX': CMD_LOG_PREFIX})
+        bluebird.logging.EP_LOGGER.debug(
+            f"[{self._sim_state.sim_t}] {data}", extra={"PREFIX": CMD_LOG_PREFIX}
+        )
 
-		self._echo_data = []
-		self.send_event(b'STACKCMD', data, target)
+        self._echo_data = []
+        self.send_event(b"STACKCMD", data, target)
 
-		time.sleep(25 / POLL_RATE)
+        time.sleep(25 / POLL_RATE)
 
-		if response_expected and self._echo_data:
-			return list(self._echo_data)
+        if response_expected and self._echo_data:
+            return list(self._echo_data)
 
-		if self._echo_data:
+        if self._echo_data:
 
-			if self._echo_data[0].startswith(IGNORED_RESPONSES):
-				return None
+            if self._echo_data[0].startswith(IGNORED_RESPONSES):
+                return None
 
-			self._logger.error(f'Command \'{data}\' resulted in error: {self._echo_data}')
-			errs = '\n'.join(str(x) for x in self._echo_data)
-			return str(f'Error(s): {errs}')
+            self._logger.error(f"Command '{data}' resulted in error: {self._echo_data}")
+            errs = "\n".join(str(x) for x in self._echo_data)
+            return str(f"Error(s): {errs}")
 
-		if response_expected:
-			return 'Error: no response received'
+        if response_expected:
+            return "Error: no response received"
 
-		return None
+        return None
 
-	def receive(self, timeout=0):
-		try:
-			socks = dict(self.poller.poll(timeout))
-			if socks.get(self.event_io) == zmq.POLLIN:
+    def receive(self, timeout=0):
+        try:
+            socks = dict(self.poller.poll(timeout))
+            if socks.get(self.event_io) == zmq.POLLIN:
 
-				msg = self.event_io.recv_multipart()
+                msg = self.event_io.recv_multipart()
 
-				# Remove send-to-all flag if present
-				if msg[0] == b'*':
-					msg.pop(0)
+                # Remove send-to-all flag if present
+                if msg[0] == b"*":
+                    msg.pop(0)
 
-				route, eventname, data = msg[:-2], msg[-2], msg[-1]
+                route, eventname, data = msg[:-2], msg[-2], msg[-1]
 
-				self.sender_id = route[0]
-				route.reverse()
-				pydata = msgpack.unpackb(data, object_hook=decode_ndarray,
-				                         encoding='utf-8') if data else None
+                self.sender_id = route[0]
+                route.reverse()
+                pydata = (
+                    msgpack.unpackb(data, object_hook=decode_ndarray, encoding="utf-8")
+                    if data
+                    else None
+                )
 
-				self._logger.debug('EVT :: {} :: {}'.format(eventname, pydata))
+                self._logger.debug("EVT :: {} :: {}".format(eventname, pydata))
 
-				if eventname in IGNORED_EVENTS:
-					self._logger.debug(f'Ignored event {eventname}')
+                if eventname in IGNORED_EVENTS:
+                    self._logger.debug(f"Ignored event {eventname}")
 
-				# TODO Is this case relevant here?
-				elif eventname == b'NODESCHANGED':
-					self.servers.update(pydata)
-					self.nodes_changed.emit(pydata)
+                # TODO Is this case relevant here?
+                elif eventname == b"NODESCHANGED":
+                    self.servers.update(pydata)
+                    self.nodes_changed.emit(pydata)
 
-					# If this is the first known node, select it as active node
-					nodes_myserver = next(iter(pydata.values())).get('nodes')
-					if not self.act and nodes_myserver:
-						self.actnode(nodes_myserver[0])
+                    # If this is the first known node, select it as active node
+                    nodes_myserver = next(iter(pydata.values())).get("nodes")
+                    if not self.act and nodes_myserver:
+                        self.actnode(nodes_myserver[0])
 
-				# TODO Also check the pydata contains 'syntax error' etc.
-				elif eventname == b'ECHO':
-					text = pydata['text']
-					if text.startswith('Unknown command: METRICS'):
-						self._logger.warning('Ignored warning about invalid "METRICS" command')
-					elif not text.startswith('IC: Opened'):
-						self._echo_data.append(text)
+                # TODO Also check the pydata contains 'syntax error' etc.
+                elif eventname == b"ECHO":
+                    text = pydata["text"]
+                    if text.startswith("Unknown command: METRICS"):
+                        self._logger.warning(
+                            'Ignored warning about invalid "METRICS" command'
+                        )
+                    elif not text.startswith("IC: Opened"):
+                        self._echo_data.append(text)
 
-				elif eventname == b'STEP':
-					self._step_flag = True
+                elif eventname == b"STEP":
+                    self._step_flag = True
 
-				elif eventname == b'RESET':
-					self._reset_flag = True
-					self._logger.info('Received BlueSky simulation reset message')
+                elif eventname == b"RESET":
+                    self._reset_flag = True
+                    self._logger.info("Received BlueSky simulation reset message")
 
-				elif eventname == b'QUIT':
-					if self._awaiting_exit_resp:
-						self._awaiting_exit_resp = False
-					else:
-						self._logger.error('Unhandled quit event from simulation')
+                elif eventname == b"QUIT":
+                    if self._awaiting_exit_resp:
+                        self._awaiting_exit_resp = False
+                    else:
+                        self._logger.error("Unhandled quit event from simulation")
 
-				elif eventname == b'SCENARIO':
-					self._scn_response = pydata
+                elif eventname == b"SCENARIO":
+                    self._scn_response = pydata
 
-				else:
-					self._logger.warning('Unhandled eventname "{} with data {}"'.format(eventname, pydata))
-					self.event(eventname, pydata, self.sender_id)
+                else:
+                    self._logger.warning(
+                        'Unhandled eventname "{} with data {}"'.format(
+                            eventname, pydata
+                        )
+                    )
+                    self.event(eventname, pydata, self.sender_id)
 
-			if socks.get(self.stream_in) == zmq.POLLIN:
-				msg = self.stream_in.recv_multipart()
+            if socks.get(self.stream_in) == zmq.POLLIN:
+                msg = self.stream_in.recv_multipart()
 
-				strmname = msg[0][:-5]
-				sender_id = msg[0][-5:]
-				pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, encoding='utf-8')
+                strmname = msg[0][:-5]
+                sender_id = msg[0][-5:]
+                pydata = msgpack.unpackb(
+                    msg[1], object_hook=decode_ndarray, encoding="utf-8"
+                )
 
-				self.stream(strmname, pydata, sender_id)
+                self.stream(strmname, pydata, sender_id)
 
-			return True
+            return True
 
-		except zmq.ZMQError as exc:
-			self._logger.error(exc)
-			return False
+        except zmq.ZMQError as exc:
+            self._logger.error(exc)
+            return False
 
-	@timeit('Client')
-	def upload_new_scenario(self, name, lines):
-		"""
+    @timeit("Client")
+    def upload_new_scenario(self, name, lines):
+        """
 		Uploads a new scenario file to the BlueSky simulation
 		:param name:
 		:param lines:
 		:return:
 		"""
 
-		self._scn_response = None
+        self._scn_response = None
 
-		data = json.dumps({'name': name, 'lines': lines})
-		self.send_event(b'SCENARIO', data)
+        data = json.dumps({"name": name, "lines": lines})
+        self.send_event(b"SCENARIO", data)
 
-		time.sleep(25 / POLL_RATE)
-		resp = self._scn_response
+        time.sleep(25 / POLL_RATE)
+        resp = self._scn_response
 
-		if not resp == 'Ok':
-			return resp if resp else 'No response received'
-		return None
+        if not resp == "Ok":
+            return resp if resp else "No response received"
+        return None
 
-	def load_scenario(self, filename, speed=1.0, start_paused=False):
-		"""
+    def load_scenario(self, filename, speed=1.0, start_paused=False):
+        """
 		Load a scenario from a file
 		:param speed:
 		:param filename:
@@ -237,94 +252,98 @@ class BlueSkyClient(Client):
 		:return:
 		"""
 
-		self._ac_data.reset()
-		episode_id = bluebird.logging.restart_episode_log(self.seed)
-		self._logger.info(f'Episode {episode_id} started. Speed {speed}')
-		self._ac_data.set_log_rate(speed, new_log=True)
+        self._ac_data.reset()
+        episode_id = bluebird.logging.restart_episode_log(self.seed)
+        self._logger.info(f"Episode {episode_id} started. Speed {speed}")
+        self._ac_data.set_log_rate(speed, new_log=True)
 
-		self._reset_flag = False
+        self._reset_flag = False
 
-		err = self.send_stack_cmd('IC ' + filename)
-		if err:
-			return err
+        err = self.send_stack_cmd("IC " + filename)
+        if err:
+            return err
 
-		err = self._await_reset_confirmation()
-		if err:
-			return err
+        err = self._await_reset_confirmation()
+        if err:
+            return err
 
-		if start_paused:
-			err = self.send_stack_cmd('HOLD')
-			if err:
-				return err
+        if start_paused:
+            err = self.send_stack_cmd("HOLD")
+            if err:
+                return err
 
-		bluebird.logging.bodge_file_content(filename)
+        bluebird.logging.bodge_file_content(filename)
 
-		if speed != 1.0:
-			cmd = f'DTMULT {speed}'
-			err = self.send_stack_cmd(cmd)
-			if err:
-				return err
+        if speed != 1.0:
+            cmd = f"DTMULT {speed}"
+            err = self.send_stack_cmd(cmd)
+            if err:
+                return err
 
-		return None
+        return None
 
-	def step(self):
-		"""
+    def step(self):
+        """
 		Steps the simulation forward
 		:return:
 		"""
 
-		init_t = int(self._sim_state.sim_t)
-		bluebird.logging.EP_LOGGER.debug(f'[{init_t}] STEP', extra={'PREFIX': CMD_LOG_PREFIX})
+        init_t = int(self._sim_state.sim_t)
+        bluebird.logging.EP_LOGGER.debug(
+            f"[{init_t}] STEP", extra={"PREFIX": CMD_LOG_PREFIX}
+        )
 
-		self._step_flag = False
-		self.send_event(b'STEP')
+        self._step_flag = False
+        self.send_event(b"STEP")
 
-		# Wait for the STEP response, and for the sim_t to have advanced
-		wait_t = 1 / POLL_RATE
-		total_t = 0
-		while not self._step_flag and (self._sim_state.sim_t == init_t):
-			time.sleep(wait_t)
-			total_t += wait_t
-			if total_t >= 5:
-				return f'Error: Could not step. step_flag={self._step_flag} ' \
-				       f'sim_t={self._sim_state.sim_t}'
+        # Wait for the STEP response, and for the sim_t to have advanced
+        wait_t = 1 / POLL_RATE
+        total_t = 0
+        while not self._step_flag and (self._sim_state.sim_t == init_t):
+            time.sleep(wait_t)
+            total_t += wait_t
+            if total_t >= 5:
+                return (
+                    f"Error: Could not step. step_flag={self._step_flag} "
+                    f"sim_t={self._sim_state.sim_t}"
+                )
 
-		return None
+        return None
 
-	def reset_sim(self):
-		"""
+    def reset_sim(self):
+        """
 		Resets the BlueSky sim and handles the response
 		:return:
 		"""
 
-		self._ac_data.timer.disabled = True
-		bluebird.logging.close_episode_log('sim reset')
+        self._ac_data.timer.disabled = True
+        bluebird.logging.close_episode_log("sim reset")
 
-		self._reset_flag = False
-		err = self.send_stack_cmd('RESET')
+        self._reset_flag = False
+        err = self.send_stack_cmd("RESET")
 
-		return err if err else self._await_reset_confirmation()
+        return err if err else self._await_reset_confirmation()
 
-	def _await_reset_confirmation(self):
-		"""
+    def _await_reset_confirmation(self):
+        """
 		Waits for reset_flag to be set, then clears ac_data.
 		:return: True if the simulation was reset
 		"""
 
-		time.sleep(25 / POLL_RATE)
-		if not self._reset_flag:
-			return 'Did not receive reset confirmation in time!'
+        time.sleep(25 / POLL_RATE)
+        if not self._reset_flag:
+            return "Did not receive reset confirmation in time!"
 
-		self._ac_data.clear()
-		return None
+        self._ac_data.clear()
+        return None
 
-	def quit(self):
-		"""
+    def quit(self):
+        """
 		Sends a shutdown message to the simulation server
 		:return:
 		"""
 
-		self._awaiting_exit_resp = True
-		self.send_event(b'QUIT', target=b'*')
-		time.sleep(25 / POLL_RATE)
-		return not bool(self._awaiting_exit_resp)
+        self._awaiting_exit_resp = True
+        self.send_event(b"QUIT", target=b"*")
+        time.sleep(25 / POLL_RATE)
+        return not bool(self._awaiting_exit_resp)
