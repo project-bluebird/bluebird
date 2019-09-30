@@ -26,8 +26,8 @@ corresponding lower thresholds, that is: C_h = 10 nm, C_v = 2000 ft
 import numpy as np
 from pyproj import Geod
 
+from bluebird.metrics.bluebird import config as cfg
 from bluebird.utils.strings import is_acid
-from . import config as cfg
 
 _WGS84 = Geod(ellps='WGS84')
 

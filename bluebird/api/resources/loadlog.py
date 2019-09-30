@@ -207,7 +207,7 @@ class LoadLog(Resource):
 		else:
 			_LOGGER.debug(f"Simulation already at required time")
 
-		_LOGGER.debug('Waiting for AC_DATA to catch up')
+		_LOGGER.debug('Waiting for ac_data to catch up')
 		err_resp = check_ac_data()
 		if err_resp:
 			return err_resp

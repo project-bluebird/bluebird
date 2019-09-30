@@ -6,6 +6,7 @@ import logging
 
 from bluebird import settings
 from bluebird.api import FLASK_APP
+from bluebird.api.resources.utils import FLASK_CONFIG_LABEL
 from bluebird.cache import AcDataCache, SimState
 from bluebird.client import ApiClient
 from bluebird.metrics import setup_metrics
@@ -94,6 +95,6 @@ class BlueBird:
 
 		# TODO This should be in connect_to_sim?
 		self._timers.append(self.ac_data.start_timer())
-		FLASK_APP.config['bluebird'] = self
+		FLASK_APP.config[FLASK_CONFIG_LABEL] = self
 		FLASK_APP.run(host=settings.BB_HOST, port=settings.BB_PORT, debug=settings.FLASK_DEBUG,
 		              use_reloader=False)

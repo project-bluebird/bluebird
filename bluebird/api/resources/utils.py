@@ -11,7 +11,10 @@ from flask_restful import reqparse
 
 from bluebird.utils.strings import is_acid
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__package__)
+
+# Name of the Flask config which contains the BlueBird instance
+FLASK_CONFIG_LABEL = 'bluebird_app'
 
 _SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*')
 
@@ -22,8 +25,9 @@ def bb_app():
 	:return:
 	"""
 
+	# pylint: disable=protected-access
 	if not hasattr(bb_app, '_instance'):
-		bb_app._instance = current_app.config.get('bluebird_app')
+		bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
 	return bb_app._instance
 
 

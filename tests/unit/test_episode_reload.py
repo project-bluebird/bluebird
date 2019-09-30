@@ -6,6 +6,8 @@ Tests for the episode log reloading feature
 
 import os
 
+from bluebird.api.resources.utils import bb_app, parse_lines
+from tests.unit import API_PREFIX
 import bluebird.client as bb_client
 from bluebird.api.resources.loadlog import parse_lines
 from . import API_PREFIX
@@ -89,18 +91,17 @@ def test_parse_lines_time():
 	assert 'ALT KL204 9144' in data['lines'][-1], ''
 
 
-def test_log_reload_from_lines(client, patch_client_sim):
+def test_log_reload_from_lines(test_flask_client):
 	"""
 	Tests the episode reloading given a full logfile in the request
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	resp = test_flask_client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
 	assert resp.status_code == 200, 'Expected the mode to be agent'
 
-	resp = client.post(API_PREFIX + '/seed', json={'value': 1234})
+	resp = test_flask_client.post(API_PREFIX + '/seed', json={'value': 1234})
 	assert resp.status_code == 200, 'Expected the seed to be set'
 
 	test_file = 'tests/unit/testEpisode.log'
@@ -108,58 +109,56 @@ def test_log_reload_from_lines(client, patch_client_sim):
 	lines = tuple(open(test_file, 'r'))
 
 	data = {'lines': lines, 'time': 123}
-	resp = client.post(API_PREFIX + '/loadlog', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 200, 'Expected a 200'
 
 
-def test_log_reload_from_file(client, patch_client_sim):
+def test_log_reload_from_file(test_flask_client):
 	"""
 	Tests that the episode reloading works when given a logfile
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	resp = test_flask_client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
 	assert resp.status_code == 200, 'Expected the mode to be agent'
 
-	resp = client.post(API_PREFIX + '/seed', json={'value': 1234})
+	resp = test_flask_client.post(API_PREFIX + '/seed', json={'value': 1234})
 	assert resp.status_code == 200, 'Expected the seed to be set'
 
 	data = {'filename': 'tests/unit/testEpisode.log', 'time': 123}
-	resp = client.post(API_PREFIX + '/loadlog', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 200, 'Expected a 200'
 
 
-def test_log_reload_full(client, patch_client_sim):
+def test_log_reload_full(test_flask_client):
 	"""
 	Tests the full functionality of the log reloading
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	resp = test_flask_client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
 	assert resp.status_code == 200, 'Expected the mode to be agent'
 
-	resp = client.post(API_PREFIX + '/seed', json={'value': 1234})
+	resp = test_flask_client.post(API_PREFIX + '/seed', json={'value': 1234})
 	assert resp.status_code == 200, 'Expected the seed to be set'
 
 	logfile = 'tests/unit/testEpisode.log'
 
 	data = {'filename': logfile, 'time': -1}
-	resp = client.post(API_PREFIX + '/loadlog', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 400, 'Expected a 400 due to invalid time'
 
 	data['time'] = 120
-	resp = client.post(API_PREFIX + '/loadlog', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/loadlog', json=data)
 	assert resp.status_code == 200, 'Expected a 200'
 
-	assert bb_client.CLIENT_SIM.was_reset, 'Expected that the simulator was reset'
-	assert bb_client.CLIENT_SIM.seed == 5678, 'Expected that the seed was set'
-	assert bb_client.CLIENT_SIM.scn_uploaded, 'Expected that the scenario was uploaded'
-	assert bb_client.CLIENT_SIM.last_scenario, 'Expected that the scenario was started'
-	assert bb_client.CLIENT_SIM.was_stepped, 'Expected that the simulation was stepped'
+	assert bb_app().sim_client.was_reset, 'Expected that the simulator was reset'
+	assert bb_app().sim_client.seed == 5678, 'Expected that the seed was set'
+	assert bb_app().sim_client.scn_uploaded, 'Expected that the scenario was uploaded'
+	assert bb_app().sim_client.last_scenario, 'Expected that the scenario was started'
+	assert bb_app().sim_client.was_stepped, 'Expected that the simulation was stepped'
 
 
 def test_log_reload_invalid_time(client, patch_client_sim):

@@ -301,7 +301,7 @@ class ApiClient(Client):
 
 	def _await_reset_confirmation(self):
 		"""
-		Waits for reset_flag to be set, then clears AC_DATA.
+		Waits for reset_flag to be set, then clears ac_data.
 		:return: True if the simulation was reset
 		"""
 

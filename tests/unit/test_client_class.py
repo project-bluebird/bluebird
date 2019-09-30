@@ -2,6 +2,13 @@
 Tests for the simulation client ABC
 """
 
+import pytest
+
 
 def test():
-	assert False, 'Not implemented'
+	"""
+	Stub test
+	:return:
+	"""
+
+	pytest.skip('Not implemented')

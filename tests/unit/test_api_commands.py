@@ -10,32 +10,31 @@ defined, so we don't have any test dependencies on BlueSky.
 
 import os
 
-import bluebird.client as bb
 import bluebird.settings as settings
-from bluebird.cache import AC_DATA
-from . import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
+from bluebird.api.resources.utils import bb_app
+from tests.unit import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
 
-def test_pos_command(client):
+def test_pos_command(test_flask_client):
 	"""
 	Tests the /pos endpoint
-	:param client:
+	:param test_flask_client:
 	:return:
 	"""
 
-	resp = client.get(API_PREFIX + '/pos')
+	resp = test_flask_client.get(API_PREFIX + '/pos')
 	assert resp.status == '400 BAD REQUEST'
 
-	resp = client.get(API_PREFIX + '/pos', json={'acid': 'TST1001'})
+	resp = test_flask_client.get(API_PREFIX + '/pos', json={'acid': 'TST1001'})
 	assert resp.status == '400 BAD REQUEST'
 
-	resp = client.get(API_PREFIX + '/pos?acid=unknown')
+	resp = test_flask_client.get(API_PREFIX + '/pos?acid=unknown')
 	assert resp.status == '404 NOT FOUND'
 
 	for idx in range(len(TEST_DATA['id'])):
 		acid = TEST_DATA['id'][idx]
 
-		resp = client.get(API_PREFIX + '/pos?acid={}'.format(acid))
+		resp = test_flask_client.get(API_PREFIX + '/pos?acid={}'.format(acid))
 		assert resp.status == '200 OK'
 
 		resp_json = resp.get_json()
@@ -52,117 +51,113 @@ def test_pos_command(client):
 			assert TEST_DATA[prop][idx] == ac_data[prop]
 
 
-def test_ic_command(client, patch_client_sim):
+def test_ic_command(test_flask_client):
 	"""
 	Tests the /ic endpoint
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client:
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/ic')
+	resp = test_flask_client.post(API_PREFIX + '/ic')
 	assert resp.status == '400 BAD REQUEST'
 
-	resp = client.post(API_PREFIX + '/ic', json={})
+	resp = test_flask_client.post(API_PREFIX + '/ic', json={})
 	assert resp.status == '400 BAD REQUEST'
 
 	filename = 'testeroni.scn'
 
-	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
+	resp = test_flask_client.post(API_PREFIX + '/ic', json={'filename': filename})
 	assert resp.status == '200 OK'
 
-	assert bb.CLIENT_SIM.last_scenario == filename, 'Expected the filename to be loaded'
+	assert bb_app().sim_client.last_scenario == filename, 'Expected the filename to be loaded'
 
 	filename = 'testeroni.SCN'
 
-	resp = client.post(API_PREFIX + '/ic', json={'filename': filename})
+	resp = test_flask_client.post(API_PREFIX + '/ic', json={'filename': filename})
 	assert resp.status == '200 OK'
 
-	assert bb.CLIENT_SIM.last_scenario == filename, 'Expected the filename to be loaded'
+	assert bb_app().sim_client.last_scenario == filename, 'Expected the filename to be loaded'
 
 
-def test_reset_command(client, patch_client_sim):
+def test_reset_command(test_flask_client):
 	"""
 	Tests the /reset endpoint
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client:
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/reset')
+	resp = test_flask_client.post(API_PREFIX + '/reset')
 	assert resp.status == '200 OK'
 
-	assert bb.CLIENT_SIM.was_reset, 'Expected the client simulation to be reset'
+	assert bb_app().sim_client.was_reset, 'Expected the client simulation to be reset'
 
 
-def test_cre_new_aircraft(client, patch_client_sim):
+def test_cre_new_aircraft(test_flask_client):
 	"""
 	Test the CRE endpoint handles new aircraft correctly
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
 	acid = 'TST1234'
-	assert not AC_DATA.contains(acid), 'Expected the test aircraft not to exist'
+	assert not bb_app().ac_data.contains(acid), 'Expected the test aircraft not to exist'
 
 	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
-	resp = client.post(API_PREFIX + '/cre', json=cre_data)
+	resp = test_flask_client.post(API_PREFIX + '/cre', json=cre_data)
 
 	assert resp.status == '201 CREATED'
 
 
-def test_cre_existing_aircraft(client, patch_client_sim):
+def test_cre_existing_aircraft(test_flask_client):
 	"""
 	Test the CRE endpoint handles existing aircraft correctly
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
 	acid = TEST_ACIDS[0]
-	assert AC_DATA.get(acid) is not None, 'Expected the test aircraft to exist'
+	assert bb_app().ac_data.get(acid) is not None, 'Expected the test aircraft to exist'
 
 	cre_data = {'acid': acid, 'type': 'testeroni', 'lat': 0, 'lon': 0, 'hdg': 0, 'alt': 0, 'spd': 0}
-	resp = client.post(API_PREFIX + '/cre', json=cre_data)
+	resp = test_flask_client.post(API_PREFIX + '/cre', json=cre_data)
 
 	assert resp.status == '400 BAD REQUEST'
 
 
-def test_scenario_endpoint(client, patch_client_sim):
+def test_scenario_endpoint(test_flask_client):
 	"""
 	Tests the create scenario endpoint
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/scenario')
+	resp = test_flask_client.post(API_PREFIX + '/scenario')
 	assert resp.status == '400 BAD REQUEST'
 
 	data = {'scn_name': 'new-scenario', 'content': []}
 
-	resp = client.post(API_PREFIX + '/scenario', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/scenario', json=data)
 	assert resp.status == '400 BAD REQUEST'
 
 	data['content'] = ['invalid', 'invalid']
 
-	resp = client.post(API_PREFIX + '/scenario', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/scenario', json=data)
 	assert resp.status == '400 BAD REQUEST'
 
 	data['content'] = ['00:00:00>CRE TEST A320 0 0 0 0', '00:00:00 > CRE TEST A320 0 0 0 0']
 
-	resp = client.post(API_PREFIX + '/scenario', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/scenario', json=data)
 	assert resp.status == '201 CREATED'
 
 	data['start_new'] = True
 	data['start_dtmult'] = 1.23
 
-	resp = client.post(API_PREFIX + '/scenario', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/scenario', json=data)
 	assert resp.status == '200 OK'
 
-	assert bb.CLIENT_SIM.last_scenario == 'new-scenario.scn', 'Expected the filename to be loaded'
-	assert bb.CLIENT_SIM.last_dtmult == 1.23, 'Expected the dtmult to be set'
+	assert bb_app().sim_client.last_scenario == 'new-scenario.scn', 'Expected the filename to be ' \
+	                                                                'loaded'
+	assert bb_app().sim_client.last_dtmult == 1.23, 'Expected the dtmult to be set'
 
 	# Remove the test file from the BlueSky submodule
 	try:
@@ -171,91 +166,87 @@ def test_scenario_endpoint(client, patch_client_sim):
 		pass
 
 
-def test_change_mode(client, patch_client_sim):
+def test_change_mode(test_flask_client):
 	"""
 	Tests the functionality of the simmode endpoint
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
 	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
 
 	data = {'mode': 'test'}
-	resp = client.post(API_PREFIX + '/simmode', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/simmode', json=data)
 
 	assert resp.status == '400 BAD REQUEST', 'Expected an invalid mode to return 400'
 
 	data['mode'] = 'agent'
-	resp = client.post(API_PREFIX + '/simmode', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/simmode', json=data)
 
 	assert resp.status == '200 OK', 'Expected a valid mode to return 200'
 	assert settings.SIM_MODE == 'agent', 'Expected the final mode to be agent'
 
 
-def test_non_agent_mode_step(client, patch_client_sim):
+def test_non_agent_mode_step(test_flask_client):
 	"""
 	Tests that the sim is not stepped if in the sandbox mode
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	client.post(API_PREFIX + '/simmode', json={'mode': 'sandbox'})
+	test_flask_client.post(API_PREFIX + '/simmode', json={'mode': 'sandbox'})
 	assert settings.SIM_MODE == 'sandbox', 'Expected the initial mode to be sandbox'
 
-	resp = client.post(f'{API_PREFIX}/step')
+	resp = test_flask_client.post(f'{API_PREFIX}/step')
 	assert resp.status_code == 400, 'Expected a 400 BAD REQUEST'
-	assert not bb.CLIENT_SIM.was_stepped, 'Expected the simulation was not stepped forward'
+	assert not bb_app().sim_client.was_stepped, 'Expected the simulation was not stepped forward'
 
 
-def test_agent_mode_step(client, patch_client_sim):
+def test_agent_mode_step(test_flask_client):
 	"""
 	Tests that the sim is stepped if in agent mode
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
+	test_flask_client.post(API_PREFIX + '/simmode', json={'mode': 'agent'})
 	assert settings.SIM_MODE == 'agent', 'Expected the mode to be agent'
 
-	resp = client.post(f'{API_PREFIX}/step')
+	resp = test_flask_client.post(f'{API_PREFIX}/step')
 	assert resp.status_code == 200, 'Expected a 200 response'
-	assert bb.CLIENT_SIM.was_stepped, 'Expected the simulation was stepped forward'
+	assert bb_app().sim_client.was_stepped, 'Expected the simulation was stepped forward'
 
 
-def test_set_seed(client, patch_client_sim):
+def test_set_seed(test_flask_client):
 	"""
 	Tests the functionality of the seed endpoint
-	:param client:
-	:param patch_client_sim:
+	:param test_flask_client
 	:return:
 	"""
 
-	resp = client.post(API_PREFIX + '/seed')
+	resp = test_flask_client.post(API_PREFIX + '/seed')
 	assert resp.status == '400 BAD REQUEST'
 
 	data = {'test': 1234}
 
-	resp = client.post(API_PREFIX + '/seed', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '400 BAD REQUEST'
 
 	data = {'value': 'test'}
 
-	resp = client.post(API_PREFIX + '/seed', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '400 BAD REQUEST'
 
 	data = {'value': -123}
 
-	resp = client.post(API_PREFIX + '/seed', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '400 BAD REQUEST'
 
 	data = {'value': 123}
 
-	resp = client.post(API_PREFIX + '/seed', json=data)
+	resp = test_flask_client.post(API_PREFIX + '/seed', json=data)
 	assert resp.status == '200 OK'
-	assert bb.CLIENT_SIM.seed == 123, ''
+	assert bb_app().sim_client.seed == 123, ''
 
 	data = {'value': 2 ** 32 - 1}
 	resp = client.post(API_PREFIX + '/seed', json=data)

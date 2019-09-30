@@ -2,12 +2,13 @@
 Tests functionality of the bluebird.api.resources.utils module
 """
 
+# pylint: disable=unused-argument
+
 from flask import Flask
 from flask_restful.reqparse import RequestParser
 
-import bluebird.client
-from bluebird.api.resources.utils import check_acid, generate_arg_parser, process_ac_cmd
-from . import TEST_ACIDS
+from bluebird.api.resources.utils import bb_app, check_acid, generate_arg_parser, process_ac_cmd
+from tests.unit import TEST_ACIDS
 
 
 def test_generate_arg_parser():
@@ -42,9 +43,10 @@ def test_generate_arg_parser():
 		idx += 1
 
 
-def test_check_acid():
+def test_check_acid(test_flask_client):
 	"""
 	Tests that check_acid performs correctly
+	:param test_flask_client
 	:return:
 	"""
 
@@ -77,11 +79,10 @@ def test_check_acid():
 		assert resp is None, 'Expected None from an existing aircraft with (assert_exists=True)'
 
 
-def test_process_ac_cmd(patch_client_sim):
-	# pylint: disable=unused-argument
+def test_process_ac_cmd(test_flask_client):
 	"""
 	Tests that process_ac_cmd performs correctly
-	:param patch_client_sim:
+	:param test_flask_client:
 	:return:
 	"""
 
@@ -102,7 +103,7 @@ def test_process_ac_cmd(patch_client_sim):
 	assert resp.status == '200 OK'
 
 	expected = '{} {} {} {} {} {}'.format(cmd, acid, 1, 2, 3, 4)
-	assert bluebird.client.CLIENT_SIM.last_stack_cmd == expected, ''  # pylint: disable=no-member
+	assert bb_app().sim_client.last_stack_cmd == expected, ''  # pylint: disable=no-member
 
 	json = {'acid': acid, 'req1': 1, 'req2': 2, 'opt2': 5}
 
@@ -113,4 +114,4 @@ def test_process_ac_cmd(patch_client_sim):
 	assert resp.status == '200 OK'
 
 	expected = '{} {} {} {} {}'.format(cmd, acid, 1, 2, 5)
-	assert bluebird.client.CLIENT_SIM.last_stack_cmd == expected, ''  # pylint: disable=no-member
+	assert bb_app().sim_client.last_stack_cmd == expected, ''  # pylint: disable=no-member

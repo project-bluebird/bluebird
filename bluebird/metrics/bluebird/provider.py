@@ -5,8 +5,8 @@ BlueBird metrics provider class
 import logging
 
 import bluebird.settings as bb_settings
+from bluebird.metrics.bluebird import metrics
 from bluebird.metrics.metrics_provider import MetricProvider
-from . import metrics
 
 
 class Provider(MetricProvider):

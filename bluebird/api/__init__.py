@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flask_restful import Api
 
 from bluebird import settings
-from . import resources as res
+from bluebird.api import resources as res
 
 
 class BlueBirdApi(Api):

@@ -2,5 +2,5 @@
 BlueBird package
 """
 
-from . import logging
-from .bluebird import BlueBird
+from bluebird import logging
+from bluebird.bluebird import BlueBird
