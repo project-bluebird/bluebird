@@ -80,14 +80,14 @@ def bad_request_resp(msg: str) -> RespTuple:
     return (msg, HTTPStatus.BAD_REQUEST)
 
 
-def checked_resp(err: Optional[str]) -> RespTuple:
+def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK) -> RespTuple:
     """
-    Generates a standard OK or INTERNAL_SERVER_ERROR response depending on the value of
-    err
+    Generates a standard response or an INTERNAL_SERVER_ERROR response depending on the
+    value of err
     """
     if err:
         return internal_err_resp(err)
-    return ok_resp()
+    return ("", code)
 
 
 def try_parse_lat_lon(args: dict) -> Union[LatLon, RespTuple]:
@@ -97,6 +97,8 @@ def try_parse_lat_lon(args: dict) -> Union[LatLon, RespTuple]:
     :return:
     """
     try:
+        assert "lat" in args, "Expected args to contain 'lat'"
+        assert "lon" in args, "Expected args to contain 'lon'"
         return LatLon(args["lat"], args["lon"])
     except AssertionError as exc:
         return bad_request_resp(f"Invalid LatLon: {exc}")
@@ -154,7 +156,7 @@ def check_callsign_exists(callsign: Callsign) -> Optional[RespTuple]:
         return bad_request_resp("No aircraft in the simulaton")
 
     if not ac_data().contains(str(callsign)):
-        return bad_request_resp("")
+        return bad_request_resp(f"Aircraft {callsign} was not found")
 
     return None
 
@@ -178,7 +180,7 @@ def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
     return True
 
 
-def check_ac_data() -> Optional[str]:
+def check_ac_data_populated() -> Optional[str]:
     """
     Checks if the ac_data is populated after resetting or loading a new scenario
     :return:
@@ -186,8 +188,8 @@ def check_ac_data() -> Optional[str]:
 
     if not wait_until_eq(ac_data().store, True):
         return (
-            "No aircraft data received after loading. Scenario might not contain any "
-            "aircraft"
+            "No aircraft data received after loading. This may have been caused by the "
+            "given scenario not containing any aircraft"
         )
 
     return None

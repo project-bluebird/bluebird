@@ -4,14 +4,19 @@ Provides logic for the 'eplog' (episode log file) API endpoint
 
 import os
 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
 import bluebird.logging as bb_logging
-from bluebird.api.resources.utils import bb_app
+from bluebird.api.resources.utils import (
+    sim_client,
+    parse_args,
+    bad_request_resp,
+    internal_err_resp,
+    ok_resp,
+)
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument("close_ep", type=bool, location="args", required=False)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("close_ep", type=bool, location="args", required=False)
 
 
 class EpLog(Resource):
@@ -26,28 +31,27 @@ class EpLog(Resource):
         :return: :class:`~flask.Response`
         """
 
-        parsed = PARSER.parse_args(strict=True)
-        close_ep = not parsed["close_ep"] is None
+        req_args = parse_args(_PARSER)
+        close_ep = req_args.get("close_ep", False)
 
         ep_file_path = bb_logging.EP_FILE
 
         if not ep_file_path:
-            resp = jsonify("Error: No episode being recorded")
-            resp.status_code = 404
-            return resp
+            return bad_request_resp("No episode being recorded")
 
         if close_ep:
-            err = bb_app().sim_client.reset_sim()
+            err = sim_client().reset_sim()
             if err:
-                resp = jsonify(f"Could not reset simulation: {err}")
-                resp.status_code = 500
-                return resp
+                return internal_err_resp(f"Could not reset simulation: {err}")
 
         full_ep_file = os.path.join(os.getcwd(), ep_file_path)
         lines = tuple(line.rstrip("\n") for line in open(full_ep_file))
 
-        resp = jsonify(
-            {"cur_ep_id": bb_logging.EP_ID, "cur_ep_file": full_ep_file, "lines": lines}
-        )
-        resp.status_code = 200
-        return resp
+        data = {
+            "cur_ep_id": bb_logging.EP_ID,
+            "cur_ep_file": full_ep_file,
+            "lines": lines,
+        }
+
+        return ok_resp(data)
+

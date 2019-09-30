@@ -2,34 +2,45 @@
 Provides logic for the Load Log API endpoint
 """
 
+# TODO Tidy this up
+# pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
+
 import logging
 import os
-
+from typing import Union
 import re
 import time
 import uuid
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.settings
+import bluebird.settings as bb_settings
 from bluebird.api.resources.utils import (
-    check_ac_data,
+    check_ac_data_populated,
+    sim_client,
+    sim_state,
     validate_scenario,
+    bad_request_resp,
+    ac_data,
     wait_until_eq,
-    bb_app,
+    parse_args,
+    internal_err_resp,
+    ok_resp,
 )
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 
 _LOGGER = logging.getLogger(__name__)
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument("filename", type=str, location="json", required=False)
-PARSER.add_argument("lines", type=str, location="json", required=False, action="append")
-PARSER.add_argument("time", type=int, location="json", required=True)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("filename", type=str, location="json", required=False)
+_PARSER.add_argument(
+    "lines", type=str, location="json", required=False, action="append"
+)
+_PARSER.add_argument("time", type=int, location="json", required=True)
 
 
-def parse_lines(lines, target_time=0):
+# TODO Move this to the BlueSky client
+def parse_lines(lines: list, target_time: int = 0) -> Union[str, dict]:
     """
     Parses the content of an episode file
     :param lines:
@@ -46,7 +57,6 @@ def parse_lines(lines, target_time=0):
     match = re.match(r".*Episode started.*Seed is (\d+)", lines.pop(0))
     if not match:
         return "Episode seed was not set"
-    scn_data = {"seed": int(match.group(1)), "lines": []}
 
     if not lines:
         return "No more lines after parsing seed"
@@ -57,6 +67,7 @@ def parse_lines(lines, target_time=0):
             return "Couldn't find scenario content"
 
     lines.pop(0)
+    scn_data = {"seed": int(match.group(1)), "lines": []}
 
     while lines:
         match = re.match(r".*E.*>.*", lines[0])
@@ -92,54 +103,49 @@ class LoadLog(Resource):
     def post():
         """
         Logic for POST events. Returns the simulator to a previous state given a logfile
-        :return: :class:`~flask.Response`
+        :return:
         """
 
-        if bluebird.settings.SIM_MODE != "agent":
-            resp = jsonify("Can only be used in agent mode")
-            resp.status_code = 400
-            return resp
+        if bb_settings.SIM_MODE != "agent":
+            return bad_request_resp("Can only be used in agent mode")
 
-        parsed = PARSER.parse_args()
-        if bool(parsed["filename"]) == bool(parsed["lines"]):
-            resp = jsonify("Either filename or lines must be specified")
-            resp.status_code = 400
-            return resp
+        req_args = parse_args(_PARSER)
 
-        target_time = parsed["time"]
+        if bool(req_args["filename"]) == bool(req_args["lines"]):
+            return bad_request_resp("Either filename or lines must be specified")
+
+        target_time = req_args["time"]
         if target_time <= 0:
-            resp = jsonify("Target time must be greater than 0")
-            resp.status_code = 400
-            return resp
+            return bad_request_resp("Target time must be greater than 0")
 
-        prev_dt = bb_app().sim_client.step_dt
+        # TODO Why get_ ?
+        prev_dt = sim_client().get_sim_speed()
 
         _LOGGER.debug("Starting log reload")
 
         # Reset now so the current episode log is closed
-        err = bb_app().sim_client.reset_sim()
+        err = sim_client().reset_sim()
 
         if err:
-            resp = jsonify(f"Simulation not reset: {err}")
-            resp.status_code = 500
+            return internal_err_resp(f"Simulation not reset: {err}")
 
-        if parsed["filename"]:
-            if not os.path.exists(parsed["filename"]):
-                resp = jsonify(f'Could not find episode file {parsed["filename"]}')
-                resp.status_code = 400
-                return resp
-            lines = tuple(open(parsed["filename"], "r"))
+        if req_args["filename"]:
+            if not os.path.exists(req_args["filename"]):
+                return bad_request_resp(
+                    f'Could not find episode file {req_args["filename"]}'
+                )
+            with open(req_args["filename"], "r") as f:
+                lines = list(f)
         else:
-            lines = parsed["lines"]
+            lines = req_args["lines"]
 
         _LOGGER.debug("Parsing log content")
         parsed_scn = parse_lines(lines, target_time)
 
         if isinstance(parsed_scn, str):
-            resp = jsonify(f"Could not parse episode content: {parsed_scn}")
-            resp.status_code = 400
-            return resp
+            return bad_request_resp(f"Could not parse episode content: {parsed_scn}")
 
+        # TODO Move regex to outer scope and comment
         # Assert that the requested time is not past the end of the log
         last_data = next(
             x for x in reversed(lines) if re.match(r".*A \[(\d+)\] (.*)$", x)
@@ -147,95 +153,81 @@ class LoadLog(Resource):
         last_time = int(re.search(r"\[(.*)]", last_data).group(1))
 
         if target_time > last_time:
-            resp = jsonify(
+            return bad_request_resp(
                 f"Error: Target time was greater than the latest time in the log"
             )
-            resp.status_code = 400
-            return resp
 
         err = validate_scenario(parsed_scn["lines"])
 
         if err:
-            resp = jsonify("Could not create a valid scenario from the given log")
-            resp.status_code = 400
-            return resp
+            return bad_request_resp(
+                "Could not create a valid scenario from the given log"
+            )
 
         # All good - do the reload
 
         _LOGGER.debug("Setting the simulator seed")
-        err = bb_app().sim_client.send_stack_cmd(f'SEED {parsed_scn["seed"]}')
+        err = sim_client().set_seed(parsed_scn["seed"])
 
         if err:
-            resp = jsonify(f"Could not set seed {err}")
-            resp.status_code = 500
-
-        bb_app().sim_client.seed = parsed_scn["seed"]
+            return internal_err_resp(f"Could not set seed {err}")
 
         scn_name = f"reloads/{str(uuid.uuid4())[:8]}.scn"
 
         _LOGGER.debug("Uploading the new scenario")
         store_local_scn(scn_name, parsed_scn["lines"])
-        err = bb_app().sim_client.upload_new_scenario(scn_name, parsed_scn["lines"])
+        err = sim_client().upload_new_scenario(scn_name, parsed_scn["lines"])
 
         if err:
-            resp = jsonify(f"Error uploading scenario: {err}")
-            resp.status_code = 500
+            return internal_err_resp(f"Error uploading scenario: {err}")
 
         _LOGGER.info("Starting the new scenario")
-        err = bb_app().sim_client.load_scenario(scn_name, start_paused=True)
+        err = sim_client().load_scenario(scn_name, start_paused=True)
 
         if err:
-            resp = jsonify(f"Could not start scenario after upload: {err}")
-            resp.status_code = 500
-            return resp
+            return internal_err_resp(f"Could not start scenario after upload {err}")
 
         _LOGGER.debug("Waiting for simulation to be paused")
-        if not wait_until_eq(bb_app().sim_state.sim_state, 1):
-            resp = jsonify(f"Could not pause simulation after starting new scenario")
-            resp.status_code = 500
-            return resp
+        # TODO Change to sim state enum
+        if not wait_until_eq(sim_state(), 1):
+            return internal_err_resp(
+                "Could not pause simulation after starting new scenario"
+            )
 
-        diff = target_time - bb_app().sim_state.sim_t
+        diff = target_time - sim_state().sim_t
+
         if diff:
             # Naive approach - set DTMULT to target, then STEP once...
             _LOGGER.debug(f"Time difference is {diff}. Stepping to {target_time}")
-            err = bb_app().sim_client.send_stack_cmd(f"DTMULT {diff}")
-
+            err = sim_client().set_sim_speed(diff)
             if err:
-                resp = jsonify(f"Could not change speed: {err}")
-                resp.status_code = 500
-                return resp
+                return internal_err_resp(f"Could not change speed: {err}")
 
             _LOGGER.debug("Performing step")
-            err = bb_app().sim_client.step()
+            err = sim_client().step_sim()
 
             if err:
-                resp = jsonify(f"Could not step simulation: {err}")
-                resp.status_code = 500
-                return resp
+                return internal_err_resp(f"Could not step simulations: {err}")
+
         else:
             _LOGGER.debug(f"Simulation already at required time")
 
         _LOGGER.debug("Waiting for ac_data to catch up")
-        err_resp = check_ac_data()
-        if err_resp:
-            return err_resp
 
-        bb_app().ac_data.log()
+        err_str = check_ac_data_populated()
+        if err_str:
+            return internal_err_resp(err_str)
+
+        ac_data().log()
 
         # Reset DTMULT to the previous value
-        err = bb_app().sim_client.send_stack_cmd(f"DTMULT {prev_dt}")
-
+        err = sim_client().set_sim_speed(prev_dt)
         if err:
-            resp = jsonify(
-                f"Episode reloaded, but could not reset DTMULT to previous value"
+            return internal_err_resp(
+                "Episode reloaded, but could not reset DTMULT to previous value"
             )
-            resp.status_code = 500
-            return resp
 
-        # TODO Do we want to check before/after positions here and check if the differences are
-        # acceptable?
+        # TODO Do we want to check before/after positions here and check if the
+        # differences are acceptable?
 
-        resp = jsonify("Simulation reloaded")
-        resp.status_code = 200
-        return resp
+        return ok_resp()

@@ -2,36 +2,62 @@
 Provides logic for the CRE (create aircraft) API endpoint
 """
 
-from flask import jsonify
-from flask_restful import Resource
+from http import HTTPStatus
 
-from bluebird.api.resources.utils import bb_app, generate_arg_parser, process_ac_cmd
+from flask_restful import Resource, reqparse
 
-REQ_ARGS = ["type", "lat", "lon", "hdg", "alt", "spd"]
-PARSER = generate_arg_parser(REQ_ARGS)
+from bluebird.api.resources.utils import (
+    ac_data,
+    sim_client,
+    CALLSIGN_LABEL,
+    parse_args,
+    bad_request_resp,
+    checked_resp,
+    try_parse_lat_lon,
+)
+from bluebird.utils.types import Callsign, Altitude, LatLon, Heading, GroundSpeed
+
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="json", required=True)
+_PARSER.add_argument("type", type=str, location="json", required=True)
+_PARSER.add_argument("lat", type=float, location="json", required=True)
+_PARSER.add_argument("lon", type=float, location="json", required=True)
+_PARSER.add_argument("hdg", type=Heading, location="json", required=True)
+_PARSER.add_argument("alt", type=Altitude, location="json", required=True)
+_PARSER.add_argument("spd", type=int, location="json", required=True)
 
 
 class Cre(Resource):
     """
-    BlueSky CRE (create aircraft) command
+    CRE (create aircraft) command
     """
 
     @staticmethod
     def post():
         """
-        Logic for POST events. If the request contains valid aircraft information, then a request is
-        sent to the simulator to create it.
-        :return: :class:`~flask.Response`
+        Logic for POST events. If the request contains valid aircraft information, then
+        a request is sent to the simulator to create it
+        :return:
         """
 
-        parsed = PARSER.parse_args(strict=True)
-        acid = parsed["acid"]
+        req_args = parse_args(_PARSER)
+        callsign = req_args[CALLSIGN_LABEL]
 
-        if bb_app().ac_data.contains(acid):
-            resp = jsonify("Aircraft {} already exists".format(acid))
-            resp.status_code = 400
-            return resp
+        # TODO Replace ac_data keys with callsigns (also need to parse callsigns coming
+        # from the simulators)
+        if ac_data().contains(str(callsign)):
+            return bad_request_resp(f"Aircraft {callsign} already exists")
 
-        return process_ac_cmd(
-            "CRE", PARSER, REQ_ARGS, [], assert_exists=False, success_code=201
+        position = try_parse_lat_lon(req_args)
+        if not isinstance(position, LatLon):
+            return position
+
+        if req_args["spd"] <= 0:
+            return bad_request_resp("Speed must be positive")
+
+        err = sim_client().create_aircraft(
+            callsign, position, req_args["hdg"], req_args["alt"], req_args["spd"]
         )
+
+        return checked_resp(err, HTTPStatus.CREATED)

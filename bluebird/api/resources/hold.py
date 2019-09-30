@@ -2,21 +2,24 @@
 Provides logic for the HOLD (simulation pause) API endpoint
 """
 
+
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import process_stack_cmd
+from bluebird.api.resources.utils import sim_client, checked_resp
 
 
 class Hold(Resource):
     """
-    BlueSky HOLD (simulation pause) command
+    HOLD (simulation pause) command
     """
 
     @staticmethod
     def post():
         """
-        POST the HOLD command and process the response.
-        :return: :class:`~flask.Response`
+        Pauses the simulation
+        :return:
         """
 
-        return process_stack_cmd("HOLD")
+        err = sim_client().pause_sim()
+
+        return checked_resp(err)

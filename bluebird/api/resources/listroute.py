@@ -5,19 +5,26 @@ Provides logic for the LISTROUTE (list route) API endpoint
 import logging
 
 import re
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import bb_app, check_acid
+from bluebird.api.resources.utils import (
+    sim_client,
+    CALLSIGN_LABEL,
+    internal_err_resp,
+    parse_args,
+    check_callsign_exists,
+)
+from bluebird.utils.types import Callsign
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument("acid", type=str, location="args", required=True)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
 
-_LOGGER = logging.getLogger("bluebird")
+_LOGGER = logging.getLogger(__name__)
 
 _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
 
 
+# TODO Move to the BlueSky client utils
 def parse_route_data(route_data):
     """
     Parse a list of strings containing route data into a keyed dictionary
@@ -51,40 +58,24 @@ class ListRoute(Resource):
     @staticmethod
     def get():
         """
-        Logic for GET events. If the request contains an identifier to an existing aircraft,
-        then information about its route (FMS flightplan) is returned.
-        :return: :class:`~flask.Response`
+        Logic for GET events. If the request contains an identifier to an existing
+        aircraft, then information about its route (FMS flightplan) is returned
+        :return:
         """
 
-        parsed = PARSER.parse_args()
-        acid = parsed["acid"]
+        parsed = parse_args(_PARSER)
+        callsign = parsed[CALLSIGN_LABEL]
 
-        resp = check_acid(acid)
-        if resp is not None:
-            return resp
+        err = check_callsign_exists(callsign)
+        if err:
+            return err
 
-        cmd_str = f"LISTRTE {acid}"
-        _LOGGER.debug(f"Sending stack command: {cmd_str}")
-        reply = bb_app().sim_client.send_stack_cmd(cmd_str, response_expected=True)
+        # TODO Response expected from BlueSky sim
+        props = sim_client().get_aircraft_properties(callsign)
+        if not props:
+            return internal_err_resp(f"Could not get properties for {callsign}")
 
+        # TODO Refactor this - should get a standard set of properties back
+        reply = None
         if not reply:
-            resp = jsonify("Error: No route data received from BlueSky")
-            resp.status_code = 500
-            return resp
-
-        if not isinstance(reply, list):
-            resp = jsonify(f"Simulation returned: {reply}")
-            resp.status_code = 500
-            return resp
-
-        parsed_route = parse_route_data(reply)
-
-        if not isinstance(parsed_route, list):
-            resp = jsonify(f"Error: Could not parse route entry {parsed_route}")
-            resp.status_code = 500
-            return resp
-
-        sim_t = bb_app().sim_state.sim_t
-        resp = jsonify({"route": parsed_route, "acid": acid, "sim_t": sim_t})
-        resp.status_code = 200
-        return resp
+            return internal_err_resp("Not implemented")
