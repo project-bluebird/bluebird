@@ -104,7 +104,7 @@ def _horizontal_separation(ac_data, acid1, acid2):
     return 0
 
 
-def aircraft_separation(acid1, acid2):
+def aircraft_separation(ac_data, acid1, acid2):
     """
     Combined score based on horizontal and vertical separation.
     :param acid1:
@@ -112,7 +112,7 @@ def aircraft_separation(acid1, acid2):
     :return:
     """
 
-    horizontal_sep = _horizontal_separation(acid1, acid2)
-    vertical_sep = _vertical_separation(acid1, acid2)
+    horizontal_sep = _horizontal_separation(ac_data, acid1, acid2)
+    vertical_sep = _vertical_separation(ac_data, acid1, acid2)
 
     return max(horizontal_sep, vertical_sep)
