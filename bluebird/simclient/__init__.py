@@ -11,7 +11,7 @@ from .abstractsimclient import AbstractSimClient
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_sim_client() -> AbstractSimClient:
+def setup_sim_client(sim_state, ac_data) -> AbstractSimClient:
 	"""
 	Imports and returns an instance of the AbstractSimClient class, as specified by	settings.SIM_TYPE
 	:return:
@@ -33,7 +33,4 @@ def setup_sim_client() -> AbstractSimClient:
 	if not hasattr(module, 'SimClient') or not issubclass(module.SimClient, AbstractSimClient):
 		raise AttributeError('Loaded module does not contain a valid SimClient class')
 
-	# TODO - What do we need to instantiate this?
-	args = []
-	kwargs = {}
-	return module.SimClient(*args, **kwargs)
+	return module.SimClient(sim_state, ac_data)

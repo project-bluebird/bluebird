@@ -26,7 +26,7 @@ class BlueBird:
 		self.sim_state = SimState()
 		self.ac_data = AcDataCache(self.sim_state)
 
-		self.sim_client = None
+		self._sim_client = None
 		self._timers = []
 		self.metrics_providers = setup_metrics(self.ac_data)
 
@@ -43,7 +43,7 @@ class BlueBird:
 		for timer in self._timers:
 			timer.stop()
 
-		self.sim_client.stop()
+		self._sim_client.stop()
 
 	def connect_to_sim(self, min_sim_version, reset_on_connect):
 		"""
@@ -51,36 +51,33 @@ class BlueBird:
 		:return: True if a connection was established with the server, false otherwise.
 		"""
 
-		sim_client = setup_sim_client()
-
-		# TODO Rename this
-		self._timers.append(self.sim_client.start_timer())
+		self._sim_client = setup_sim_client(self.sim_state, self.ac_data)
+		self._timers.extend(self._sim_client.start_timers())
 
 		self._logger.info('Connecting to client...')
 
 		try:
-			# TODO Will need to refactor the host_event port into kwargs
-			self.sim_client.connect(hostname=settings.SIM_HOST, event_port=settings.BS_EVENT_PORT,
-			                        stream_port=settings.BS_STREAM_PORT, timeout=1)
+			self._sim_client.connect()
 		except TimeoutError:
-			self._logger.error(f'Failed to connect to {sim_type.name} server at '
+			self._logger.error(f'Failed to connect to {settings.SIM_TYPE.name} server at '
 			                   f'{settings.SIM_HOST}, exiting')
-			self.sim_client.stop()
+			self._sim_client.stop()
 			return False
 
-		if self.sim_client.host_version < min_sim_version:
+		if self._sim_client.host_version < min_sim_version:
 			self._logger.error(
-							f'BlueSky server of version {self.sim_client.host_version} does not meet the '
+							f'BlueSky server of version {self._sim_client.host_version} does not meet the '
 							f'minimum requirement ({min_sim_version})')
 			return False
-		if self.sim_client.host_version.major > min_sim_version.major:
+
+		if self._sim_client.host_version.major > min_sim_version.major:
 			self._logger.error(
-							f'BlueSky server of version {self.sim_client.host_version} has major version '
+							f'BlueSky server of version {self._sim_client.host_version} has major version '
 							f'greater than supported in this version of client ({min_sim_version})')
 			return False
 
 		if reset_on_connect:
-			self.sim_client.reset_sim()
+			self._sim_client.reset_sim()
 
 		self._timers.append(self.sim_state.start_timer())
 		return True
