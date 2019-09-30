@@ -7,7 +7,7 @@ import logging
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import bb_app, validate_scenario, wait_for_data
+from bluebird.api.resources.utils import bb_app, validate_scenario, wait_until_eq
 from bluebird.logging import store_local_scn
 
 _LOGGER = logging.getLogger('bluebird')

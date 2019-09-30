@@ -10,6 +10,7 @@ import pytest
 
 import bluebird.metrics as bb_metrics
 import bluebird.settings as bb_settings
+from bluebird.cache import AcDataCache, SimState
 from tests.unit import API_PREFIX, TEST_ACIDS
 
 
@@ -20,7 +21,8 @@ def setup_metrics():
 	:return:
 	"""
 
-	bb_metrics.setup_metrics()
+	ac_data = AcDataCache(SimState())
+	bb_metrics.setup_metrics(ac_data)
 
 
 def test_metric_providers(client):
