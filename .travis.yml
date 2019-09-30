@@ -15,13 +15,17 @@ before_install:
   - "echo $PWD"
   - "export BLUEBIRD_HOME=$PWD"
 
+env:
+  global:
+    - SRC_FILES="bluebird/ tests/ run.py"
+
 before_install:
-  - pip install black
-  - black --check bluebird/ tests/ run.py
+  - pip install -r requirements-dev.txt
+  - black --check $SRC_FILES
+  - pylint --rcfile=.pylintrc $SRC_FILES
 
 install:
   - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
 
 script:
   - pytest -rs --ignore=./tests/integration ./tests

@@ -4,6 +4,9 @@
 # Import the BlueSky modules so the linter can find them
 init-hook="import sys; import os; sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.abspath('./bluesky')))"
 
+# Ignore NATS MachColl code. Will only exist if testing locally
+ignore=nats
+
 [BASIC]
 
 good-names=log
