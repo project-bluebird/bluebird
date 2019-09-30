@@ -1,3 +1,4 @@
+
 branches:
   only:
   - master
@@ -10,26 +11,24 @@ language: python
 python:
   - "3.7"
 
+env:
+  global:
+    - 'SRC_FILES="bluebird/ tests/ run.py"'
+
 before_install:
   - "git pull --all"
   - "echo $PWD"
   - "export BLUEBIRD_HOME=$PWD"
-
-env:
-  global:
-    - SRC_FILES="bluebird/ tests/ run.py"
-
-before_install:
-  - pip install -r requirements-dev.txt
-  - black --check $SRC_FILES
-  - pylint --rcfile=.pylintrc $SRC_FILES
+  - "pip install -r requirements-dev.txt"
+  - "black --check $SRC_FILES"
+  - "pylint --rcfile=.pylintrc $SRC_FILES"
 
 install:
-  - pip install -r requirements.txt
+  - "pip install -r requirements.txt"
 
 script:
-  - pytest -rs --ignore=./tests/integration ./tests
-  - pytest -rs  ./tests/integration
+  - "pytest -rs --ignore=./tests/integration ./tests"
+  - "pytest -rs ./tests/integration"
 
 after_success:
   - "bash $BLUEBIRD_HOME/.travis-build.sh"
