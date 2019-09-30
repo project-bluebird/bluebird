@@ -17,15 +17,15 @@ PARSER.add_argument("mode", type=str, location="json", required=True)
 
 class SimMode(Resource):
     """
-	Logic for the SimMode endpoint
-	"""
+    Logic for the SimMode endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. Changes the simulation mode
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Changes the simulation mode
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         new_mode = parsed["mode"]

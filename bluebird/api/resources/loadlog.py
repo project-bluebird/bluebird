@@ -31,11 +31,11 @@ PARSER.add_argument("time", type=int, location="json", required=True)
 
 def parse_lines(lines, target_time=0):
     """
-	Parses the content of an episode file
-	:param lines:
-	:param target_time:
-	:return: String for errors or dict with parsed data
-	"""
+    Parses the content of an episode file
+    :param lines:
+    :param target_time:
+    :return: String for errors or dict with parsed data
+    """
 
     if not lines:
         return "No lines provided"
@@ -84,16 +84,16 @@ def parse_lines(lines, target_time=0):
 
 class LoadLog(Resource):
     """
-	Contains logic for the Load Log endpoint
-	"""
+    Contains logic for the Load Log endpoint
+    """
 
     @staticmethod
     @timeit("LoadLog")
     def post():
         """
-		Logic for POST events. Returns the simulator to a previous state given a logfile
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Returns the simulator to a previous state given a logfile
+        :return: :class:`~flask.Response`
+        """
 
         if bluebird.settings.SIM_MODE != "agent":
             resp = jsonify("Can only be used in agent mode")

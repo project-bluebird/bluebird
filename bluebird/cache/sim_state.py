@@ -21,8 +21,8 @@ BS_STATES = ["INIT", "HOLD", "RUN", "END"]
 # pylint: disable=too-many-instance-attributes
 class SimState:
     """
-	Proxy class for the simulation state
-	"""
+    Proxy class for the simulation state
+    """
 
     def __init__(self):
         self._logger = logging.getLogger(__name__)
@@ -40,9 +40,9 @@ class SimState:
 
     def start_timer(self):
         """
-		Starts the timer for logging
-		:return:
-		"""
+        Starts the timer for logging
+        :return:
+        """
 
         self.timer.start()
         self._logger.info(f"Logging started. Initial SIM_LOG_RATE={SIM_LOG_RATE}")
@@ -50,10 +50,10 @@ class SimState:
 
     def update(self, data):
         """
-		Update the stored simulation state
-		:param data:
-		:return:
-		"""
+        Update the stored simulation state
+        :param data:
+        :return:
+        """
 
         self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, self.scn_name = (
             data

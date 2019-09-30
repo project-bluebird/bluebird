@@ -23,15 +23,15 @@ PARSER.add_argument("start_dtmult", type=float, location="json", required=False)
 
 class Scenario(Resource):
     """
-	Contains logic for the scenario endpoint
-	"""
+    Contains logic for the scenario endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
 

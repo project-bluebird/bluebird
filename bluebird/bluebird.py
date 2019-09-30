@@ -14,8 +14,8 @@ from bluebird.simclient import setup_sim_client
 
 class BlueBird:
     """
-	The BlueBird application
-	"""
+    The BlueBird application
+    """
 
     def __init__(self):
         self._logger = logging.getLogger(__name__)
@@ -37,8 +37,8 @@ class BlueBird:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-		Stops the app and cleans up any threaded code
-		"""
+        Stops the app and cleans up any threaded code
+        """
 
         self._logger.info("BlueBird stopping")
 
@@ -49,18 +49,18 @@ class BlueBird:
 
     def setup_sim_client(self):
         """
-		Setup the simulation client class
-		:return:
-		"""
+        Setup the simulation client class
+        :return:
+        """
 
         self.sim_client = setup_sim_client(self.sim_state, self.ac_data)
         self._timers.extend(self.sim_client.start_timers())
 
     def connect_to_sim(self, min_sim_version, reset_on_connect):
         """
-		Connect to the simulation server
-		:return: True if a connection was established with the server, false otherwise.
-		"""
+        Connect to the simulation server
+        :return: True if a connection was established with the server, false otherwise.
+        """
 
         self._logger.info("Connecting to client...")
 
@@ -96,8 +96,8 @@ class BlueBird:
 
     def run(self):
         """
-		Start the Flask app. This is a blocking method which only returns once the app exists.
-		"""
+        Start the Flask app. This is a blocking method which only returns once the app exists.
+        """
 
         self._logger.debug("Starting Flask app")
 

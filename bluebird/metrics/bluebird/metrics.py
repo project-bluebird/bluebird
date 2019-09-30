@@ -45,12 +45,12 @@ def _get_pos(ac_data, acid):
 
 def _vertical_separation(ac_data, acid1, acid2):
     """
-	Basic vertical separation metric
-	:param ac_data:
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
+    Basic vertical separation metric
+    :param ac_data:
+    :param acid1:
+    :param acid2:
+    :return:
+    """
 
     alt1 = _get_pos(ac_data, acid1)["alt"]
     alt2 = _get_pos(ac_data, acid2)["alt"]
@@ -72,12 +72,12 @@ def _vertical_separation(ac_data, acid1, acid2):
 def _horizontal_separation(ac_data, acid1, acid2):
 
     """
-	Basic horizontal separation metric
-	:param ac_data:
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
+    Basic horizontal separation metric
+    :param ac_data:
+    :param acid1:
+    :param acid2:
+    :return:
+    """
 
     pos1 = _get_pos(ac_data, acid1)
     pos2 = _get_pos(ac_data, acid2)
@@ -106,11 +106,11 @@ def _horizontal_separation(ac_data, acid1, acid2):
 
 def aircraft_separation(acid1, acid2):
     """
-	Combined score based on horizontal and vertical separation.
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
+    Combined score based on horizontal and vertical separation.
+    :param acid1:
+    :param acid2:
+    :return:
+    """
 
     horizontal_sep = _horizontal_separation(acid1, acid2)
     vertical_sep = _vertical_separation(acid1, acid2)

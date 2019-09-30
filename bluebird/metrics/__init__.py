@@ -13,10 +13,10 @@ _LOGGER = logging.getLogger(__package__)
 
 def setup_metrics(ac_data):
     """
-	Loads the metrics providers defined in the global settings. Returns them as a list
-	:param ac_data:
-	:return:
-	"""
+    Loads the metrics providers defined in the global settings. Returns them as a list
+    :param ac_data:
+    :return:
+    """
 
     providers = []
     for provider in bb_settings.METRICS_PROVIDERS:

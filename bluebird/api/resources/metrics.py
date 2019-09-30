@@ -19,15 +19,15 @@ _LOGGER = logging.getLogger(__name__)
 
 class Metric(Resource):
     """
-	BlueBird Metric endpoint
-	"""
+    BlueBird Metric endpoint
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events. Attempts to call the method for the given metric
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events. Attempts to call the method for the given metric
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
 
@@ -74,15 +74,15 @@ class Metric(Resource):
 
 class MetricProviders(Resource):
     """
-	BlueBird metric providers endpoint
-	"""
+    BlueBird metric providers endpoint
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events. Returns a list of all the available metric providers
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events. Returns a list of all the available metric providers
+        :return: :class:`~flask.Response`
+        """
 
         data = {}
         for provider in bb_app().metrics_providers:

@@ -14,8 +14,8 @@ from bluebird.api import resources as res
 
 class BlueBirdApi(Api):
     """
-	Subclass of the Flask API object - allows us to customise it later if needed
-	"""
+    Subclass of the Flask API object - allows us to customise it later if needed
+    """
 
     def __init__(self, *args, **kwargs):
         super(BlueBirdApi, self).__init__(*args, **kwargs)
@@ -34,9 +34,9 @@ LOGGER = logging.getLogger(__name__)
 @FLASK_APP.before_request
 def before_req():
     """
-	Method called before every request is handled
-	:return:
-	"""
+    Method called before every request is handled
+    :return:
+    """
 
     json = request.get_json()
     LOGGER.info(f'REQ: {request.method} {request.full_path} "{json if json else ""}"')
@@ -45,10 +45,10 @@ def before_req():
 @FLASK_APP.after_request
 def after_req(response):
     """
-	Method called before any response is returned
-	:param response:
-	:return:
-	"""
+    Method called before any response is returned
+    :param response:
+    :return:
+    """
 
     json = response.get_json()
 

@@ -15,15 +15,15 @@ PARSER.add_argument("multiplier", type=float, location="json", required=False)
 
 class Ic(Resource):
     """
-	BlueSky IC (initial condition) command
-	"""
+    BlueSky IC (initial condition) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. Loads the scenario contained in the given file
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Loads the scenario contained in the given file
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         filename = fn_base = parsed["filename"]

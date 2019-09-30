@@ -13,9 +13,9 @@ _LOGGER = logging.getLogger(__name__)
 
 def setup_sim_client(sim_state, ac_data) -> AbstractSimClient:
     """
-	Imports and returns an instance of the AbstractSimClient class, as specified by	settings.SIM_TYPE
-	:return:
-	"""
+    Imports and returns an instance of the AbstractSimClient class, as specified by    settings.SIM_TYPE
+    :return:
+    """
 
     _LOGGER.info(f'Loading the "{bb_settings.SIM_TYPE.name}" simulator client')
 

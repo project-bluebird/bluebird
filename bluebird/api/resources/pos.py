@@ -13,16 +13,16 @@ PARSER.add_argument("acid", type=str, location="args", required=True)
 
 class Pos(Resource):
     """
-	BlueSky POS (position) command
-	"""
+    BlueSky POS (position) command
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then information about that aircraft is returned. Otherwise returns a 404.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events. If the request contains an identifier to an existing aircraft,
+        then information about that aircraft is returned. Otherwise returns a 404.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         acid = parsed["acid"]

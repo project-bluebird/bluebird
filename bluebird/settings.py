@@ -42,8 +42,8 @@ SIM_MODE = SIM_MODES[0]
 
 class SimType(IntEnum):
     """
-	Supported simulators
-	"""
+    Supported simulators
+    """
 
     BlueSky = 1
     MachColl = 2

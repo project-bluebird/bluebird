@@ -12,15 +12,15 @@ PARSER = generate_arg_parser(REQ_ARGS)
 
 class Hdg(Resource):
     """
-	Contains logic for the HDG endpoint
-	"""
+    Contains logic for the HDG endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to alter its heading.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
+        to alter its heading.
+        :return: :class:`~flask.Response`
+        """
 
         return process_ac_cmd("HDG", PARSER, REQ_ARGS)

@@ -11,15 +11,15 @@ from bluebird.api.resources.utils import bb_app
 
 class Step(Resource):
     """
-	Contains logic for the step endpoint
-	"""
+    Contains logic for the step endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events.
+        :return: :class:`~flask.Response`
+        """
 
         if settings.SIM_MODE != "agent":
             resp = jsonify("Must be in agent mode to use step")

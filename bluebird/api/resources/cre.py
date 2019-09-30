@@ -13,16 +13,16 @@ PARSER = generate_arg_parser(REQ_ARGS)
 
 class Cre(Resource):
     """
-	BlueSky CRE (create aircraft) command
-	"""
+    BlueSky CRE (create aircraft) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request contains valid aircraft information, then a request is
-		sent to the simulator to create it.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request contains valid aircraft information, then a request is
+        sent to the simulator to create it.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
         acid = parsed["acid"]

@@ -42,8 +42,8 @@ IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
 class BlueSkyClient(Client):
     """
-	Client class for the BlueSky simulator
-	"""
+    Client class for the BlueSky simulator
+    """
 
     def __init__(self, sim_state, ac_data):
         super().__init__(ACTIVE_NODE_TOPICS)
@@ -67,28 +67,28 @@ class BlueSkyClient(Client):
 
     def start_timer(self):
         """
-		Start the client timer
-		:return:
-		"""
+        Start the client timer
+        :return:
+        """
 
         self.timer.start()
         return self.timer
 
     def stop(self):
         """
-		Stop the client and disconnect
-		"""
+        Stop the client and disconnect
+        """
 
         self.timer.stop()
         bluebird.logging.close_episode_log("client was stopped")
 
     def stream(self, name, data, sender_id):
         """
-		Method called to process data received on a stream
-		:param name:
-		:param data:
-		:param sender_id:
-		"""
+        Method called to process data received on a stream
+        :param name:
+        :param data:
+        :param sender_id:
+        """
 
         # TODO Refactor these into two "update_x" methods of a Simulation proxy class
 
@@ -103,11 +103,11 @@ class BlueSkyClient(Client):
 
     def send_stack_cmd(self, data=None, response_expected=False, target=b"*"):
         """
-		Send a command to the BlueSky simulation command stack
-		:param data:
-		:param response_expected:
-		:param target:
-		"""
+        Send a command to the BlueSky simulation command stack
+        :param data:
+        :param response_expected:
+        :param target:
+        """
 
         bluebird.logging.EP_LOGGER.debug(
             f"[{self._sim_state.sim_t}] {data}", extra={"PREFIX": CMD_LOG_PREFIX}
@@ -225,11 +225,11 @@ class BlueSkyClient(Client):
     @timeit("Client")
     def upload_new_scenario(self, name, lines):
         """
-		Uploads a new scenario file to the BlueSky simulation
-		:param name:
-		:param lines:
-		:return:
-		"""
+        Uploads a new scenario file to the BlueSky simulation
+        :param name:
+        :param lines:
+        :return:
+        """
 
         self._scn_response = None
 
@@ -245,12 +245,12 @@ class BlueSkyClient(Client):
 
     def load_scenario(self, filename, speed=1.0, start_paused=False):
         """
-		Load a scenario from a file
-		:param speed:
-		:param filename:
-		:param start_paused:
-		:return:
-		"""
+        Load a scenario from a file
+        :param speed:
+        :param filename:
+        :param start_paused:
+        :return:
+        """
 
         self._ac_data.reset()
         episode_id = bluebird.logging.restart_episode_log(self.seed)
@@ -284,9 +284,9 @@ class BlueSkyClient(Client):
 
     def step(self):
         """
-		Steps the simulation forward
-		:return:
-		"""
+        Steps the simulation forward
+        :return:
+        """
 
         init_t = int(self._sim_state.sim_t)
         bluebird.logging.EP_LOGGER.debug(
@@ -312,9 +312,9 @@ class BlueSkyClient(Client):
 
     def reset_sim(self):
         """
-		Resets the BlueSky sim and handles the response
-		:return:
-		"""
+        Resets the BlueSky sim and handles the response
+        :return:
+        """
 
         self._ac_data.timer.disabled = True
         bluebird.logging.close_episode_log("sim reset")
@@ -326,9 +326,9 @@ class BlueSkyClient(Client):
 
     def _await_reset_confirmation(self):
         """
-		Waits for reset_flag to be set, then clears ac_data.
-		:return: True if the simulation was reset
-		"""
+        Waits for reset_flag to be set, then clears ac_data.
+        :return: True if the simulation was reset
+        """
 
         time.sleep(25 / POLL_RATE)
         if not self._reset_flag:
@@ -339,9 +339,9 @@ class BlueSkyClient(Client):
 
     def quit(self):
         """
-		Sends a shutdown message to the simulation server
-		:return:
-		"""
+        Sends a shutdown message to the simulation server
+        :return:
+        """
 
         self._awaiting_exit_resp = True
         self.send_event(b"QUIT", target=b"*")

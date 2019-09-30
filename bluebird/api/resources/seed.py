@@ -13,15 +13,15 @@ PARSER.add_argument("value", type=int, location="json", required=True)
 
 class Seed(Resource):
     """
-	BlueSky SEED (set seed) command
-	"""
+    BlueSky SEED (set seed) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. Sets the seed of the simulator
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Sets the seed of the simulator
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         seed = parsed["value"]

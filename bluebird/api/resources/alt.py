@@ -24,16 +24,16 @@ PARSER_GET.add_argument("acid", type=str, location="args", required=True)
 
 class Alt(Resource):
     """
-	BlueSky ALT (altitude) command
-	"""
+    BlueSky ALT (altitude) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to alter its altitude.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
+        to alter its altitude.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
         acid = parsed["acid"]
@@ -58,11 +58,11 @@ class Alt(Resource):
     @staticmethod
     def get():
         """
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then its current, requested, and cleared flight levels are returned (if they can be
-		determined).
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events. If the request contains an identifier to an existing aircraft,
+        then its current, requested, and cleared flight levels are returned (if they can be
+        determined).
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER_GET.parse_args()
         acid = parsed["acid"]

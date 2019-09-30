@@ -9,8 +9,8 @@ from semver import VersionInfo
 
 class MetricProvider(ABC):
     """
-	ABC for classes which provide metrics to BlueBird
-	"""
+    ABC for classes which provide metrics to BlueBird
+    """
 
     @abstractmethod
     def __call__(self, metric, *args, **kwargs):
@@ -23,6 +23,6 @@ class MetricProvider(ABC):
     @abstractmethod
     def version(self) -> VersionInfo:
         """
-		Return the version of the metrics module
-		:return:
-		"""
+        Return the version of the metrics module
+        :return:
+        """

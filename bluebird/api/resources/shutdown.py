@@ -13,15 +13,15 @@ PARSER.add_argument("stop_sim", type=bool, location="args", required=False)
 
 class Shutdown(Resource):
     """
-	Contains logic for the shutdown endpoint
-	"""
+    Contains logic for the shutdown endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Shuts down the BlueBird server
-		:return: :class:`~flask.Response`
-		"""
+        Shuts down the BlueBird server
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
         stop_sim = not parsed["stop_sim"] is None

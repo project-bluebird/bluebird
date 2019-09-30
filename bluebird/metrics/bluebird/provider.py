@@ -11,8 +11,8 @@ from bluebird.metrics.metrics_provider import MetricProvider
 
 class Provider(MetricProvider):
     """
-	BlueBird metrics provider
-	"""
+    BlueBird metrics provider
+    """
 
     def __init__(self, ac_data):
         super().__init__()

@@ -13,15 +13,15 @@ PARSER.add_argument("multiplier", type=float, location="json", required=True)
 
 class DtMult(Resource):
     """
-	BlueSky DTMULT command
-	"""
+    BlueSky DTMULT command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. Sets the speed multiplier for the simulation
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Sets the speed multiplier for the simulation
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
         mult = round(parsed["multiplier"], 2)

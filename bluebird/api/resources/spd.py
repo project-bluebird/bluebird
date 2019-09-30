@@ -12,15 +12,15 @@ PARSER = generate_arg_parser(REQ_ARGS)
 
 class Spd(Resource):
     """
-	Contains logic for the SPD endpoint
-	"""
+    Contains logic for the SPD endpoint
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to alter its horizontal speed.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
+        to alter its horizontal speed.
+        :return: :class:`~flask.Response`
+        """
 
         return process_ac_cmd("SPD", PARSER, REQ_ARGS)

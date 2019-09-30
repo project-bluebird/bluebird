@@ -24,8 +24,8 @@ LOG_PREFIX = "A"
 
 class AcDataCache(Cache):
     """
-	Holds the most recent aircraft data
-	"""
+    Holds the most recent aircraft data
+    """
 
     def __init__(self, sim_state):
         super().__init__()
@@ -47,18 +47,18 @@ class AcDataCache(Cache):
 
     def start_timer(self):
         """
-		Starts the timer for logging
-		:return:
-		"""
+        Starts the timer for logging
+        :return:
+        """
 
         self.timer.start()
         return self.timer
 
     def reset(self):
         """
-		Resets the cache for a new episode
-		:return
-		"""
+        Resets the cache for a new episode
+        :return
+        """
         super().clear()
         self.cleared_fls = {}
         self.timer.disabled = True
@@ -66,10 +66,10 @@ class AcDataCache(Cache):
 
     def get(self, key):
         """
-		Get data for an aircraft
-		:param key: An aircraft identifier
-		:return: Aircraft information
-		"""
+        Get data for an aircraft
+        :param key: An aircraft identifier
+        :return: Aircraft information
+        """
 
         query = key.upper()
 
@@ -87,10 +87,10 @@ class AcDataCache(Cache):
 
     def contains(self, acid):
         """
-		Check if the given acid exists in the simulation
-		:param acid:
-		:return:
-		"""
+        Check if the given acid exists in the simulation
+        :param acid:
+        :return:
+        """
         return acid in self.store.keys()
 
     def fill(self, data):
@@ -124,19 +124,19 @@ class AcDataCache(Cache):
 
     def resume_log(self):
         """
-		Resumes the episode log at the previous rate
-		:return:
-		"""
+        Resumes the episode log at the previous rate
+        :return:
+        """
         # TODO: Don't set DTMULT in sim files!
         self.set_log_rate(self._target_sim_speed)
 
     def set_log_rate(self, new_speed, new_log=False):
         """
-		Set the speed at which simulation data is logged at
-		:param new_speed:
-		:param new_log:
-		:return:
-		"""
+        Set the speed at which simulation data is logged at
+        :param new_speed:
+        :param new_log:
+        :return:
+        """
 
         self._target_sim_speed = new_speed
         current_speed = self._sim_state.sim_speed
@@ -165,9 +165,9 @@ class AcDataCache(Cache):
 
     def log(self):
         """
-		Writes the current aircraft states to the episode log
-		:return:
-		"""
+        Writes the current aircraft states to the episode log
+        :return:
+        """
 
         if not self.store:
             return

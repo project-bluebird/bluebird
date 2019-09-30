@@ -20,16 +20,16 @@ PARSER.add_argument("type", type=str, location="json", required=False)
 
 class DefWpt(Resource):
     """
-	BlueSky DEFWPT (define waypoint) command
-	"""
+    BlueSky DEFWPT (define waypoint) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request contains valid waypoint information, then a request is
-		sent to the simulator to create it.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request contains valid waypoint information, then a request is
+        sent to the simulator to create it.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
 

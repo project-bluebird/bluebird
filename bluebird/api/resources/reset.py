@@ -10,15 +10,15 @@ from bluebird.api.resources.utils import bb_app
 
 class Reset(Resource):
     """
-	BlueSky RESET command
-	"""
+    BlueSky RESET command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. Resets and clears the simulation
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. Resets and clears the simulation
+        :return: :class:`~flask.Response`
+        """
 
         err = bb_app().sim_client.reset_sim()
 

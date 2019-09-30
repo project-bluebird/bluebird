@@ -12,15 +12,15 @@ import bluebird.logging as bb_logging
 
 class EpInfo(Resource):
     """
-	Contains logic for the epinfo endpoint
-	"""
+    Contains logic for the epinfo endpoint
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events.
+        :return: :class:`~flask.Response`
+        """
 
         full_log_dir = os.path.join(os.getcwd(), bb_logging.INST_LOG_DIR)
         full_ep_file = os.path.join(os.getcwd(), bb_logging.EP_FILE)

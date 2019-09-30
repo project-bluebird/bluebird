@@ -20,10 +20,10 @@ _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
 
 def parse_route_data(route_data):
     """
-	Parse a list of strings containing route data into a keyed dictionary
-	:param route_data:
-	:return:
-	"""
+    Parse a list of strings containing route data into a keyed dictionary
+    :param route_data:
+    :return:
+    """
 
     parsed = []
     for line in map(lambda s: s.replace(" ", ""), route_data):
@@ -45,16 +45,16 @@ def parse_route_data(route_data):
 
 class ListRoute(Resource):
     """
-	Contains logic for the LISTROUTE endpoint
-	"""
+    Contains logic for the LISTROUTE endpoint
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then information about its route (FMS flightplan) is returned.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events. If the request contains an identifier to an existing aircraft,
+        then information about its route (FMS flightplan) is returned.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         acid = parsed["acid"]

@@ -22,16 +22,16 @@ PARSER.add_argument("spd", type=float, location="json", required=False)
 
 class AddWpt(Resource):
     """
-	BlueSky ADDWPT (add waypoint) command
-	"""
+    BlueSky ADDWPT (add waypoint) command
+    """
 
     @staticmethod
     def post():
         """
-		Logic for POST events. If the request is valid, then the specified waypoint is added to the
-		aircraft's route
-		:return: :class:`~flask.Response`
-		"""
+        Logic for POST events. If the request is valid, then the specified waypoint is added to the
+        aircraft's route
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args()
         acid = parsed["acid"]

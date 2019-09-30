@@ -14,15 +14,15 @@ _LOGGER = logging.getLogger("bluebird")
 
 class Time(Resource):
     """
-	BlueSky TIME (get simulated time) command
-	"""
+    BlueSky TIME (get simulated time) command
+    """
 
     @staticmethod
     def get():
         """
-		GET the current simulated time.
-		:return: :class:`~flask.Response`
-		"""
+        GET the current simulated time.
+        :return: :class:`~flask.Response`
+        """
 
         cmd_str = "TIME"
 

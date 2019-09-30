@@ -19,9 +19,9 @@ if not os.path.exists(LOGS_ROOT):
 
 def log_name_time():
     """
-	Returns the current formatted timestamp
-	:return:
-	"""
+    Returns the current formatted timestamp
+    :return:
+    """
     return datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
 
@@ -54,11 +54,11 @@ _LOG_PREFIX = "E"
 
 def store_local_scn(filename, content):
     """
-	Stores an uploaded scenario file locally so it can be logged later
-	:param filename:
-	:param content:
-	:return:
-	"""
+    Stores an uploaded scenario file locally so it can be logged later
+    :param filename:
+    :param content:
+    :return:
+    """
 
     if not filename.startswith("scenario"):
         filename = os.path.join("scenario", filename)
@@ -74,12 +74,12 @@ def store_local_scn(filename, content):
 # TODO: Remove this when we move away from loading files
 def bodge_file_content(filename):
     """
-	Log the content of the scenario file which was loaded.	Interim solution until we move away from
-	using BlueSky's default scenario files. Note that we log the contents of our copy of the scenario
-	files, so this won't reflect any changes to BlueSky's files (which are actually loaded).
-	:param filename:
-	:return:
-	"""
+    Log the content of the scenario file which was loaded.    Interim solution until we move away from
+    using BlueSky's default scenario files. Note that we log the contents of our copy of the scenario
+    files, so this won't reflect any changes to BlueSky's files (which are actually loaded).
+    :param filename:
+    :return:
+    """
 
     if not filename.startswith("scenario"):
         filename = os.path.join("scenario", filename)
@@ -102,9 +102,9 @@ def bodge_file_content(filename):
 
 def close_episode_log(reason):
     """
-	Closes the currently open episode log, if there is one
-	:return:
-	"""
+    Closes the currently open episode log, if there is one
+    :return:
+    """
 
     if not EP_LOGGER.hasHandlers():
         return
@@ -116,10 +116,10 @@ def close_episode_log(reason):
 
 def _start_episode_log(sim_seed):
     """
-	Starts a new episode logfile
-	:param sim_seed:
-	:return:
-	"""
+    Starts a new episode logfile
+    :param sim_seed:
+    :return:
+    """
 
     global EP_ID, EP_FILE  # pylint: disable=global-statement
 
@@ -148,9 +148,9 @@ def _start_episode_log(sim_seed):
 
 def restart_episode_log(sim_seed):
     """
-	Closes the current episode log and starts a new one. Returns the UUID of the new episode
-	:return:
-	"""
+    Closes the current episode log and starts a new one. Returns the UUID of the new episode
+    :return:
+    """
 
     close_episode_log("episode logging restarted")
     return _start_episode_log(sim_seed)

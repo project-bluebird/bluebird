@@ -16,15 +16,15 @@ PARSER.add_argument("close_ep", type=bool, location="args", required=False)
 
 class EpLog(Resource):
     """
-	Contains logic for the eplog endpoint
-	"""
+    Contains logic for the eplog endpoint
+    """
 
     @staticmethod
     def get():
         """
-		Logic for GET events.
-		:return: :class:`~flask.Response`
-		"""
+        Logic for GET events.
+        :return: :class:`~flask.Response`
+        """
 
         parsed = PARSER.parse_args(strict=True)
         close_ep = not parsed["close_ep"] is None
