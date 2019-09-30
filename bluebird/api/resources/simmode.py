@@ -7,9 +7,8 @@ import logging
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.cache
-import bluebird.client
 import bluebird.settings as settings
+from bluebird.api.resources.utils import bb_app
 
 _LOGGER = logging.getLogger('bluebird')
 PARSER = reqparse.RequestParser()
@@ -43,9 +42,9 @@ class SimMode(Resource):
 
 		if new_mode == 'agent':
 
-			bluebird.cache.AC_DATA.set_log_rate(0)
+			bb_app().ac_data.set_log_rate(0)
 
-			err = bluebird.client.CLIENT_SIM.send_stack_cmd('HOLD')
+			err = bb_app().sim_client.send_stack_cmd('HOLD')
 			if err:
 				resp = jsonify(f'Could not pause sim when changing mode: {err}')
 				resp.status_code = 500
@@ -53,9 +52,9 @@ class SimMode(Resource):
 
 		elif new_mode == 'sandbox':
 
-			bluebird.cache.AC_DATA.resume_log()
+			bb_app().ac_data.resume_log()
 
-			err = bluebird.client.CLIENT_SIM.send_stack_cmd('OP')
+			err = bb_app().sim_client.send_stack_cmd('OP')
 			if err:
 				resp = jsonify(f'Could not resume sim when changing mode: {err}')
 				resp.status_code = 500

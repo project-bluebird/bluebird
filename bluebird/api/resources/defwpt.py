@@ -7,7 +7,7 @@ import logging
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client
+from bluebird.api.resources.utils import bb_app
 
 _LOGGER = logging.getLogger('bluebird')
 
@@ -43,7 +43,7 @@ class DefWpt(Resource):
 		cmd_str = f'DEFWPT {wp_name} {parsed["lat"]} {parsed["lon"]} {wp_type}'
 
 		_LOGGER.info(f'Sending stack command: {cmd_str}')
-		err = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+		err = bb_app().sim_client.send_stack_cmd(cmd_str)
 
 		if err:
 			resp = jsonify(f'Error: {err}')

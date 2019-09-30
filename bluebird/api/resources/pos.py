@@ -5,8 +5,7 @@ Provides logic for the POST (position) API endpoint
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import check_acid
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import bb_app, check_acid
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('acid', type=str, location='args', required=True)
@@ -29,7 +28,7 @@ class Pos(Resource):
 		acid = parsed['acid']
 
 		if acid.upper() == 'ALL':
-			if not AC_DATA.store:
+			if not bb_app().ac_data.store:
 				resp = jsonify('No aircraft in the simulation')
 				resp.status_code = 400
 				return resp
@@ -38,6 +37,6 @@ class Pos(Resource):
 			if resp is not None:
 				return resp
 
-		resp = jsonify(AC_DATA.get(acid))
+		resp = jsonify(bb_app().ac_data.get(acid))
 		resp.status_code = 200
 		return resp

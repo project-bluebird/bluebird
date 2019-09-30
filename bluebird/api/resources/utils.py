@@ -6,16 +6,25 @@ import logging
 
 import re
 import time
-from flask import jsonify
+from flask import current_app, jsonify
 from flask_restful import reqparse
 
-import bluebird.cache as bb_cache
-import bluebird.client
 from bluebird.utils.strings import is_acid
 
-_LOGGER = logging.getLogger('bluebird')
+_LOGGER = logging.getLogger(__name__)
 
 _SCN_RE = re.compile(r'\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*')
+
+
+def bb_app():
+	"""
+	Gets the BlueBird app instance
+	:return:
+	"""
+
+	if not hasattr(bb_app, '_instance'):
+		bb_app._instance = current_app.config.get('bluebird_app')
+	return bb_app._instance
 
 
 def generate_arg_parser(_req_args, opt_args=None):
@@ -63,7 +72,7 @@ def check_acid(string, assert_exists=True):
 
 	if assert_exists:
 		for acid in filter(None, string.split(',')):
-			if not bb_cache.AC_DATA.contains(acid):
+			if not bb_app().ac_data.contains(acid):
 				resp = jsonify('AC {} not found'.format(acid))
 				resp.status_code = 404
 				return resp
@@ -120,7 +129,7 @@ def process_stack_cmd(cmd_str, success_code=200):
 
 	_LOGGER.debug('Sending stack command: {}'.format(cmd_str))
 
-	error = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+	error = bb_app().sim_client.send_stack_cmd(cmd_str)
 
 	if error:
 		resp = jsonify(f'Simulation returned: {error}')
@@ -156,7 +165,7 @@ def check_ac_data():
 	:return:
 	"""
 
-	if not wait_until_eq(bb_cache.AC_DATA.store, True):
+	if not wait_until_eq(bb_app().ac_data.store, True):
 		resp = jsonify(
 						'No aircraft data received after loading. Scenario might not contain any aircraft')
 		resp.status_code = 500

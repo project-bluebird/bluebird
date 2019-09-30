@@ -5,10 +5,8 @@ Provides logic for the ALT (altitude) API endpoint
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client
 from bluebird.api.resources.listroute import parse_route_data
-from bluebird.api.resources.utils import check_acid, generate_arg_parser, process_stack_cmd
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import bb_app, check_acid, generate_arg_parser, process_stack_cmd
 
 REQ_ARGS = ['alt']
 OPT_ARGS = ['vspd']
@@ -47,7 +45,7 @@ class Alt(Resource):
 		if fl_cleared.upper().startswith('FL'):
 			fl_cleared = round(int(fl_cleared[2:]) * 100 * 0.3048)
 
-		AC_DATA.cleared_fls.update({acid: fl_cleared})
+		bb_app().ac_data.cleared_fls.update({acid: fl_cleared})
 
 		cmd_str = f'ALT {acid} {fl_cleared_feet_or_fl} {vspd}'.strip()
 		return process_stack_cmd(cmd_str)
@@ -64,7 +62,7 @@ class Alt(Resource):
 		parsed = PARSER_GET.parse_args()
 		acid = parsed['acid']
 
-		if not AC_DATA.store:
+		if not bb_app().ac_data.store:
 			resp = jsonify('No aircraft in the simulation')
 			resp.status_code = 400
 			return resp
@@ -75,17 +73,17 @@ class Alt(Resource):
 			return resp
 
 		# Current flight level
-		fl_current = AC_DATA.get(acid)[acid]['alt']
+		fl_current = bb_app().ac_data.get(acid)[acid]['alt']
 
 		# Cleared flight level
-		fl_cleared = AC_DATA.cleared_fls.get(acid)
+		fl_cleared = bb_app().ac_data.cleared_fls.get(acid)
 		if fl_cleared:
 			fl_cleared = int(fl_cleared)
 
 		# Requested flight level
 		fl_requested = None
 		cmd_str = f'LISTRTE {acid}'
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
+		reply = bb_app().sim_client.send_stack_cmd(cmd_str, response_expected=True)
 
 		if reply and isinstance(reply, list):
 			parsed_route = parse_route_data(reply)

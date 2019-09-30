@@ -7,8 +7,8 @@ import os
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client as bb_client
 import bluebird.logging as bb_logging
+from bluebird.api.resources.utils import bb_app
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('close_ep', type=bool, location='args', required=False)
@@ -37,7 +37,7 @@ class EpLog(Resource):
 			return resp
 
 		if close_ep:
-			err = bb_client.CLIENT_SIM.reset_sim()
+			err = bb_app().sim_client.reset_sim()
 			if err:
 				resp = jsonify(f'Could not reset simulation: {err}')
 				resp.status_code = 500

@@ -5,8 +5,7 @@ Provides logic for the CRE (create aircraft) API endpoint
 from flask import jsonify
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import bb_app, generate_arg_parser, process_ac_cmd
 
 REQ_ARGS = ['type', 'lat', 'lon', 'hdg', 'alt', 'spd']
 PARSER = generate_arg_parser(REQ_ARGS)
@@ -28,7 +27,7 @@ class Cre(Resource):
 		parsed = PARSER.parse_args(strict=True)
 		acid = parsed['acid']
 
-		if AC_DATA.contains(acid):
+		if bb_app().ac_data.contains(acid):
 			resp = jsonify('Aircraft {} already exists'.format(acid))
 			resp.status_code = 400
 			return resp

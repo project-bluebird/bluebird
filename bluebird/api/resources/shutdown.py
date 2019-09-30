@@ -5,7 +5,7 @@ Provides logic for the shutdown endpoint
 from flask import jsonify, request
 from flask_restful import Resource, reqparse
 
-import bluebird.client as bb_client
+from bluebird.api.resources.utils import bb_app
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('stop_sim', type=bool, location='args', required=False)
@@ -28,7 +28,7 @@ class Shutdown(Resource):
 
 		sim_quit_msg = ''
 		if stop_sim:
-			sim_quit = bb_client.CLIENT_SIM.quit()
+			sim_quit = bb_app().sim_client.quit()
 			sim_quit_msg = f'. (Sim exited ok: {sim_quit})'
 
 		try:

@@ -5,7 +5,7 @@ Provides logic for the RESET API endpoint
 from flask import jsonify
 from flask_restful import Resource
 
-import bluebird.client as bb_client
+from bluebird.api.resources.utils import bb_app
 
 
 class Reset(Resource):
@@ -20,7 +20,7 @@ class Reset(Resource):
 		:return: :class:`~flask.Response`
 		"""
 
-		err = bb_client.CLIENT_SIM.reset_sim()
+		err = bb_app().sim_client.reset_sim()
 
 		if not err:
 			resp = jsonify('Simulation reset')

@@ -7,7 +7,7 @@ import logging
 from flask import jsonify
 from flask_restful import Resource
 
-import bluebird.client
+from bluebird.api.resources.utils import bb_app
 
 _LOGGER = logging.getLogger('bluebird')
 
@@ -27,7 +27,7 @@ class Time(Resource):
 		cmd_str = 'TIME'
 
 		_LOGGER.debug(f'Sending stack command: {cmd_str}')
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
+		reply = bb_app().sim_client.send_stack_cmd(cmd_str, response_expected=True)
 
 		if not reply:
 			resp = jsonify('Error: No time data received from BlueSky')

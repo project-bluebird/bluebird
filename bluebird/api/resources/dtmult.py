@@ -5,8 +5,7 @@ Provides logic for the DTMULT API endpoint
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client as bb_client
-from bluebird.cache import AC_DATA
+from bluebird.api.resources.utils import bb_app
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('multiplier', type=float, location='json', required=True)
@@ -33,15 +32,15 @@ class DtMult(Resource):
 			return resp
 
 		cmd = f'DTMULT {mult}'
-		err = bb_client.CLIENT_SIM.send_stack_cmd(cmd)
+		err = bb_app().sim_client.send_stack_cmd(cmd)
 
 		if not err:
-			AC_DATA.set_log_rate(mult)
+			bb_app().ac_data.set_log_rate(mult)
 			resp = jsonify('Simulation speed changed')
 			resp.status_code = 200
 		else:
 			resp = jsonify(f'Could not change speed: {err}')
 			resp.status_code = 500
 
-		bb_client.CLIENT_SIM.step_dt = mult
+		bb_app().sim_client.step_dt = mult
 		return resp

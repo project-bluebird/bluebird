@@ -11,10 +11,8 @@ import uuid
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.cache as bb_cache
-import bluebird.client as bb_client
 import bluebird.settings
-from bluebird.api.resources.utils import check_ac_data, validate_scenario, wait_until_eq
+from bluebird.api.resources.utils import check_ac_data, validate_scenario, wait_until_eq, bb_app
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 
@@ -109,12 +107,12 @@ class LoadLog(Resource):
 			resp.status_code = 400
 			return resp
 
-		prev_dt = bb_client.CLIENT_SIM.step_dt
+		prev_dt = bb_app().sim_client.step_dt
 
 		_LOGGER.debug('Starting log reload')
 
 		# Reset now so the current episode log is closed
-		err = bb_client.CLIENT_SIM.reset_sim()
+		err = bb_app().sim_client.reset_sim()
 
 		if err:
 			resp = jsonify(f'Simulation not reset: {err}')
@@ -156,26 +154,26 @@ class LoadLog(Resource):
 		# All good - do the reload
 
 		_LOGGER.debug('Setting the simulator seed')
-		err = bb_client.CLIENT_SIM.send_stack_cmd(f'SEED {parsed_scn["seed"]}')
+		err = bb_app().sim_client.send_stack_cmd(f'SEED {parsed_scn["seed"]}')
 
 		if err:
 			resp = jsonify(f'Could not set seed {err}')
 			resp.status_code = 500
 
-		bb_client.CLIENT_SIM.seed = parsed_scn["seed"]
+		bb_app().sim_client.seed = parsed_scn["seed"]
 
 		scn_name = f'reloads/{str(uuid.uuid4())[:8]}.scn'
 
 		_LOGGER.debug('Uploading the new scenario')
 		store_local_scn(scn_name, parsed_scn['lines'])
-		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, parsed_scn['lines'])
+		err = bb_app().sim_client.upload_new_scenario(scn_name, parsed_scn['lines'])
 
 		if err:
 			resp = jsonify(f'Error uploading scenario: {err}')
 			resp.status_code = 500
 
 		_LOGGER.info('Starting the new scenario')
-		err = bb_client.CLIENT_SIM.load_scenario(scn_name, start_paused=True)
+		err = bb_app().sim_client.load_scenario(scn_name, start_paused=True)
 
 		if err:
 			resp = jsonify(f'Could not start scenario after upload: {err}')
@@ -183,16 +181,16 @@ class LoadLog(Resource):
 			return resp
 
 		_LOGGER.debug('Waiting for simulation to be paused')
-		if not wait_until_eq(bb_cache.SIM_STATE.sim_state, 1):
+		if not wait_until_eq(bb_app().sim_state.sim_state, 1):
 			resp = jsonify(f'Could not pause simulation after starting new scenario')
 			resp.status_code = 500
 			return resp
 
-		diff = target_time - bb_cache.SIM_STATE.sim_t
+		diff = target_time - bb_app().sim_state.sim_t
 		if diff:
 			# Naive approach - set DTMULT to target, then STEP once...
 			_LOGGER.debug(f'Time difference is {diff}. Stepping to {target_time}')
-			err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {diff}')
+			err = bb_app().sim_client.send_stack_cmd(f'DTMULT {diff}')
 
 			if err:
 				resp = jsonify(f'Could not change speed: {err}')
@@ -200,7 +198,7 @@ class LoadLog(Resource):
 				return resp
 
 			_LOGGER.debug('Performing step')
-			err = bb_client.CLIENT_SIM.step()
+			err = bb_app().sim_client.step()
 
 			if err:
 				resp = jsonify(f'Could not step simulation: {err}')
@@ -214,10 +212,10 @@ class LoadLog(Resource):
 		if err_resp:
 			return err_resp
 
-		bb_cache.AC_DATA.log()
+		bb_app().ac_data.log()
 
 		# Reset DTMULT to the previous value
-		err = bb_client.CLIENT_SIM.send_stack_cmd(f'DTMULT {prev_dt}')
+		err = bb_app().sim_client.send_stack_cmd(f'DTMULT {prev_dt}')
 
 		if err:
 			resp = jsonify(f'Episode reloaded, but could not reset DTMULT to previous value')

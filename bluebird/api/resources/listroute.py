@@ -8,9 +8,7 @@ import re
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.cache
-import bluebird.client
-from bluebird.api.resources.utils import check_acid
+from bluebird.api.resources.utils import bb_app, check_acid
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('acid', type=str, location='args', required=True)
@@ -62,7 +60,7 @@ class ListRoute(Resource):
 
 		cmd_str = f'LISTRTE {acid}'
 		_LOGGER.debug(f'Sending stack command: {cmd_str}')
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
+		reply = bb_app().sim_client.send_stack_cmd(cmd_str, response_expected=True)
 
 		if not reply:
 			resp = jsonify('Error: No route data received from BlueSky')
@@ -81,8 +79,7 @@ class ListRoute(Resource):
 			resp.status_code = 500
 			return resp
 
-		sim_state = bluebird.cache.SIM_STATE
-
-		resp = jsonify({'route': parsed_route, 'acid': acid, 'sim_t': sim_state.sim_t})
+		sim_t = bb_app().sim_state.sim_t
+		resp = jsonify({'route': parsed_route, 'acid': acid, 'sim_t': sim_t})
 		resp.status_code = 200
 		return resp

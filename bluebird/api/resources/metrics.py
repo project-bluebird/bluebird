@@ -7,7 +7,7 @@ import logging
 from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.metrics as bb_metrics
+from bluebird.api.resources.utils import bb_app
 
 PARSER = reqparse.RequestParser()
 PARSER.add_argument('name', type=str, location='args', required=True)
@@ -31,7 +31,7 @@ class Metric(Resource):
 
 		parsed = PARSER.parse_args()
 
-		if not bb_metrics.METRIC_PROVIDERS:
+		if not bb_app().metrics_providers:
 			resp = jsonify('No metrics available')
 			resp.status_code = 500
 			return resp
@@ -40,9 +40,9 @@ class Metric(Resource):
 
 		if parsed['provider']:
 			prov_name = parsed['provider']
-			provider = next((x for x in bb_metrics.METRIC_PROVIDERS if str(x) == prov_name), None)
+			provider = next((x for x in bb_app().metrics_providers if str(x) == prov_name), None)
 		else:
-			provider = bb_metrics.METRIC_PROVIDERS[0]  # BlueBird's built-in metrics
+			provider = bb_app().metrics_providers[0]  # BlueBird's built-in metrics
 
 		args = parsed['args'].split(',') if parsed['args'] else []
 
@@ -82,7 +82,7 @@ class MetricProviders(Resource):
 		"""
 
 		data = {}
-		for provider in bb_metrics.METRIC_PROVIDERS:
+		for provider in bb_app().metrics_providers:
 			data.update({str(provider): provider.version()})
 
 		return jsonify(data)
