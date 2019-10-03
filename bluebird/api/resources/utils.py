@@ -6,7 +6,7 @@ import logging
 
 import re
 import time
-from typing import List, Union, Optional, Tuple
+from typing import List, Union, Optional, Tuple, Dict, Any
 from http import HTTPStatus
 from flask import current_app, jsonify
 from flask_restful import reqparse
@@ -29,7 +29,7 @@ CALLSIGN_LABEL = "acid"
 _SCN_RE = re.compile(r"\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*")
 
 
-def parse_args(parser: reqparse.RequestParser) -> dict:
+def parse_args(parser: reqparse.RequestParser) -> Dict[str, Any]:
     """
     Parse the request arguments and return them as a dict
     """

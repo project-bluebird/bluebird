@@ -1,13 +1,24 @@
 """
-Provides logic for the SPD (horizontal speed) API endpoint
+Provides logic for the SPD (_ speed) API endpoint
 """
 
-from flask_restful import Resource
+# TODO Which speed are we specifying here?
 
-from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
+from flask_restful import Resource, reqparse
 
-REQ_ARGS = ["spd"]
-PARSER = generate_arg_parser(REQ_ARGS)
+from bluebird.api.resources.utils import (
+    parse_args,
+    checked_resp,
+    CALLSIGN_LABEL,
+    bad_request_resp,
+    sim_client,
+)
+from bluebird.utils.types import Callsign
+
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="json", required=True)
+_PARSER.add_argument("spd", type=int, location="json", required=True)
 
 
 class Spd(Resource):
@@ -18,9 +29,17 @@ class Spd(Resource):
     @staticmethod
     def post():
         """
-        Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-        to alter its horizontal speed.
-        :return: :class:`~flask.Response`
+        Logic for POST events. If the request contains an existing aircraft ID, then a
+        request is sent to alter its horizontal speed
+        :return:
         """
 
-        return process_ac_cmd("SPD", PARSER, REQ_ARGS)
+        req_args = parse_args(_PARSER)
+        speed: int = req_args["spd"]
+
+        if speed <= 0:
+            return bad_request_resp("Speed must be positive")
+
+        err = sim_client().set_aircraft_speed(speed)
+
+        return checked_resp(err)
