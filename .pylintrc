@@ -17,6 +17,8 @@ good-names=log
 max-line-length=88
 indent-string='    '
 
+max-args=7
+
 [MESSAGES CONTROL]
 
 # Disable W0511 'fixme' (TODO comments)
