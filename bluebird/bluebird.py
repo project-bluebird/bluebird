@@ -7,7 +7,8 @@ import logging
 from bluebird.settings import Settings
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL
-from bluebird.cache import AcDataCache, SimState
+from bluebird.cache.acdatacache import AcDataCache
+from bluebird.cache.sim_state import SimState
 from bluebird.metrics import setup_metrics
 from bluebird.sim_client import setup_sim_client
 

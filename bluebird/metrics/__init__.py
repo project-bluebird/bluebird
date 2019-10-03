@@ -8,7 +8,7 @@ import logging
 
 from bluebird.settings import Settings
 
-_LOGGER = logging.getLogger(__package__)
+_LOGGER = logging.getLogger(__name__)
 
 
 def setup_metrics(ac_data):

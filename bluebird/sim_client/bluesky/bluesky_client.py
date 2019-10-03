@@ -2,8 +2,18 @@
 Contains the BlueSky client class
 """
 
+import json
+import logging
 import os
 import sys
+import time
+
+import msgpack
+import zmq
+
+import bluebird.logging
+from bluebird.utils.timer import Timer
+from bluebird.utils.timeutils import timeit
 
 # Import BlueSky from the git submodule
 sys.path.append(
@@ -12,18 +22,9 @@ sys.path.append(
     )
 )
 
-import json
-import logging
-
-import msgpack
-import time
-import zmq
-
-import bluebird.logging
-from bluebird.utils.timer import Timer
-from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
+
 
 CMD_LOG_PREFIX = "C"
 

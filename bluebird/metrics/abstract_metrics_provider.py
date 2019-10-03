@@ -1,5 +1,5 @@
 """
-Contains the MetricProvider abstract base class
+Contains the AbstractMetricProvider abstract base class
 """
 
 from abc import ABC, abstractmethod
@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from semver import VersionInfo
 
 
-class MetricProvider(ABC):
+class AbstractMetricProvider(ABC):
     """
     ABC for classes which provide metrics to BlueBird
     """

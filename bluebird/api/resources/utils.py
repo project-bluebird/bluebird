@@ -12,8 +12,9 @@ from flask import current_app, jsonify
 from flask_restful import reqparse
 
 from bluebird.settings import Settings
-from bluebird.cache import AcDataCache, SimState
-from bluebird.metrics.metrics_provider import MetricProvider
+from bluebird.cache.acdatacache import AcDataCache
+from bluebird.cache.sim_state import SimState
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from bluebird.sim_client import AbstractSimClient
 from bluebird.utils.types import LatLon, Callsign
 
@@ -135,7 +136,7 @@ def sim_state() -> SimState:
     return _bb_app().sim_state
 
 
-def metrics_providers() -> List[MetricProvider]:
+def metrics_providers() -> List[AbstractMetricProvider]:
     """
     Utility function to return the metrics_providers instance
     """

@@ -4,12 +4,12 @@ BlueBird metrics provider class
 
 import logging
 
-import bluebird.settings as bb_settings
+from bluebird.settings import Settings
 from bluebird.metrics.bluebird import metrics
-from bluebird.metrics.metrics_provider import MetricProvider
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 
 
-class Provider(MetricProvider):
+class Provider(AbstractMetricProvider):
     """
     BlueBird metrics provider
     """
@@ -27,4 +27,4 @@ class Provider(MetricProvider):
 
     def version(self):
         # Just track these metrics along with BlueBird release versions
-        return str(bb_settings.VERSION)
+        return str(Settings.VERSION)

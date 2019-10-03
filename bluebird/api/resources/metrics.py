@@ -16,7 +16,7 @@ from bluebird.api.resources.utils import (
     ok_resp,
     RespTuple,
 )
-from bluebird.metrics.metrics_provider import MetricProvider
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("name", type=str, location="args", required=True)
@@ -26,7 +26,9 @@ _PARSER.add_argument("provider", type=str, location="args", required=False)
 _LOGGER = logging.getLogger(__name__)
 
 
-def _get_provider_by_name(provider_name: str) -> Union[RespTuple, MetricProvider]:
+def _get_provider_by_name(
+    provider_name: str
+) -> Union[RespTuple, AbstractMetricProvider]:
     if not provider_name:
         return bad_request_resp("Provider name must be specified")
 
