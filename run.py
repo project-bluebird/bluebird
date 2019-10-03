@@ -2,11 +2,8 @@
 Entry point for the BlueBird app
 """
 
-import os
-
 import argparse
 from dotenv import load_dotenv
-from semver import VersionInfo
 
 from bluebird import BlueBird
 from bluebird.settings import Settings
@@ -27,10 +24,10 @@ def _parse_args():
         f'{", ".join([x.name for x in SimType])}',
     )
     parser.add_argument(
-        "--sim-host", type=str, help="Hostname or IP of the simulation to connect to"
+        "--sim-host", type=str, help="Hostname or IP of the simulator to connect to"
     )
     parser.add_argument(
-        "--reset-sim", action="store_true", help="Reset the simulation on connection"
+        "--reset-sim", action="store_true", help="Resets the simulation on connection"
     )
     parser.add_argument("--log-rate", type=float, help="Log rate in sim-seconds")
     parser.add_argument(
