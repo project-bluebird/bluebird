@@ -53,4 +53,3 @@ class DefWpt(Resource):
         err = sim_client().define_waypoint(wp_name, position, type=req_args["type"])
 
         return checked_resp(err, HTTPStatus.CREATED)
-

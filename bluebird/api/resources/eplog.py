@@ -54,4 +54,3 @@ class EpLog(Resource):
         }
 
         return ok_resp(data)
-

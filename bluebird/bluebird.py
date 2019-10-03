@@ -54,7 +54,9 @@ class BlueBird:
         :return:
         """
 
-        self.sim_client, self._min_sim_version = setup_sim_client(self.sim_state, self.ac_data)
+        self.sim_client, self._min_sim_version = setup_sim_client(
+            self.sim_state, self.ac_data
+        )
         self._timers.extend(self.sim_client.start_timers())
 
     def connect_to_sim(self, reset_on_connect: bool):

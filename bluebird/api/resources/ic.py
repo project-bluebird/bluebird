@@ -61,4 +61,3 @@ class Ic(Resource):
         err = check_ac_data_populated()
 
         return checked_resp(err)
-

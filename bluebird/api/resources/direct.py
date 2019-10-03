@@ -41,4 +41,3 @@ class Direct(Resource):
         err = sim_client().direct_to_waypoint(req_args[CALLSIGN_LABEL], waypoint)
 
         return checked_resp(err)
-

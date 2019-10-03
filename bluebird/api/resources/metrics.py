@@ -26,7 +26,7 @@ _PARSER.add_argument("provider", type=str, location="args", required=False)
 _LOGGER = logging.getLogger(__name__)
 
 
-def _get_provider_by_name(provider_name: str) -> Union[RespTuple, MetricProvider]:    
+def _get_provider_by_name(provider_name: str) -> Union[RespTuple, MetricProvider]:
     if not provider_name:
         return bad_request_resp("Provider name must be specified")
 
@@ -62,8 +62,8 @@ class Metric(Resource):
         # BlueBird's built-in metrics
         provider = metrics_providers()[0]
 
-        #TODO Check behaviour of parse_args with non-required/None
-        if 'provider' in req_args:
+        # TODO Check behaviour of parse_args with non-required/None
+        if "provider" in req_args:
             provider = _get_provider_by_name(req_args["provider"])
             if isinstance(provider, RespTuple):
                 return provider
