@@ -283,7 +283,7 @@ class AbstractSimClient(ABC):
         """
 
     @abstractmethod
-    def stop(self, shutdown_sim: bool) -> Optional[bool]:
+    def stop(self, shutdown_sim: bool = False) -> Optional[bool]:
         """
         Disconnect from the simulation server, and stop the client (including any
         timers)

@@ -37,4 +37,12 @@ def setup_sim_client(sim_state, ac_data) -> (AbstractSimClient, VersionInfo):
     ):
         raise AttributeError("Loaded module does not contain a valid SimClient class")
 
-    return (module.SimClient(sim_state, ac_data), getattr(module, "MIN_SIM_VERSION"))
+    try:
+        sim_client = module.SimClient(sim_state, ac_data)
+    except TypeError as exc:
+        raise TypeError(
+            f"Client class for {Settings.SIM_TYPE.name} does not properly implement "
+            "AbstractSimClient"
+        ) from exc
+
+    return (sim_client, getattr(module, "MIN_SIM_VERSION"))
