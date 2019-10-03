@@ -5,7 +5,7 @@ Module contains logic for storing the state of the remote simulation
 import logging
 
 from bluebird.settings import Settings
-from bluebird.utils import Timer
+from bluebird.utils.timer import Timer
 
 # Note - BlueSky SIMINFO returns:
 # [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)), bs.traf.ntraf,

@@ -6,7 +6,7 @@ import importlib
 import importlib.util
 import logging
 
-import bluebird.settings as bb_settings
+from bluebird.settings import Settings
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -19,7 +19,7 @@ def setup_metrics(ac_data):
     """
 
     providers = []
-    for provider in bb_settings.METRICS_PROVIDERS:
+    for provider in Settings.METRICS_PROVIDERS:
         mod_path = f"{__package__}.{provider}.provider"
         try:
             spec = importlib.util.find_spec(mod_path)

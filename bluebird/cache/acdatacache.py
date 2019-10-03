@@ -10,7 +10,7 @@ import datetime
 import bluebird.logging
 from bluebird.cache.base import Cache
 from bluebird.settings import Settings
-from bluebird.utils import Timer
+from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import log_rate
 
 LOG_PREFIX = "A"

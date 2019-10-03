@@ -21,7 +21,7 @@ class BlueBird:
         self._logger = logging.getLogger(__name__)
         self._logger.info(
             f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
-            f"mode: {Settings.SIM_MODE}"
+            f"mode: {Settings.SIM_MODE.name}"
         )
 
         # TODO Refactor these two into a single Simulation proxy class

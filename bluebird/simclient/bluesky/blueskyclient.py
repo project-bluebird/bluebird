@@ -20,7 +20,7 @@ import time
 import zmq
 
 import bluebird.logging
-from bluebird.utils import Timer
+from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 from bluesky.network.client import Client
 from bluesky.network.npcodec import decode_ndarray
