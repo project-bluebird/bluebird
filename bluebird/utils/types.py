@@ -42,13 +42,13 @@ class Altitude:
         return int(self.feet * _METERS_PER_FOOT)
 
     @property
-    def flight_level(self) -> str:
+    def flight_levels(self) -> str:
         """
         The altitude in flight levels
         """
         return f"FL{round(self.feet / 100)}"
 
-    def __str__(self) -> str:
+    def __repr__(self):
         return str(self.feet)
 
 
@@ -66,7 +66,7 @@ class Callsign:
         ), f"Invalid callsign {callsign}"
         self.value = callsign
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return self.value
 
 
@@ -89,7 +89,7 @@ class GroundSpeed:
         """
         return int(self.meters_per_sec / _METERS_PER_FOOT)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return str(self.meters_per_sec)
 
 
@@ -105,7 +105,7 @@ class Heading:
         assert 0 <= heading < 360, "Heading must satisfy 0 <= x < 360"
         self.heading_degrees = heading
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return str(self.heading_degrees)
 
 
@@ -123,7 +123,7 @@ class LatLon:
         assert abs(lon) <= 180, "Longitude must satisfy abs(x) <= 180"
         self.lat_degrees, self.lon_degrees = (lat, lon)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"{self.lat_degrees:f} {self.lon_degrees:f}"
 
 
@@ -144,5 +144,5 @@ class VerticalSpeed:
         """
         return int(self.meters_per_sec / _METERS_PER_FOOT)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return str(self.meters_per_sec)

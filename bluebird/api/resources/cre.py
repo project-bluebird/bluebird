@@ -25,7 +25,7 @@ _PARSER.add_argument("lat", type=float, location="json", required=True)
 _PARSER.add_argument("lon", type=float, location="json", required=True)
 _PARSER.add_argument("hdg", type=Heading, location="json", required=True)
 _PARSER.add_argument("alt", type=Altitude, location="json", required=True)
-_PARSER.add_argument("spd", type=int, location="json", required=True)
+_PARSER.add_argument("spd", type=GroundSpeed, location="json", required=True)
 
 
 class Cre(Resource):
