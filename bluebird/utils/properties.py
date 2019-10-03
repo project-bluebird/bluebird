@@ -20,7 +20,7 @@ class SimMode(IntEnum):
     Agent = 2
 
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls: type(IntEnum), value: str):
         for member in cls:
             if SimMode(member).name.lower() == value.lower():
                 return member
@@ -43,7 +43,7 @@ class SimType(IntEnum):
     MachColl = 2
 
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls: type(IntEnum), value: str):
         for member in cls:
             if SimType(member).name.lower() == value.lower():
                 return member
