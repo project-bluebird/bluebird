@@ -7,7 +7,7 @@ import logging
 from semver import VersionInfo
 from bluebird.settings import Settings
 
-from .abstractsimclient import AbstractSimClient
+from .abstract_sim_client import AbstractSimClient
 
 _LOGGER = logging.getLogger(__name__)
 

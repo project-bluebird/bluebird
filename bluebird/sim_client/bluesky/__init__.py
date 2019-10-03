@@ -3,9 +3,9 @@ Package for the BlueSky simulator client
 """
 
 from semver import VersionInfo
-from bluebird.simclient.abstractsimclient import AbstractSimClient
+from bluebird.sim_client.abstract_sim_client import AbstractSimClient
 
-from .simclient import SimClient, MIN_SIM_VERSION
+from .sim_client import SimClient, MIN_SIM_VERSION
 
 assert issubclass(
     SimClient, AbstractSimClient

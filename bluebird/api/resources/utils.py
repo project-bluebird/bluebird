@@ -14,7 +14,7 @@ from flask_restful import reqparse
 from bluebird.settings import Settings
 from bluebird.cache import AcDataCache, SimState
 from bluebird.metrics.metrics_provider import MetricProvider
-from bluebird.simclient import AbstractSimClient
+from bluebird.sim_client import AbstractSimClient
 from bluebird.utils.types import LatLon, Callsign
 
 _LOGGER = logging.getLogger(__name__)

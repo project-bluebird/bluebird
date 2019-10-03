@@ -9,7 +9,7 @@ from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL
 from bluebird.cache import AcDataCache, SimState
 from bluebird.metrics import setup_metrics
-from bluebird.simclient import setup_sim_client
+from bluebird.sim_client import setup_sim_client
 
 
 class BlueBird:

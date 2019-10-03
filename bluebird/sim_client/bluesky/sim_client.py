@@ -7,8 +7,8 @@ import os
 from semver import VersionInfo
 
 from bluebird.settings import Settings
-from bluebird.simclient import AbstractSimClient
-from .blueskyclient import BlueSkyClient
+from bluebird.sim_client import AbstractSimClient
+from .bluesky_client import BlueSkyClient
 
 _BS_MIN_VERSION = os.getenv("BS_MIN_VERSION")
 if not _BS_MIN_VERSION:
