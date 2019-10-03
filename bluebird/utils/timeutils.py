@@ -7,7 +7,7 @@ import logging
 import datetime
 import time
 
-from bluebird.settings import SIM_LOG_RATE
+from bluebird.settings import Settings
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def log_rate(sim_speed):
     :return:
     """
 
-    return round(SIM_LOG_RATE * sim_speed, 2)
+    return round(Settings.SIM_LOG_RATE * sim_speed, 2)
 
 
 def timeit(prefix):

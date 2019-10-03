@@ -6,7 +6,8 @@ import logging
 
 from flask_restful import Resource, reqparse
 
-import bluebird.settings as bb_settings
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode as SimMode_prop
 from bluebird.api.resources.utils import (
     ac_data,
     sim_client,
@@ -37,17 +38,17 @@ class SimMode(Resource):
         req_args = parse_args(_PARSER)
         new_mode = req_args["mode"]
 
-        if not new_mode in bb_settings.SimMode:
+        try:
+            Settings.set_sim_mode(new_mode)
+        except ValueError:
             return bad_request_resp(
                 f'Mode "{new_mode}"" not supported. Must be one of: '
-                f'{", ".join([x.name for x in bb_settings.SimType])}'
+                f'{", ".join([x.name for x in SimMode_prop])}'
             )
 
-        _LOGGER.debug(f"Setting mode to {new_mode}")
+        _LOGGER.debug(f"Mode set to {new_mode}")
 
-        bb_settings.SIM_MODE = new_mode
-
-        if new_mode == bb_settings.SimMode.Agent:
+        if Settings.SIM_MODE == SimMode_prop.Agent:
             ac_data().set_log_rate(0)
             err = sim_client().pause_sim()
             if err:
@@ -55,7 +56,7 @@ class SimMode(Resource):
                     f"Could not pause sim when changing mode: {err}"
                 )
 
-        elif new_mode == bb_settings.SimMode.Sandbox:
+        elif Settings.SIM_MODE == SimMode_prop.Sandbox:
             ac_data().resume_log()
             err = sim_client().resume_sim()
             if err:
@@ -65,6 +66,6 @@ class SimMode(Resource):
         else:
             # Only reach here if we add a new mode to settings but don't add a case to
             # handle it here
-            raise ValueError(f"Unsupported mode {new_mode}")
+            raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
 
         return ok_resp()

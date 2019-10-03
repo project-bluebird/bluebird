@@ -2,67 +2,86 @@
 Default settings for the BlueBird app
 """
 
-import os
-from enum import IntEnum
+# TODO Rename SIM_MODE
 
+from abc import ABC
+import os
+
+import logging
 from semver import VersionInfo
 
-# BlueBird app settings
+from bluebird.utils.properties import SimMode, SimType
+
 
 with open("VERSION") as version_file:
     _VERSION_STR = version_file.read().strip()
+
+
+class Settings(ABC):  # pylint: disable=too-few-public-methods
+    """
+    BlueBird's settings
+
+    Attributes:
+        VERSION:            BlueBird release version
+        API_VERSION:        BlueBird API version
+        FLASK_DEBUG:        FLASK_DEBUG flag for `Flask.run(debug=FLASK_DEBUG)`
+        PORT:               BlueBird (Flask) server port
+        SIM_LOG_RATE:       Rate (in sim-seconds) at which aircraft data is logged to
+                            the episode file
+        LOGS_ROOT:          Root directory for log files
+        CONSOLE_LOG_LEVEL:  The min. log level for console messages
+        METRICS_PROVIDERS:  List of package names containing metrics providers
+        SIM_HOST:           Hostname of the simulation server
+        SIM_MODE:           Mode for interacting with the simulator
+        SIM_TYPE:           The simulator type
+        BS_EVENT_PORT:      BlueSky event port
+        BS_STREAM_PORT:     BlueSky stream port
+    """
+
     VERSION = VersionInfo.parse(_VERSION_STR)
+    API_VERSION = 1
+    FLASK_DEBUG = True
+    PORT = 5001
 
-API_VERSION = 1
+    SIM_LOG_RATE = 0.2
+    LOGS_ROOT = os.getenv("BB_LOGS_ROOT", "logs")
+    CONSOLE_LOG_LEVEL = logging.INFO
 
-FLASK_DEBUG = True
+    METRICS_PROVIDERS = ["bluebird"]
 
-BB_HOST = "0.0.0.0"
-BB_PORT = 5001
+    SIM_HOST = "localhost"
+    # SIM_PORT = 123 - MachColl?
+    SIM_MODE = SimMode.Sandbox
+    SIM_TYPE = SimType.BlueSky
 
-# Rate (in sim-seconds) at which aircraft data is logged to the episode file
-SIM_LOG_RATE = 0.2
+    @staticmethod
+    def set_sim_mode(new_val: str):
+        """
+        Update the current sim mode setting
+        :raises ValueError: If the given string is not a valid mode
+        """
+        try:
+            Settings.SIM_MODE = SimMode(new_val)
+        except KeyError as exc:
+            raise ValueError(
+                f'Mode "{new_val}" not supported. Must be one of: '
+                f'{", ".join([x.name for x in SimMode])}'
+            ) from exc
 
-LOGS_ROOT = os.getenv("BB_LOGS_ROOT", "logs")
-CONSOLE_LOG_LEVEL = "INFO"  # Change to 'DEBUG' if needed
+    @staticmethod
+    def set_sim_type(new_val: str):
+        """
+        Update the current sim type setting
+        :raises ValueError: If the given string is not a valid type
+        """
+        try:
+            Settings.SIM_TYPE = SimType(new_val)
+        except KeyError as exc:
+            raise ValueError(
+                f'Type "{new_val}" not supported. Must be one of: '
+                f'{", ".join([x.name for x in SimType])}'
+            ) from exc
 
-# List of package names containing metrics providers
-METRICS_PROVIDERS = ["bluebird"]
-
-# Current modes:
-# sandbox - Default. Simulation runs normally
-# agent - Simulation starts paused and must be manually advanced with STEP
-# TODO Enum-ify this
-SIM_MODES = ["sandbox", "agent"]
-SIM_MODE = SIM_MODES[0]
-
-
-# Simulator app settings
-
-
-class SimType(IntEnum):
-    """
-    Supported simulators
-    """
-
-    BlueSky = 1
-    MachColl = 2
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if SimType(member).name.lower() == value.lower():
-                return member
-        raise ValueError(
-            f'SimType has no value "{value}". Options are - '
-            f'{", ".join(cls.__members__)}'
-        )
-
-
-SIM_TYPE = SimType.BlueSky
-SIM_HOST = "localhost"
-
-# BlueSky specific settings
-
-BS_EVENT_PORT = 9000
-BS_STREAM_PORT = 9001
+    # TODO Move to subclass
+    BS_EVENT_PORT = 9000
+    BS_STREAM_PORT = 9001

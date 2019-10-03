@@ -5,16 +5,18 @@ Logging configuration for BlueBird
 # TODO Cli option - single episode log
 
 import json
+import logging
 import logging.config
 import os
 
 import uuid
 from datetime import datetime
 
-from .settings import CONSOLE_LOG_LEVEL, LOGS_ROOT, SIM_LOG_RATE
+from bluebird.settings import Settings
 
-if not os.path.exists(LOGS_ROOT):
-    os.mkdir(LOGS_ROOT)
+
+if not os.path.exists(Settings.LOGS_ROOT):
+    os.mkdir(Settings.LOGS_ROOT)
 
 
 def log_name_time():
@@ -26,12 +28,12 @@ def log_name_time():
 
 
 INSTANCE_ID = uuid.uuid1()
-INST_LOG_DIR = os.path.join(LOGS_ROOT, f"{log_name_time()}_{INSTANCE_ID}")
+INST_LOG_DIR = os.path.join(Settings.LOGS_ROOT, f"{log_name_time()}_{INSTANCE_ID}")
 os.mkdir(INST_LOG_DIR)
 
 with open("bluebird/logging_config.json") as f:
     LOG_CONFIG = json.load(f)
-    LOG_CONFIG["handlers"]["console"]["level"] = CONSOLE_LOG_LEVEL
+    LOG_CONFIG["handlers"]["console"]["level"] = Settings.CONSOLE_LOG_LEVEL
 
 # Set filenames for logfiles (can't do this from the JSON)
 LOG_CONFIG["handlers"]["debug-file"]["filename"] = os.path.join(
@@ -74,9 +76,10 @@ def store_local_scn(filename, content):
 # TODO: Remove this when we move away from loading files
 def bodge_file_content(filename):
     """
-    Log the content of the scenario file which was loaded.    Interim solution until we move away from
-    using BlueSky's default scenario files. Note that we log the contents of our copy of the scenario
-    files, so this won't reflect any changes to BlueSky's files (which are actually loaded).
+    Log the content of the scenario file which was loaded. Interim solution until we
+    move away from using BlueSky's default scenario files. Note that we log the contents
+    of our copy of the scenario files, so this won't reflect any changes to BlueSky's
+    files (which are actually loaded)
     :param filename:
     :return:
     """
@@ -139,7 +142,8 @@ def _start_episode_log(sim_seed):
     file_handler.setFormatter(formatter)
     EP_LOGGER.addHandler(file_handler)
     EP_LOGGER.info(
-        f"Episode started. SIM_LOG_RATE is {SIM_LOG_RATE} Hz. Seed is {sim_seed}",
+        f"Episode started. SIM_LOG_RATE is {Settings.SIM_LOG_RATE} Hz. "
+        f"Seed is {sim_seed}",
         extra={"PREFIX": _LOG_PREFIX},
     )
 
@@ -148,7 +152,8 @@ def _start_episode_log(sim_seed):
 
 def restart_episode_log(sim_seed):
     """
-    Closes the current episode log and starts a new one. Returns the UUID of the new episode
+    Closes the current episode log and starts a new one. Returns the UUID of the new
+    episode
     :return:
     """
 

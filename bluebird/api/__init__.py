@@ -8,7 +8,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api
 
-from bluebird import settings
+from bluebird.settings import Settings
 from bluebird.api import resources as res
 
 
@@ -24,7 +24,7 @@ class BlueBirdApi(Api):
 # Create the Flask app & API, with the given prefix
 FLASK_APP = Flask(__name__)
 CORS(FLASK_APP)
-FLASK_API = BlueBirdApi(FLASK_APP, prefix="/api/v" + str(settings.API_VERSION))
+FLASK_API = BlueBirdApi(FLASK_APP, prefix="/api/v" + str(Settings.API_VERSION))
 
 # Add hooks to log request response data
 

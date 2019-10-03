@@ -11,7 +11,7 @@ from http import HTTPStatus
 from flask import current_app, jsonify
 from flask_restful import reqparse
 
-import bluebird.settings as bb_settings
+from bluebird.settings import Settings
 from bluebird.cache import AcDataCache, SimState
 from bluebird.metrics.metrics_provider import MetricProvider
 from bluebird.simclient import AbstractSimClient
@@ -68,7 +68,7 @@ def not_implemented_resp() -> RespTuple:
     simulator
     """
     return (
-        f"API is not supported for the {bb_settings.SIM_TYPE.name} simulator",
+        f"API is not supported for the {Settings.SIM_TYPE.name} simulator",
         HTTPStatus.NOT_IMPLEMENTED,
     )
 

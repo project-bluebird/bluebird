@@ -4,7 +4,7 @@ Module contains logic for storing the state of the remote simulation
 
 import logging
 
-from bluebird.settings import SIM_LOG_RATE
+from bluebird.settings import Settings
 from bluebird.utils import Timer
 
 # Note - BlueSky SIMINFO returns:
@@ -28,7 +28,7 @@ class SimState:
         self._logger = logging.getLogger(__name__)
 
         # TODO Can be private?
-        self.timer = Timer(self._log, SIM_LOG_RATE)
+        self.timer = Timer(self._log, Settings.SIM_LOG_RATE)
 
         self.sim_speed = 0
         self.sim_dt = 0
@@ -45,7 +45,9 @@ class SimState:
         """
 
         self.timer.start()
-        self._logger.info(f"Logging started. Initial SIM_LOG_RATE={SIM_LOG_RATE}")
+        self._logger.info(
+            f"Logging started. Initial SIM_LOG_RATE={Settings.SIM_LOG_RATE}"
+        )
         return self.timer
 
     def update(self, data):

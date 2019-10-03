@@ -4,7 +4,7 @@ Contains the BlueBird class
 
 import logging
 
-from bluebird import settings
+from bluebird.settings import Settings
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils import FLASK_CONFIG_LABEL
 from bluebird.cache import AcDataCache, SimState
@@ -20,8 +20,8 @@ class BlueBird:
     def __init__(self):
         self._logger = logging.getLogger(__name__)
         self._logger.info(
-            f"BlueBird init - sim type: {settings.SIM_TYPE.name}, "
-            f"mode: {settings.SIM_MODE}"
+            f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
+            f"mode: {Settings.SIM_MODE}"
         )
 
         # TODO Refactor these two into a single Simulation proxy class
@@ -29,6 +29,7 @@ class BlueBird:
         self.ac_data = AcDataCache(self.sim_state)
 
         self.sim_client = None
+        self._min_sim_version = None
         self._timers = []
         self.metrics_providers = setup_metrics(self.ac_data)
 
@@ -53,13 +54,13 @@ class BlueBird:
         :return:
         """
 
-        self.sim_client = setup_sim_client(self.sim_state, self.ac_data)
+        self.sim_client, self._min_sim_version = setup_sim_client(self.sim_state, self.ac_data)
         self._timers.extend(self.sim_client.start_timers())
 
-    def connect_to_sim(self, min_sim_version, reset_on_connect):
+    def connect_to_sim(self, reset_on_connect: bool):
         """
         Connect to the simulation server
-        :return: True if a connection was established with the server, false otherwise.
+        :return: True if a connection was established with the server, otherwise false
         """
 
         self._logger.info("Connecting to client...")
@@ -68,23 +69,23 @@ class BlueBird:
             self.sim_client.connect()
         except TimeoutError:
             self._logger.error(
-                f"Failed to connect to {settings.SIM_TYPE.name} server at "
-                f"{settings.SIM_HOST}, exiting"
+                f"Failed to connect to {Settings.SIM_TYPE.name} server at "
+                f"{Settings.SIM_HOST}, exiting"
             )
             self.sim_client.stop()
             return False
 
-        if self.sim_client.host_version < min_sim_version:
+        if self.sim_client.host_version < self._min_sim_version:
             self._logger.error(
                 f"BlueSky server of version {self.sim_client.host_version} does not meet the "
-                f"minimum requirement ({min_sim_version})"
+                f"minimum requirement ({self._min_sim_version})"
             )
             return False
 
-        if self.sim_client.host_version.major > min_sim_version.major:
+        if self.sim_client.host_version.major > self._min_sim_version.major:
             self._logger.error(
                 f"BlueSky server of version {self.sim_client.host_version} has major version "
-                f"greater than supported in this version of client ({min_sim_version})"
+                f"greater than supported in this version of client ({self._min_sim_version})"
             )
             return False
 
@@ -105,8 +106,8 @@ class BlueBird:
         self._timers.append(self.ac_data.start_timer())
         FLASK_APP.config[FLASK_CONFIG_LABEL] = self
         FLASK_APP.run(
-            host=settings.BB_HOST,
-            port=settings.BB_PORT,
-            debug=settings.FLASK_DEBUG,
+            host="0.0.0.0",
+            port=Settings.PORT,
+            debug=Settings.FLASK_DEBUG,
             use_reloader=False,
         )

@@ -9,7 +9,7 @@ import datetime
 
 import bluebird.logging
 from bluebird.cache.base import Cache
-from bluebird.settings import SIM_LOG_RATE
+from bluebird.settings import Settings
 from bluebird.utils import Timer
 from bluebird.utils.timeutils import log_rate
 
@@ -37,7 +37,7 @@ class AcDataCache(Cache):
         # Periodically log the sim state to file. Starts disabled.
         self._target_sim_speed = 1
         # TODO Can be private?
-        self.timer = Timer(self.log, SIM_LOG_RATE)
+        self.timer = Timer(self.log, Settings.SIM_LOG_RATE)
         self.timer.disabled = True
 
         self.have_logged_aircraft = False

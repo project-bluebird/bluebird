@@ -4,22 +4,24 @@ Package for simulator clients and their associated logic
 
 import importlib.util
 import logging
+from semver import VersionInfo
+from bluebird.settings import Settings
 
-from bluebird import settings as bb_settings
 from .abstractsimclient import AbstractSimClient
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_sim_client(sim_state, ac_data) -> AbstractSimClient:
+def setup_sim_client(sim_state, ac_data) -> (AbstractSimClient, VersionInfo):
     """
-    Imports and returns an instance of the AbstractSimClient class, as specified by    settings.SIM_TYPE
+    Imports and returns an instance of the AbstractSimClient class, as specified by
+    Settings.SIM_TYPE
     :return:
     """
 
-    _LOGGER.info(f'Loading the "{bb_settings.SIM_TYPE.name}" simulator client')
+    _LOGGER.info(f'Loading the "{Settings.SIM_TYPE.name}" simulator client')
 
-    mod_path = f"{__package__}.{bb_settings.SIM_TYPE.name.lower()}"
+    mod_path = f"{__package__}.{Settings.SIM_TYPE.name.lower()}"
     try:
         spec = importlib.util.find_spec(mod_path)
         if spec is None:
@@ -35,4 +37,5 @@ def setup_sim_client(sim_state, ac_data) -> AbstractSimClient:
     ):
         raise AttributeError("Loaded module does not contain a valid SimClient class")
 
-    return module.SimClient(sim_state, ac_data)
+    return (module.SimClient(sim_state, ac_data), getattr(module, "MIN_SIM_VERSION"))
+
