@@ -2,48 +2,40 @@
 Provides logic for the SEED (set seed) API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import bb_app
+from bluebird.api.resources.utils import (
+    sim_client,
+    parse_args,
+    checked_resp,
+    bad_request_resp,
+)
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument("value", type=int, location="json", required=True)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("value", type=int, location="json", required=True)
 
 
 class Seed(Resource):
     """
-    BlueSky SEED (set seed) command
+    SEED (set seed) command
     """
 
     @staticmethod
     def post():
         """
         Logic for POST events. Sets the seed of the simulator
-        :return: :class:`~flask.Response`
+        :return:
         """
 
-        parsed = PARSER.parse_args()
-        seed = parsed["value"]
+        req_args = parse_args(_PARSER)
+        seed = req_args["value"]
 
-        if not seed or seed < 0 or int(seed) >> 32:
-            resp = jsonify(
-                f"Invalid seed specified. Must be a positive integer less than 2^32"
+        if seed < 0 or seed >> 32:
+            return bad_request_resp(
+                "Invalid seed specified. Must be a positive integer less than 2^32"
             )
-            resp.status_code = 400
-            return resp
 
-        # TODO Wrap this into a method
-        err = bb_app().sim_client.send_stack_cmd(f"SEED {seed}")
+        # TODO AbstractClient needs to have the 'seed' property
+        err = sim_client().set_seed(seed)
 
-        if not err:
-            resp = jsonify("Seed set")
-            resp.status_code = 200
-        else:
-            resp = jsonify(f"Error: Could not set seed. Error was: {err}")
-            resp.status_code = 500
-
-        bb_app().sim_client.seed = (
-            seed
-        )  # Store the seed so we can use it in the episode logs
-        return resp
+        return checked_resp(err)

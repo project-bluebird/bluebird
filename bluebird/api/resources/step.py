@@ -2,13 +2,18 @@
 Provides logic for the STEP API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource
 
-import bluebird.settings as settings
-from bluebird.api.resources.utils import bb_app
+import bluebird.settings as bb_settings
+from bluebird.api.resources.utils import (
+    ac_data,
+    sim_client,
+    bad_request_resp,
+    checked_resp,
+)
 
 
+# TODO SimClient's should assert (internally) that the simulator time is advanced
 class Step(Resource):
     """
     Contains logic for the step endpoint
@@ -17,24 +22,16 @@ class Step(Resource):
     @staticmethod
     def post():
         """
-        Logic for POST events.
-        :return: :class:`~flask.Response`
+        Logic for POST events
+        :return:
         """
 
-        if settings.SIM_MODE != "agent":
-            resp = jsonify("Must be in agent mode to use step")
-            resp.status_code = 400
-            return resp
+        if bb_settings.SIM_MODE != bb_settings.SimMode.Agent:
+            return bad_request_resp("Must be in agent mode to use step")
 
-        err = bb_app().sim_client.step()
+        err = sim_client().step_sim()
 
         if not err:
-            resp = jsonify("Simulation stepped")
-            resp.status_code = 200
-        else:
-            resp = jsonify(f"Could not step simulations: {err}")
-            resp.status_code = 500
+            ac_data().log()
 
-        bb_app().ac_data.log()
-
-        return resp
+        return checked_resp(err)

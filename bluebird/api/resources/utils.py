@@ -195,6 +195,7 @@ def check_ac_data_populated() -> Optional[str]:
     return None
 
 
+# TODO This is specific to BlueSky and will be replaced
 def validate_scenario(scn_lines: List[str]) -> Optional[str]:
     """
     Checks that each line in the given list matches the requirements

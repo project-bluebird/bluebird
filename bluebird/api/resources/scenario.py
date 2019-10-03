@@ -4,21 +4,29 @@ Provides logic for the scenario (create scenario) API endpoint
 
 import logging
 
-from flask import jsonify
+from http import HTTPStatus
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import bb_app, validate_scenario, wait_until_eq
+from bluebird.api.resources.utils import (
+    sim_client,
+    validate_scenario,
+    check_ac_data_populated,
+    parse_args,
+    bad_request_resp,
+    internal_err_resp,
+    ok_resp,
+)
 from bluebird.logging import store_local_scn
 
-_LOGGER = logging.getLogger("bluebird")
+_LOGGER = logging.getLogger(__name__)
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument("scn_name", type=str, location="json", required=True)
-PARSER.add_argument(
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("scn_name", type=str, location="json", required=True)
+_PARSER.add_argument(
     "content", type=str, location="json", required=True, action="append"
 )
-PARSER.add_argument("start_new", type=bool, location="json", required=False)
-PARSER.add_argument("start_dtmult", type=float, location="json", required=False)
+_PARSER.add_argument("start_new", type=bool, location="json", required=False)
+_PARSER.add_argument("start_dtmult", type=float, location="json", required=False)
 
 
 class Scenario(Resource):
@@ -30,58 +38,48 @@ class Scenario(Resource):
     def post():
         """
         Logic for POST events.
-        :return: :class:`~flask.Response`
+        :return:
         """
 
-        parsed = PARSER.parse_args()
+        req_args = parse_args(_PARSER)
 
-        scn_name = scn_base = parsed["scn_name"]
+        scn_name = req_args["scn_name"]
 
-        if not scn_name.endswith(".scn"):
-            scn_name += ".scn"
+        # TODO The BlueSky client needs to handle the various "scenario/*[.scn]" options now
 
-        if scn_name.startswith("scenario"):
-            scn_name = scn_name[len("scenario") + 1 :]
+        if not scn_name:
+            return bad_request_resp("Scenario name must be provided")
 
-        content = parsed["content"]
+        content = req_args["content"]
         err = validate_scenario(content)
 
         if err:
-            resp = jsonify(f"Invalid scenario content: {err}")
-            resp.status_code = 400
-            return resp
+            return bad_request_resp(f"Invalid scenario content: {err}")
 
         store_local_scn(scn_name, content)
 
-        err = bb_app().sim_client.upload_new_scenario(scn_name, content)
+        err = sim_client().upload_new_scenario(scn_name, content)
 
         if err:
-            resp = jsonify(f"Error uploading scenario: {err}")
-            resp.status_code = 500
+            return internal_err_resp(f"Error uploading scenario: {err}")
 
-        elif parsed["start_new"]:
+        if req_args.get("start_new", False):
 
-            dtmult = parsed["start_dtmult"] if parsed["start_dtmult"] else 1.0
-            err = bb_app().sim_client.load_scenario(scn_name, speed=dtmult)
+            multiplier = req_args["start_dtmult"] if req_args["start_dtmult"] else 1.0
+            err = sim_client().load_scenario(scn_name, speed=multiplier)
 
             if err:
-                resp = jsonify(f"Could not start scenario after upload: {err}")
-                resp.status_code = 500
-                return resp
-
-            if not wait_until_eq(bb_app().ac_data.store, True):
-                resp = jsonify(
-                    "No aircraft data received after loading. Scenario might not contain any "
-                    "aircraft"
+                return internal_err_resp(
+                    f"Could not start scenario after upload: {err}"
                 )
-                resp.status_code = 500
-                return resp
 
-            resp = jsonify(f"Scenario {scn_base} uploaded and started")
-            resp.status_code = 200
+            if not check_ac_data_populated():
+                return internal_err_resp(
+                    "No aircraft data received after loading. Scenario might not "
+                    "contian any aircraft"
+                )
 
-        else:
-            resp = jsonify(f"Scenario {scn_base} uploaded")
-            resp.status_code = 201
+            data = {"msg": f"Scenario {scn_name} uploaded and started"}
+            return ok_resp(data)
 
-        return resp
+        return ("", HTTPStatus.CREATED)
