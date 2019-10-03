@@ -47,7 +47,8 @@ class BlueBird:
         for timer in self._timers:
             timer.stop()
 
-        self.sim_client.stop()
+        if self.sim_client:
+            self.sim_client.stop()
 
     def setup_sim_client(self):
         """
