@@ -22,7 +22,7 @@ LOG_PREFIX = "A"
 #   vs      1 fpm  is ~0.005 m/s, so can store as an int
 
 
-class AcDataCache(Cache):
+class AircraftDataCache(Cache):
     """
     Holds the most recent aircraft data
     """
