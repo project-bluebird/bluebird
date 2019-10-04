@@ -45,7 +45,7 @@ class AbstractAircraftControls(ABC):
 		:return:
 		"""
 
-    # TODO Supported aircraft types
+    # TODO What are the supported aircraft types?
     @abstractmethod
     def create(
         self,
@@ -263,22 +263,18 @@ class AbstractSimClient(ABC):
         """
 
     @abstractmethod
-    def __init__(self, sim_state, ac_data):
-        pass
+    def connect(self, timeout: int = 1) -> None:
+        """
+        Connect to the simulation server
+        :param timeout:
+        :raises TimeoutException: If the connection could not be made before the timeout
+        :return:
+        """
 
     @abstractmethod
     def start_timers(self) -> Iterable[Timer]:
         """
         Start any timed functions, and return all the Timer instances
-        :return:
-        """
-
-    @abstractmethod
-    def connect(self, timeout=1) -> None:
-        """
-        Connect to the simulation server
-        :param timeout:
-        :raises TimeoutException: If the connection could not be made before the timeout
         :return:
         """
 

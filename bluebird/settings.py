@@ -85,3 +85,4 @@ class Settings(ABC):  # pylint: disable=too-few-public-methods
     # TODO Move to subclass
     BS_EVENT_PORT = 9000
     BS_STREAM_PORT = 9001
+    MC_PORT = 5321

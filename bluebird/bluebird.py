@@ -67,29 +67,27 @@ class BlueBird:
         :return: True if a connection was established with the server, otherwise false
         """
 
-        self._logger.info("Connecting to client...")
+        sim_name = Settings.SIM_TYPE.name
+        self._logger.info(f"Attempting to connect to {sim_name} at {Settings.SIM_HOST}")
 
         try:
             self.sim_client.connect()
         except TimeoutError:
-            self._logger.error(
-                f"Failed to connect to {Settings.SIM_TYPE.name} server at "
-                f"{Settings.SIM_HOST}, exiting"
-            )
-            self.sim_client.stop()
+            self._logger.error(f"Failed to connect to {sim_name}, exiting")
             return False
 
-        if self.sim_client.host_version < self._min_sim_version:
+        if self.sim_client.sim_version < self._min_sim_version:
             self._logger.error(
-                f"BlueSky server of version {self.sim_client.host_version} does not meet the "
+                f"server of version {self.sim_client.sim_version} does not meet the "
                 f"minimum requirement ({self._min_sim_version})"
             )
             return False
 
-        if self.sim_client.host_version.major > self._min_sim_version.major:
+        if self.sim_client.sim_version.major > self._min_sim_version.major:
             self._logger.error(
-                f"BlueSky server of version {self.sim_client.host_version} has major version "
-                f"greater than supported in this version of client ({self._min_sim_version})"
+                f"{sim_name} server of version {self.sim_client.sim_version} has major"
+                f"version greater than supported in this version of the client"
+                f"({self._min_sim_version})"
             )
             return False
 

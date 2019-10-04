@@ -1,0 +1,19 @@
+"""
+Package for the MachColl simulator client
+"""
+
+# TODO Refactor - this is entirely replicated from the BlueSky implementation
+
+from semver import VersionInfo
+from bluebird.sim_client.abstract_sim_client import AbstractSimClient
+
+from .sim_client import SimClient, MIN_SIM_VERSION
+
+assert issubclass(
+    SimClient, AbstractSimClient
+), "Expected SimClient to be defined as a subclass of AbstractSimClient"
+
+assert isinstance(
+    MIN_SIM_VERSION, VersionInfo
+), "Expected MIN_SIM_VERSION to be an instance of VersionInfo"
+
