@@ -120,12 +120,19 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
 
 class MachCollWaypointControls(AbstractWaypointControls):
-    """   
-    
+    """
+    AbstractWaypointControls implementation for MachColl
     """
 
     def __init__(self, client: MCClient):
         self._client = client
+
+    def get_all_waypoints(self) -> dict:
+        fixes = self._client.get_all_fixes()
+        if self._client.last_request_failed:
+            raise NotImplementedError("what to do here")
+        # TODO Need to create a mapping
+        return fixes
 
     def define(self, name: str, position: LatLon, **kwargs) -> Optional[str]:
         raise NotImplementedError
@@ -152,7 +159,7 @@ class SimClient(AbstractSimClient):
     def waypoints(self) -> AbstractWaypointControls:
         return self._waypoint_controls
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs):  # pylint: disable=unused-argument
         self._client = None
         self._host_version: VersionInfo = None
         self._sim_controls = MachCollSimulatorControls(self._client)
@@ -178,8 +185,7 @@ class SimClient(AbstractSimClient):
 
     def stop(self, shutdown_sim: bool = False):
 
-        if not self._host_version:
+        if not self._host_version or not shutdown_sim:
             return
 
-        resp = self._client.sim_stop()
-        _LOGGER.warning(f"stop(): Received response from MCClient - {resp}")
+        raise NotImplementedError("No shutdown method implemented")

@@ -214,6 +214,13 @@ class AbstractWaypointControls(ABC):
     Abstract class defining waypoint control functions
     """
 
+    # TODO Will need a mapping between each client format and BlueBird's implementation
+    @abstractmethod
+    def get_all_waypoints(self) -> dict:
+        """
+        Get all the waypoints (fixes) defined in the simulation
+        """
+
     @abstractmethod
     def define(self, name: str, position: LatLon, **kwargs) -> Optional[str]:
         """
