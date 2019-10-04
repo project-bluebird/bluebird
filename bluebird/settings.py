@@ -30,6 +30,7 @@ class Settings(ABC):  # pylint: disable=too-few-public-methods
                             the episode file
         LOGS_ROOT:          Root directory for log files
         CONSOLE_LOG_LEVEL:  The min. log level for console messages
+        STREAM_ENABLE:      Enable the streaming of simulation data to BlueBird
         METRICS_PROVIDERS:  List of package names containing metrics providers
         SIM_HOST:           Hostname of the simulation server
         SIM_MODE:           Mode for interacting with the simulator
@@ -46,6 +47,8 @@ class Settings(ABC):  # pylint: disable=too-few-public-methods
     SIM_LOG_RATE = 0.2
     LOGS_ROOT = os.getenv("BB_LOGS_ROOT", "logs")
     CONSOLE_LOG_LEVEL = logging.INFO
+
+    STREAM_ENABLE = True
 
     METRICS_PROVIDERS = ["bluebird"]
 

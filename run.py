@@ -3,14 +3,18 @@ Entry point for the BlueBird app
 """
 
 import argparse
+from typing import Any, Dict
+
 from dotenv import load_dotenv
 
 from bluebird import BlueBird
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimType, SimMode
 
+_ARG_BOOL_ACTION = "store_true"
 
-def _parse_args():
+
+def _parse_args() -> Dict[str, Any]:
     """
     Parse CLI arguments and override any default settings
     :return:
@@ -27,7 +31,9 @@ def _parse_args():
         "--sim-host", type=str, help="Hostname or IP of the simulator to connect to"
     )
     parser.add_argument(
-        "--reset-sim", action="store_true", help="Resets the simulation on connection"
+        "--reset-sim",
+        action=_ARG_BOOL_ACTION,
+        help="Resets the simulation on connection",
     )
     parser.add_argument("--log-rate", type=float, help="Log rate in sim-seconds")
     parser.add_argument(
@@ -35,6 +41,11 @@ def _parse_args():
         type=str,
         help="Set the initial mode. Supported values are: "
         f'{", ".join([x.name for x in SimMode])}',
+    )
+    parser.add_argument(
+        "--disable-stream",
+        action=_ARG_BOOL_ACTION,
+        help="Disables automatic streaming of the simulator state to BlueBird",
     )
     args = parser.parse_args()
 
@@ -52,7 +63,7 @@ def _parse_args():
     if args.sim_mode:
         Settings.set_sim_mode(args.sim_mode)
 
-    return args
+    return vars(args)
 
 
 def main():
@@ -64,9 +75,9 @@ def main():
     args = _parse_args()
     load_dotenv(verbose=True, override=True)
 
-    with BlueBird() as app:
+    with BlueBird(args) as app:
         app.setup_sim_client()
-        if app.connect_to_sim(args.reset_sim):
+        if app.connect_to_sim():
             # Run the Flask app. Blocks here until it exits
             app.run()
 

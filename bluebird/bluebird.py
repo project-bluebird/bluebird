@@ -3,6 +3,7 @@ Contains the BlueBird class
 """
 
 import logging
+from typing import Any, Dict
 
 from bluebird.settings import Settings
 from bluebird.api import FLASK_APP
@@ -18,12 +19,15 @@ class BlueBird:
     The BlueBird application
     """
 
-    def __init__(self):
+    def __init__(self, args: Dict[str, Any]):
+
         self._logger = logging.getLogger(__name__)
         self._logger.info(
             f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
             f"mode: {Settings.SIM_MODE.name}"
         )
+
+        self._cli_args = args
 
         # TODO Refactor these two into a single Simulation proxy class
         self.sim_state = SimState()
@@ -61,10 +65,11 @@ class BlueBird:
         )
         self._timers.extend(self.sim_client.start_timers())
 
-    def connect_to_sim(self, reset_on_connect: bool):
+    def connect_to_sim(self):
         """
         Connect to the simulation server
-        :return: True if a connection was established with the server, otherwise false
+        :param args: Parsed CLI arguments
+        :return: True if a connection was established with the server, otherwise False
         """
 
         sim_name = Settings.SIM_TYPE.name
@@ -91,21 +96,21 @@ class BlueBird:
             )
             return False
 
-        if reset_on_connect:
+        if self._cli_args["reset_sim"]:
             self.sim_client.reset_sim()
 
-        self._timers.append(self.sim_state.start_timer())
+        self._timers.extend([self.sim_state.start_timer(), self.ac_data.start_timer()])
+
         return True
 
     def run(self):
         """
-        Start the Flask app. This is a blocking method which only returns once the app exists.
+        Start the Flask app. This is a blocking method which only returns once the app
+        exists
         """
 
         self._logger.debug("Starting Flask app")
 
-        # TODO This should be in connect_to_sim?
-        self._timers.append(self.ac_data.start_timer())
         FLASK_APP.config[FLASK_CONFIG_LABEL] = self
         FLASK_APP.run(
             host="0.0.0.0",
