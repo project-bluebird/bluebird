@@ -2,12 +2,15 @@
 Contains utility dataclasses representing physical units
 """
 
-
 from dataclasses import dataclass
-from typing import Union
 import re
+from typing import Union
+
 
 _METERS_PER_FOOT = 0.3048
+
+_FL_REGEX = re.compile(r"^FL[1-9]\d*$")
+_CALLSIGN_REGEX = re.compile(r"[a-z0-9]{3,}")
 
 
 @dataclass
@@ -25,7 +28,7 @@ class Altitude:
 
         assert alt is not None, "Altitude must be specified"
         if isinstance(alt, str):
-            assert re.match(r"^FL[1-9]\d*$", alt), (
+            assert _FL_REGEX.match(alt), (
                 "Altitude must be a valid flight level when passed as a string "
                 '(e.g. "FL123")'
             )
@@ -61,8 +64,8 @@ class Callsign:
     value: str
 
     def __init__(self, callsign: str):
-        assert re.match(
-            r"[a-z0-9]{3,}", callsign, re.IGNORECASE
+        assert _CALLSIGN_REGEX.match(
+            callsign, re.IGNORECASE
         ), f"Invalid callsign {callsign}"
         self.value = callsign
 
