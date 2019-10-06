@@ -3,20 +3,20 @@ Logic for metric endpoints
 """
 
 import logging
-
 from typing import Union
+
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    metrics_providers,
-    parse_args,
+from bluebird.api.resources.utils.responses import (
     internal_err_resp,
     bad_request_resp,
     not_found_resp,
     ok_resp,
     RespTuple,
 )
+from bluebird.api.resources.utils.utils import metrics_providers, parse_args
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
+
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("name", type=str, location="args", required=True)

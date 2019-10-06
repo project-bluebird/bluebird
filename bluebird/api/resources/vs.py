@@ -4,13 +4,10 @@ Provides logic for the VS (vertical speed) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    CALLSIGN_LABEL,
-    parse_args,
-    sim_client,
-    checked_resp,
-)
+from bluebird.api.resources.utils.responses import checked_resp
+from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args
 from bluebird.utils.types import Callsign
+
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)

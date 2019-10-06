@@ -6,16 +6,15 @@ import logging
 
 from flask_restful import Resource, reqparse
 
-from bluebird.settings import Settings
-from bluebird.utils.properties import SimMode as SimMode_prop
-from bluebird.api.resources.utils import (
-    ac_data,
-    sim_client,
-    parse_args,
+from bluebird.api.resources.utils.responses import (
     bad_request_resp,
     internal_err_resp,
     ok_resp,
 )
+from bluebird.api.resources.utils.utils import parse_args, is_agent_mode
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode as SimMode_prop
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +47,7 @@ class SimMode(Resource):
 
         _LOGGER.debug(f"Mode set to {new_mode}")
 
-        if Settings.SIM_MODE == SimMode_prop.Agent:
+        if is_agent_mode():
             ac_data().set_log_rate(0)
             err = sim_client().pause_sim()
             if err:

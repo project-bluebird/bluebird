@@ -7,16 +7,18 @@ import logging
 from http import HTTPStatus
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    sim_client,
-    validate_scenario,
-    check_ac_data_populated,
-    parse_args,
+from bluebird.api.resources.utils.responses import (
     bad_request_resp,
     internal_err_resp,
     ok_resp,
 )
+from bluebird.api.resources.utils.utils import (
+    check_ac_data_populated,
+    parse_args,
+    validate_scenario,
+)
 from bluebird.logging import store_local_scn
+
 
 _LOGGER = logging.getLogger(__name__)
 

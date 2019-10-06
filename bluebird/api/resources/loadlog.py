@@ -7,27 +7,28 @@ Provides logic for the Load Log API endpoint
 
 import logging
 import os
-from typing import Union
 import re
 import time
+from typing import Union
 import uuid
+
 from flask_restful import Resource, reqparse
 
-import bluebird.settings as bb_settings
-from bluebird.api.resources.utils import (
-    check_ac_data_populated,
-    sim_client,
-    sim_state,
-    validate_scenario,
+from bluebird.api.resources.utils.responses import (
     bad_request_resp,
-    ac_data,
-    wait_until_eq,
-    parse_args,
     internal_err_resp,
     ok_resp,
 )
+from bluebird.api.resources.utils.utils import (
+    check_ac_data_populated,
+    validate_scenario,
+    wait_until_eq,
+    parse_args,
+    is_agent_mode,
+)
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class LoadLog(Resource):
         :return:
         """
 
-        if bb_settings.SIM_MODE != "agent":
+        if not is_agent_mode():
             return bad_request_resp("Can only be used in agent mode")
 
         req_args = parse_args(_PARSER)

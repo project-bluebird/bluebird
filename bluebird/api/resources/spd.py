@@ -6,13 +6,8 @@ Provides logic for the SPD (_ speed) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    parse_args,
-    checked_resp,
-    CALLSIGN_LABEL,
-    bad_request_resp,
-    sim_client,
-)
+from bluebird.api.resources.utils.responses import checked_resp, bad_request_resp
+from bluebird.api.resources.utils.utils import parse_args, CALLSIGN_LABEL
 from bluebird.utils.types import Callsign
 
 

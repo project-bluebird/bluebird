@@ -3,20 +3,19 @@ Contains utility functions for the API resources
 """
 
 import logging
-
 import re
 import time
-from typing import List, Union, Optional, Tuple, Dict, Any
-from http import HTTPStatus
-from flask import current_app, jsonify
+from typing import List, Union, Optional, Dict, Any
+
+from flask import current_app
 from flask_restful import reqparse
 
-from bluebird.settings import Settings
-from bluebird.cache.acdatacache import AcDataCache
-from bluebird.cache.sim_state import SimState
+from bluebird.api.resources.utils.responses import RespTuple, bad_request_resp
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
-from bluebird.sim_client import AbstractSimClient
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode
 from bluebird.utils.types import LatLon, Callsign
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +27,7 @@ FLASK_CONFIG_LABEL = "bluebird_app"
 CALLSIGN_LABEL = "acid"
 
 _SCN_RE = re.compile(r"\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*")
+_ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
 
 
 def parse_args(parser: reqparse.RequestParser) -> Dict[str, Any]:
@@ -35,60 +35,6 @@ def parse_args(parser: reqparse.RequestParser) -> Dict[str, Any]:
     Parse the request arguments and return them as a dict
     """
     return dict(parser.parse_args(strict=True))
-
-
-RespTuple = Tuple[str, HTTPStatus]
-
-
-def internal_err_resp(err: str) -> RespTuple:
-    """
-    Generates a standard flask error response for a given error
-    """
-    return (err, HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
-def not_found_resp(err: str) -> RespTuple:
-    """
-    Generates a standard NOT_FOUND flask response
-    """
-    return (err, HTTPStatus.NOT_FOUND)
-
-
-def ok_resp(data: dict = None) -> RespTuple:
-    """
-    Generates a standard response
-    """
-    if data:
-        return (jsonify(data), HTTPStatus.OK)
-    return ("", HTTPStatus.OK)
-
-
-def not_implemented_resp() -> RespTuple:
-    """
-    Generates a standard response for APIs which are not implemented for the current
-    simulator
-    """
-    return (
-        f"API is not supported for the {Settings.SIM_TYPE.name} simulator",
-        HTTPStatus.NOT_IMPLEMENTED,
-    )
-
-
-def bad_request_resp(msg: str) -> RespTuple:
-    """
-    Generates a standard BAD_REQUEST response with the given message
-    """
-    return (msg, HTTPStatus.BAD_REQUEST)
-
-
-def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK) -> RespTuple:
-    """
-    Generates a standard response or an INTERNAL_SERVER_ERROR response depending on the
-    value of err
-    """
-    if err:
-        return internal_err_resp(err)
-    return ("", code)
 
 
 def try_parse_lat_lon(args: dict) -> Union[LatLon, RespTuple]:
@@ -115,27 +61,28 @@ def _bb_app():
     return _bb_app._instance
 
 
-def sim_client() -> AbstractSimClient:
-    """
-    Utility function to return the sim_client instance
-    """
-    return _bb_app().sim_client
+# def sim_client() -> AbstractSimClient:
+#     """
+#     Utility function to return the sim_client instance
+#     """
+#     return _bb_app().sim_client
 
 
-def ac_data() -> AcDataCache:
-    """
-    Utility function to return the ac_data instance
-    """
-    return _bb_app().ac_data
+# def ac_data() -> AcDataCache:
+#     """
+#     Utility function to return the ac_data instance
+#     """
+#     return _bb_app().ac_data
 
 
-def sim_state() -> SimState:
-    """
-    Utility function to return the sim_state instance
-    """
-    return _bb_app().sim_state
+# def sim_state() -> SimState:
+#     """
+#     Utility function to return the sim_state instance
+#     """
+#     return _bb_app().sim_state
 
 
+# NOTE This is probably ok here
 def metrics_providers() -> List[AbstractMetricProvider]:
     """
     Utility function to return the metrics_providers instance
@@ -181,6 +128,7 @@ def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
     return True
 
 
+# TODO Move to  sim proxy layer
 def check_ac_data_populated() -> Optional[str]:
     """
     Checks if the ac_data is populated after resetting or loading a new scenario
@@ -209,3 +157,36 @@ def validate_scenario(scn_lines: List[str]) -> Optional[str]:
             return f"Line '{line}' does not match the required format"
 
     return None
+
+
+# TODO Move to the BlueSky client utils
+def parse_route_data(route_data):
+    """
+    Parse a list of strings containing route data into a keyed dictionary
+    :param route_data:
+    :return:
+    """
+
+    parsed = []
+    for line in map(lambda s: s.replace(" ", ""), route_data):
+        match = _ROUTE_RE.match(line)
+        if not match:
+            return line
+        req_alt = match.group(3) if not "-" in match.group(3) else None
+        req_spd = int(match.group(4)) if not "-" in match.group(4) else None
+        parsed.append(
+            {
+                "is_current": bool(match.group(1)),
+                "wpt_name": match.group(2),
+                "req_alt": req_alt,
+                "req_spd": req_spd,
+            }
+        )
+    return parsed
+
+
+def is_agent_mode() -> bool:
+    """
+    Checks if we are currently in Agent mode
+    """
+    return Settings.SIM_MODE == SimMode.Agent

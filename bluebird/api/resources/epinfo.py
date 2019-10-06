@@ -5,8 +5,8 @@ Provides logic for the epinfo (episode info) API endpoint
 import os
 
 from flask_restful import Resource
-from bluebird.api.resources.utils import bad_request_resp, ok_resp
 
+from bluebird.api.resources.utils.responses import bad_request_resp, ok_resp
 import bluebird.logging as bb_logging
 
 

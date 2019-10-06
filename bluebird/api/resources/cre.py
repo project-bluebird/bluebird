@@ -6,14 +6,11 @@ from http import HTTPStatus
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    ac_data,
-    sim_client,
+from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
+from bluebird.api.resources.utils.utils import (
     CALLSIGN_LABEL,
-    parse_args,
-    bad_request_resp,
-    checked_resp,
     try_parse_lat_lon,
+    parse_args,
 )
 from bluebird.utils.types import Callsign, Altitude, LatLon, Heading, GroundSpeed
 

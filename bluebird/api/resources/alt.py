@@ -4,17 +4,12 @@ Provides logic for the ALT (altitude) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.listroute import parse_route_data
-from bluebird.api.resources.utils import (
-    ac_data,
-    sim_client,
+from bluebird.api.resources.utils.responses import internal_err_resp, RespTuple, ok_resp
+from bluebird.api.resources.utils.utils import (
     CALLSIGN_LABEL,
     parse_args,
-    internal_err_resp,
-    bad_request_resp,
-    ok_resp,
-    RespTuple,
     check_callsign_exists,
+    parse_route_data,
 )
 from bluebird.utils.types import Altitude, Callsign
 

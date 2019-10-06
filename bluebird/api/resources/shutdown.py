@@ -5,12 +5,9 @@ Provides logic for the shutdown endpoint
 from flask import request
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    sim_client,
-    parse_args,
-    internal_err_resp,
-    ok_resp,
-)
+from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
+from bluebird.api.resources.utils.utils import parse_args
+
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("stop_sim", type=bool, location="args", required=False)

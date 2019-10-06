@@ -4,7 +4,7 @@ Provides logic for the RESET API endpoint
 
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import sim_client, checked_resp
+from bluebird.api.resources.utils.responses import checked_resp
 
 
 class Reset(Resource):

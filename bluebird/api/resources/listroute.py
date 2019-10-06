@@ -4,50 +4,21 @@ Provides logic for the LISTROUTE (list route) API endpoint
 
 import logging
 
-import re
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import (
-    sim_client,
+from bluebird.api.resources.utils.responses import internal_err_resp
+from bluebird.api.resources.utils.utils import (
     CALLSIGN_LABEL,
-    internal_err_resp,
     parse_args,
     check_callsign_exists,
 )
 from bluebird.utils.types import Callsign
 
-_PARSER = reqparse.RequestParser()
-_PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
 
 _LOGGER = logging.getLogger(__name__)
 
-_ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
-
-
-# TODO Move to the BlueSky client utils
-def parse_route_data(route_data):
-    """
-    Parse a list of strings containing route data into a keyed dictionary
-    :param route_data:
-    :return:
-    """
-
-    parsed = []
-    for line in map(lambda s: s.replace(" ", ""), route_data):
-        match = _ROUTE_RE.match(line)
-        if not match:
-            return line
-        req_alt = match.group(3) if not "-" in match.group(3) else None
-        req_spd = int(match.group(4)) if not "-" in match.group(4) else None
-        parsed.append(
-            {
-                "is_current": bool(match.group(1)),
-                "wpt_name": match.group(2),
-                "req_alt": req_alt,
-                "req_spd": req_spd,
-            }
-        )
-    return parsed
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
 
 
 class ListRoute(Resource):

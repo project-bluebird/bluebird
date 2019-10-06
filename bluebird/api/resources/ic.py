@@ -4,16 +4,17 @@ Provides logic for the IC (initial condition) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.settings import Settings
-from bluebird.utils.properties import SimMode
-from bluebird.api.resources.utils import (
-    check_ac_data_populated,
-    sim_client,
-    parse_args,
+from bluebird.api.resources.utils.responses import (
     bad_request_resp,
-    internal_err_resp,
     checked_resp,
+    internal_err_resp,
 )
+from bluebird.api.resources.utils.utils import (
+    check_ac_data_populated,
+    parse_args,
+    is_agent_mode,
+)
+
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("filename", type=str, location="json", required=True)
@@ -48,9 +49,8 @@ class Ic(Resource):
         if speed <= 0.0:
             return bad_request_resp(f"Invalid speed {speed}")
 
-        start_paused = Settings.SIM_MODE == SimMode.Agent
         err = sim_client().load_scenario(
-            filename, speed=speed, start_paused=start_paused
+            filename, speed=speed, start_paused=is_agent_mode()
         )
 
         if err:

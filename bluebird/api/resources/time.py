@@ -6,7 +6,8 @@ import logging
 
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import sim_client, internal_err_resp, ok_resp
+from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
+
 
 _LOGGER = logging.getLogger(__name__)
 

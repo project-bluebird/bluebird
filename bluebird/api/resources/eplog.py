@@ -6,14 +6,14 @@ import os
 
 from flask_restful import Resource, reqparse
 
-import bluebird.logging as bb_logging
-from bluebird.api.resources.utils import (
-    sim_client,
-    parse_args,
+from bluebird.api.resources.utils.responses import (
     bad_request_resp,
     internal_err_resp,
     ok_resp,
 )
+from bluebird.api.resources.utils.utils import parse_args
+import bluebird.logging as bb_logging
+
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("close_ep", type=bool, location="args", required=False)
