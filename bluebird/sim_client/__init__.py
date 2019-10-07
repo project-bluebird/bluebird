@@ -4,10 +4,10 @@ Package for simulator clients and their associated logic
 
 import importlib.util
 import logging
-from semver import VersionInfo
-from bluebird.settings import Settings
 
+from bluebird.settings import Settings
 from .abstract_sim_client import AbstractSimClient
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,9 @@ assert isinstance(
 """
 
 
-def setup_sim_client(sim_state, ac_data) -> (AbstractSimClient, VersionInfo):
+# TODO: We should be able to annotate this as returning a Tuple[AbstractSimClientType,
+# VersionInfo], but the current typing implementation seems to not like that...
+def setup_sim_client():
     """
     Imports and returns an instance of the AbstractSimClient class, as specified by
     Settings.SIM_TYPE
@@ -53,7 +55,7 @@ def setup_sim_client(sim_state, ac_data) -> (AbstractSimClient, VersionInfo):
         raise AttributeError("Loaded module does not contain a valid SimClient class")
 
     try:
-        sim_client = module.SimClient(sim_state=sim_state, ac_data=ac_data)
+        sim_client = module.SimClient()
     except TypeError as exc:
         raise TypeError(
             f"Client class for {Settings.SIM_TYPE.name} does not properly implement the"

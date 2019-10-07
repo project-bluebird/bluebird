@@ -4,7 +4,7 @@ Contains utility dataclasses representing physical units
 
 from dataclasses import dataclass
 import re
-from typing import Union
+from typing import Optional, Union
 
 
 _METERS_PER_FOOT = 0.3048
@@ -149,3 +149,18 @@ class VerticalSpeed:
 
     def __repr__(self):
         return str(self.meters_per_sec)
+
+
+@dataclass(eq=True, frozen=True)
+class Waypoint:
+    """
+    Dataclass representing a named waypoint and optional altitude. __repr__ returns the
+    waypoint name
+    """
+
+    name: str
+    position: LatLon
+    altitude: Optional[Altitude]
+
+    def __repr__(self):
+        return self.name

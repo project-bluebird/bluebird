@@ -1,18 +1,15 @@
 """
 Contains the AbstractSimClient class
 """
-# TODO Need to capture common sim states between MachColl / BlueBird and expose here
-# TODO Add "using_streams" setting to indicate whether the caches are being
-# automatically filled
-# TODO Need to pull out logging from the implementations of this
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, List
 
 from semver import VersionInfo
 
 from bluebird.utils.timer import Timer
-from bluebird.utils.types import Altitude, Callsign, Heading, LatLon
+import bluebird.utils.types as types
+from bluebird.utils.properties import AircraftProperties, SimProperties
 
 
 class AbstractAircraftControls(ABC):
@@ -20,9 +17,14 @@ class AbstractAircraftControls(ABC):
     Abstract class defining aircraft control functions
     """
 
+    @property
+    @abstractmethod
+    def stream_data(self) -> List[AircraftProperties]:
+        pass
+
     @abstractmethod
     def set_cleared_fl(
-        self, callsign: Callsign, flight_level: Altitude, **kwargs
+        self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
         """
 		Set the cleared flight level for the specified aircraft
@@ -34,8 +36,49 @@ class AbstractAircraftControls(ABC):
 		"""
 
     @abstractmethod
+    def set_heading(
+        self, callsign: types.Callsign, heading: types.Heading
+    ) -> Optional[str]:
+        """
+        Set the heading of the specified aircraft
+        :param callsign:
+        :param heading:
+        :return:
+        """
+
+    def set_ground_speed(
+        self, callsign: types.Callsign, ground_speed: types.GroundSpeed
+    ):
+        """
+        Set the ground speed of the specified aircraft
+        :param callsign:
+        :param ground_speed:
+        :return:
+        """
+
+    def set_vertical_speed(
+        self, callsign: types.Callsign, vertical_speed: types.VerticalSpeed
+    ):
+        """
+        Set the vertical speed of the specified aircraft
+        :param callsign:
+        :param vertical_speed:
+        :return:
+        """
+
+    def direct_to_waypoint(
+        self, callsign: types.Callsign, waypoint: str
+    ) -> Optional[str]:
+        """
+        Send the aircraft directly to the specified waypoint
+        :param callsign:
+        :param waypoint:
+        :return:
+        """
+
+    @abstractmethod
     def add_waypoint_to_route(
-        self, callsign: Callsign, target: Union[str, LatLon], **kwargs
+        self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
     ) -> Optional[str]:
         """
 		Append a waypoint to an aircraft's route
@@ -49,11 +92,11 @@ class AbstractAircraftControls(ABC):
     @abstractmethod
     def create(
         self,
-        callsign: Callsign,
+        callsign: types.Callsign,
         ac_type: str,
-        position: LatLon,
-        heading: Heading,
-        altitude: Altitude,
+        position: types.LatLon,
+        heading: types.Heading,
+        altitude: types.Altitude,
         speed: int,
     ) -> Optional[str]:
         """
@@ -67,14 +110,18 @@ class AbstractAircraftControls(ABC):
         :return:
         """
 
-    # TODO Needs to return a standard set of properties (instead of str), including:
-    # position, alt, speed, route, heading (track), type
-    # NOTE callsign=None should return all aircraft
     @abstractmethod
-    def get_properties(self, callsign: Optional[Callsign]) -> str:
+    def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
         """
-        Get all the properties for an aircraft
-        :param callsign:
+        Get all the properties for the specified aircraft
+        :param callsign: The aircraft callsign
+        :return: None if the aircraft could not be found
+        """
+
+    def get_all_properties(self) -> List[AircraftProperties]:
+        """
+        Get all aircraft properties
+        :return: A (possibly empty) list of all aircraft properties in the simulation
         """
 
 
@@ -85,9 +132,15 @@ class AbstractSimulatorControls(ABC):
 
     @property
     @abstractmethod
-    def sim_state(self) -> str:
+    def stream_data(self) -> SimProperties:
+        pass
+
+    @property
+    @abstractmethod
+    def properties(self) -> Union[SimProperties, str]:
         """
-        :return: Returns the simulators current state
+        :return: Returns the simulator's current properties, or a string to indicate an
+        error
         """
 
     @abstractmethod
@@ -222,7 +275,7 @@ class AbstractWaypointControls(ABC):
         """
 
     @abstractmethod
-    def define(self, name: str, position: LatLon, **kwargs) -> Optional[str]:
+    def define(self, name: str, position: types.LatLon, **kwargs) -> Optional[str]:
         """
         Define a waypoint
         :param name:
@@ -239,15 +292,15 @@ class AbstractSimClient(ABC):
 
     @property
     @abstractmethod
-    def sim_version(self) -> VersionInfo:
+    def aircraft(self) -> AbstractAircraftControls:
         """
-        Return the version of the connected simulation server
-        :return:
+        :return: Returns the client's aircraft controller instance
+        :rtype: AbstractAircraftControls
         """
 
     @property
     @abstractmethod
-    def simulator(self) -> AbstractSimulatorControls:
+    def simulation(self) -> AbstractSimulatorControls:
         """
         :return: Returns the client's simulator controller instance
         :rtype: AbstractSimulatorControls
@@ -255,10 +308,10 @@ class AbstractSimClient(ABC):
 
     @property
     @abstractmethod
-    def aircraft(self) -> AbstractAircraftControls:
+    def sim_version(self) -> VersionInfo:
         """
-        :return: Returns the client's aircraft controller instance
-        :rtype: AbstractAircraftControls
+        Return the version of the connected simulation server
+        :return:
         """
 
     @property
@@ -286,7 +339,7 @@ class AbstractSimClient(ABC):
         """
 
     @abstractmethod
-    def stop(self, shutdown_sim: bool = False) -> Optional[bool]:
+    def stop(self, shutdown_sim: bool = False) -> bool:
         """
         Disconnect from the simulation server, and stop the client (including any
         timers)

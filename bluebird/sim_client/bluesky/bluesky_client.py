@@ -2,6 +2,8 @@
 Contains the BlueSky client class
 """
 
+# TODO See what needs to be moved from here
+
 import json
 import logging
 import os
@@ -22,8 +24,9 @@ sys.path.append(
     )
 )
 
-from bluesky.network.client import Client
-from bluesky.network.npcodec import decode_ndarray
+# pylint: disable=wrong-import-position
+from bluesky.network.client import Client  # type: ignore
+from bluesky.network.npcodec import decode_ndarray  # type: ignore
 
 
 CMD_LOG_PREFIX = "C"
@@ -40,19 +43,38 @@ IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 # Tuple of strings which should not be considered error responses from BlueSky
 IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
+# Note - BlueSky SIMINFO returns:
+# [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)), bs.traf.ntraf,
+# bs.sim.state, stack.get_scenname()]
+# [1.0015915889597933, 0.05, 3550.1500000041497, '2019-03-06 00:59:10', 2, 2, '']
+
+# TODO
+# def update(self, data):
+#     """
+#     Update the stored simulation state
+#     :param data:
+#     :return:
+#     """
+
+#     self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, self.scn_name = (
+#         data
+#     )
+#     self.sim_speed = round(self.sim_speed, 1)
+#     if self.sim_state == 1:
+#         self.sim_speed = 0.0
+#     self.sim_t = round(self.sim_t)
+#     self.sim_utc = self.sim_utc.split()[1]
+
 
 class BlueSkyClient(Client):
     """
     Client class for the BlueSky simulator
     """
 
-    def __init__(self, sim_state, ac_data):
+    def __init__(self):
         super().__init__(ACTIVE_NODE_TOPICS)
 
         self._logger = logging.getLogger(__name__)
-
-        self._sim_state = sim_state
-        self._ac_data = ac_data
 
         # Continually poll for the sim state
         self.timer = Timer(self.receive, POLL_RATE)
@@ -100,6 +122,7 @@ class BlueSkyClient(Client):
         elif name == b"SIMINFO":
             self._sim_state.update(data)
 
+        # TODO Warn on unconsumed stream
         self.stream_received.emit(name, data, sender_id)
 
     def send_stack_cmd(self, data=None, response_expected=False, target=b"*"):

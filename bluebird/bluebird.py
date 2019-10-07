@@ -10,7 +10,7 @@ from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
 from bluebird.settings import Settings
 from bluebird.sim_client import setup_sim_client
-from bluebird.sim_proxy import SimProxy
+from bluebird.sim_proxy.sim_proxy import SimProxy
 
 
 class BlueBird:
