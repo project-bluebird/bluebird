@@ -63,6 +63,9 @@ def _parse_args() -> Dict[str, Any]:
     if args.sim_mode:
         Settings.set_sim_mode(args.sim_mode)
 
+    if args.disable_stream:
+        Settings.STREAM_ENABLE = False
+
     return vars(args)
 
 
