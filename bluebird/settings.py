@@ -4,10 +4,10 @@ Default settings for the BlueBird app
 
 # TODO Rename SIM_MODE
 
-from abc import ABC
-import os
-
 import logging
+import os
+from typing import List
+
 from semver import VersionInfo
 
 from bluebird.utils.properties import SimMode, SimType
@@ -17,9 +17,9 @@ with open("VERSION") as version_file:
     _VERSION_STR = version_file.read().strip()
 
 
-class Settings(ABC):  # pylint: disable=too-few-public-methods
+class Settings:
     """
-    BlueBird's settings
+    BlueBird's settings. Should be treated as a static singleton object.
 
     Attributes:
         VERSION:            BlueBird release version
@@ -39,23 +39,23 @@ class Settings(ABC):  # pylint: disable=too-few-public-methods
         BS_STREAM_PORT:     BlueSky stream port
     """
 
-    VERSION = VersionInfo.parse(_VERSION_STR)
-    API_VERSION = 1
-    FLASK_DEBUG = True
-    PORT = 5001
+    VERSION: VersionInfo = VersionInfo.parse(_VERSION_STR)
+    API_VERSION: int = 1
+    FLASK_DEBUG: bool = True
+    PORT: int = 5001
 
-    SIM_LOG_RATE = 0.2
-    LOGS_ROOT = os.getenv("BB_LOGS_ROOT", "logs")
-    CONSOLE_LOG_LEVEL = logging.INFO
+    SIM_LOG_RATE: float = 0.2
+    LOGS_ROOT: str = os.getenv("BB_LOGS_ROOT", "logs")
+    CONSOLE_LOG_LEVEL: int = logging.INFO
 
-    STREAM_ENABLE = True
+    STREAM_ENABLE: bool = True
 
-    METRICS_PROVIDERS = ["bluebird"]
+    METRICS_PROVIDERS: List[str] = ["bluebird"]
 
-    SIM_HOST = "localhost"
+    SIM_HOST: str = "localhost"
     # SIM_PORT = 123 - MachColl?
-    SIM_MODE = SimMode.Sandbox
-    SIM_TYPE = SimType.BlueSky
+    SIM_MODE: SimMode = SimMode.Sandbox
+    SIM_TYPE: SimType = SimType.BlueSky
 
     @staticmethod
     def set_sim_mode(new_val: str):
@@ -86,6 +86,6 @@ class Settings(ABC):  # pylint: disable=too-few-public-methods
             ) from exc
 
     # TODO Move to subclass
-    BS_EVENT_PORT = 9000
-    BS_STREAM_PORT = 9001
-    MC_PORT = 5321
+    BS_EVENT_PORT: int = 9000
+    BS_STREAM_PORT: int = 9001
+    MC_PORT: int = 5321
