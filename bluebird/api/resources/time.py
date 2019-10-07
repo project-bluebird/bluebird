@@ -7,6 +7,7 @@ import logging
 from flask_restful import Resource
 
 from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
+from bluebird.api.resources.utils.utils import sim_proxy
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,12 +25,10 @@ class Time(Resource):
         :return:
         """
 
-        time = sim_client().get_sim_time()
+        sim_utc = sim_proxy().sim_properties.sim_utc
 
-        if not time:
-            return internal_err_resp("No time data received")
+        if not sim_utc:
+            return internal_err_resp("Could not get sim time")
 
-        # TODO Move this to simclient and just return the UTC from get_sim_time
-        date_time = " ".join(time[0].split()[3:])
-        data = {"sim_utc": date_time}
+        data = {"sim_utc": sim_utc}
         return ok_resp(data)

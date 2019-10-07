@@ -6,12 +6,8 @@ import logging
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    bad_request_resp,
-    internal_err_resp,
-    ok_resp,
-)
-from bluebird.api.resources.utils.utils import parse_args, is_agent_mode
+import bluebird.api.resources.utils.responses as responses
+from bluebird.api.resources.utils.utils import parse_args, is_agent_mode, sim_proxy
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimMode as SimMode_prop
 
@@ -40,7 +36,7 @@ class SimMode(Resource):
         try:
             Settings.set_sim_mode(new_mode)
         except ValueError:
-            return bad_request_resp(
+            return responses.bad_request_resp(
                 f'Mode "{new_mode}"" not supported. Must be one of: '
                 f'{", ".join([x.name for x in SimMode_prop])}'
             )
@@ -48,18 +44,16 @@ class SimMode(Resource):
         _LOGGER.debug(f"Mode set to {new_mode}")
 
         if is_agent_mode():
-            ac_data().set_log_rate(0)
-            err = sim_client().pause_sim()
+            err = sim_proxy().pause_sim()
             if err:
-                return internal_err_resp(
+                return responses.internal_err_resp(
                     f"Could not pause sim when changing mode: {err}"
                 )
 
         elif Settings.SIM_MODE == SimMode_prop.Sandbox:
-            ac_data().resume_log()
-            err = sim_client().resume_sim()
+            err = sim_proxy().resume_sim()
             if err:
-                return internal_err_resp(
+                return responses.internal_err_resp(
                     f"Could not resume sim when changing mode: {err}"
                 )
         else:
@@ -67,4 +61,4 @@ class SimMode(Resource):
             # handle it here
             raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
 
-        return ok_resp()
+        return responses.ok_resp()

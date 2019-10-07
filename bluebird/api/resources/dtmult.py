@@ -5,7 +5,7 @@ Provides logic for the DTMULT API endpoint
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
-from bluebird.api.resources.utils.utils import parse_args
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 
 
 _PARSER = reqparse.RequestParser()
@@ -31,12 +31,6 @@ class DtMult(Resource):
             return bad_request_resp("Multiplier must be greater than 0")
 
         # TODO Check if we still need to keep track of step_dt in the client
-        err = sim_client().set_sim_speed(multiplier)
+        err = sim_proxy().set_sim_speed(multiplier)
 
-        resp = checked_resp(err)
-
-        if err:
-            return resp
-
-        ac_data().set_log_rate(multiplier)
-        return resp
+        return checked_resp(err)

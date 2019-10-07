@@ -6,7 +6,7 @@ from flask import request
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
-from bluebird.api.resources.utils.utils import parse_args
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 
 
 _PARSER = reqparse.RequestParser()
@@ -29,7 +29,7 @@ class Shutdown(Resource):
 
         sim_quit_msg = ""
         if req_args.get("stop_sim", False):
-            sim_quit = sim_client().stop(shutdown_sim=True)
+            sim_quit = sim_proxy().stop_sim(shutdown_sim=True)
             sim_quit_msg = f". (Sim exited ok: {sim_quit})"
 
         try:

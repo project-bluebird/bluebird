@@ -6,12 +6,8 @@ import logging
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import internal_err_resp
-from bluebird.api.resources.utils.utils import (
-    CALLSIGN_LABEL,
-    parse_args,
-    check_callsign_exists,
-)
+from bluebird.api.resources.utils.responses import internal_err_resp, bad_request_resp
+from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
 from bluebird.utils.types import Callsign
 
 
@@ -34,19 +30,13 @@ class ListRoute(Resource):
         :return:
         """
 
-        parsed = parse_args(_PARSER)
-        callsign = parsed[CALLSIGN_LABEL]
+        req_args = parse_args(_PARSER)
+        callsign = req_args[CALLSIGN_LABEL]
 
-        err = check_callsign_exists(callsign)
-        if err:
-            return err
-
-        # TODO Response expected from BlueSky sim
-        props = sim_client().get_aircraft_properties(callsign)
+        # TODO Refactor this - how do we want to handle aircraft routes in BlueBird?
+        props = sim_proxy().get_aircraft_props(callsign)
         if not props:
-            return internal_err_resp(f"Could not get properties for {callsign}")
+            return bad_request_resp(f"Aircraft {callsign} was not found")
 
-        # TODO Refactor this - should get a standard set of properties back
-        reply = None
-        if not reply:
-            return internal_err_resp("Not implemented")
+        # TODO
+        return internal_err_resp("Not implemented")

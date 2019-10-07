@@ -4,7 +4,6 @@ Contains utility functions for the API resources
 
 import logging
 import re
-import time
 from typing import List, Union, Optional, Dict, Any
 
 from flask import current_app
@@ -13,8 +12,10 @@ from flask_restful import reqparse
 from bluebird.api.resources.utils.responses import RespTuple, bad_request_resp
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from bluebird.settings import Settings
+from bluebird.sim_client.abstract_sim_client import AbstractSimClient
+from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.utils.properties import SimMode
-from bluebird.utils.types import LatLon, Callsign
+from bluebird.utils.types import LatLon
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,87 +62,25 @@ def _bb_app():
     return _bb_app._instance
 
 
-# def sim_client() -> AbstractSimClient:
-#     """
-#     Utility function to return the sim_client instance
-#     """
-#     return _bb_app().sim_client
+def sim_proxy() -> SimProxy:
+    """
+    Utility function to return the sim_proxy instance
+    """
+    return _bb_app().sim_proxy
 
 
-# def ac_data() -> AcDataCache:
-#     """
-#     Utility function to return the ac_data instance
-#     """
-#     return _bb_app().ac_data
+def sim_client() -> AbstractSimClient:
+    """
+    Utility function to return the sim_client instance
+    """
+    return _bb_app().sim_client
 
 
-# def sim_state() -> SimState:
-#     """
-#     Utility function to return the sim_state instance
-#     """
-#     return _bb_app().sim_state
-
-
-# NOTE This is probably ok here
 def metrics_providers() -> List[AbstractMetricProvider]:
     """
     Utility function to return the metrics_providers instance
     """
     return _bb_app().metrics_providers
-
-
-# TODO Old version of this checked multiple strings at once - need to modify or change
-# usage
-# TODO Only directly check ac_data if settings.streaming
-def check_callsign_exists(callsign: Callsign) -> Optional[RespTuple]:
-    """
-    Asserts that the given callsign exists in the scenario
-    :param callsign:
-    :return:
-    """
-
-    if not ac_data().store:
-        return bad_request_resp("No aircraft in the simulaton")
-
-    if not ac_data().contains(str(callsign)):
-        return bad_request_resp(f"Aircraft {callsign} was not found")
-
-    return None
-
-
-def wait_until_eq(lhs, rhs, max_wait=1) -> bool:
-    """
-    Waits for the given condition to be met
-    :param lhs:
-    :param rhs:
-    :param max_wait:
-    :return:
-    """
-
-    timeout = time.time() + max_wait
-
-    while bool(lhs) != bool(rhs):
-        time.sleep(0.1)
-        if time.time() > timeout:
-            return False
-
-    return True
-
-
-# TODO Move to  sim proxy layer
-def check_ac_data_populated() -> Optional[str]:
-    """
-    Checks if the ac_data is populated after resetting or loading a new scenario
-    :return:
-    """
-
-    if not wait_until_eq(ac_data().store, True):
-        return (
-            "No aircraft data received after loading. This may have been caused by the "
-            "given scenario not containing any aircraft"
-        )
-
-    return None
 
 
 # TODO This is specific to BlueSky and will be replaced

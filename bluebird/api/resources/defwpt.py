@@ -8,7 +8,7 @@ import logging
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
-from bluebird.api.resources.utils.utils import parse_args, try_parse_lat_lon
+from bluebird.api.resources.utils.utils import parse_args, try_parse_lat_lon, sim_proxy
 from bluebird.utils.types import LatLon
 
 
@@ -45,6 +45,7 @@ class DefWpt(Resource):
         if not isinstance(position, LatLon):
             return position
 
-        err = sim_client().define_waypoint(wp_name, position, type=req_args["type"])
+        # TODO We probably want to record the waypoint in sim_proxy as well?
+        err = sim_proxy().define_waypoint(wp_name, position, type=req_args["type"])
 
         return checked_resp(err, HTTPStatus.CREATED)

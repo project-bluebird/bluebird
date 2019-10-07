@@ -11,10 +11,9 @@ from bluebird.settings import Settings
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup_metrics(ac_data):
+def setup_metrics():
     """
     Loads the metrics providers defined in the global settings. Returns them as a list
-    :param ac_data:
     :return:
     """
 
@@ -27,7 +26,7 @@ def setup_metrics(ac_data):
                 raise ModuleNotFoundError(f"Can't find {mod_path}")
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            providers.append(getattr(module, "Provider")(ac_data))
+            providers.append(getattr(module, "Provider")())
         except ModuleNotFoundError as exc:
             _LOGGER.error(f"Couldn't import {mod_path}. Check the module exists")
             raise exc

@@ -5,6 +5,7 @@ Provides logic for the OP (operate) API endpoint
 from flask_restful import Resource
 
 from bluebird.api.resources.utils.responses import checked_resp
+from bluebird.api.resources.utils.utils import sim_proxy
 
 
 class Op(Resource):
@@ -19,6 +20,6 @@ class Op(Resource):
         :return:
         """
 
-        err = sim_client().resume_sim()
+        err = sim_proxy().resume_sim()
 
         return checked_resp(err)

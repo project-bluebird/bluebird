@@ -13,7 +13,7 @@ _FL_REGEX = re.compile(r"^FL[1-9]\d*$")
 _CALLSIGN_REGEX = re.compile(r"[a-z0-9]{3,}")
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Altitude:
     """
     Dataclass representing an altitude in feet
@@ -55,7 +55,7 @@ class Altitude:
         return str(self.feet)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Callsign:
     """
     Dataclass representing an aircraft's callsign
@@ -73,7 +73,7 @@ class Callsign:
         return self.value
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class GroundSpeed:
     """
     Dataclass representing an aircraft's ground speed [meters/sec]
@@ -96,7 +96,7 @@ class GroundSpeed:
         return str(self.meters_per_sec)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Heading:
     """
     Dataclass representing an aircraft's heading [°]
@@ -112,7 +112,7 @@ class Heading:
         return str(self.heading_degrees)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class LatLon:
     """
     Dataclass representing a lat/lon pair
@@ -130,7 +130,7 @@ class LatLon:
         return f"{self.lat_degrees:f} {self.lon_degrees:f}"
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class VerticalSpeed:
     """
     Dataclass representing a vertical speed [m/s]

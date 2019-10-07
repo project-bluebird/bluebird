@@ -1,19 +1,24 @@
 """
-Provides logic for the SPD (_ speed) API endpoint
+Provides logic for the SPD (set ground speed) API endpoint
 """
 
-# TODO Which speed are we specifying here?
+# TODO Check which speed we should specify here
 
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import checked_resp, bad_request_resp
-from bluebird.api.resources.utils.utils import parse_args, CALLSIGN_LABEL
-from bluebird.utils.types import Callsign
+from bluebird.api.resources.utils.utils import (
+    parse_args,
+    CALLSIGN_LABEL,
+    sim_client,
+    sim_proxy,
+)
+from bluebird.utils.types import Callsign, GroundSpeed
 
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="json", required=True)
-_PARSER.add_argument("spd", type=int, location="json", required=True)
+_PARSER.add_argument("spd", type=GroundSpeed, location="json", required=True)
 
 
 class Spd(Resource):
@@ -30,11 +35,11 @@ class Spd(Resource):
         """
 
         req_args = parse_args(_PARSER)
-        speed: int = req_args["spd"]
 
-        if speed <= 0:
-            return bad_request_resp("Speed must be positive")
+        callsign = req_args[CALLSIGN_LABEL]
+        if not sim_proxy().contains(callsign):
+            return bad_request_resp(f"Aircraft {callsign} was not found")
 
-        err = sim_client().set_aircraft_speed(speed)
+        err = sim_client().aircraft.set_ground_speed(callsign, req_args["spd"])
 
         return checked_resp(err)

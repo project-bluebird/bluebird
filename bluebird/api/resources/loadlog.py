@@ -14,20 +14,17 @@ import uuid
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    bad_request_resp,
-    internal_err_resp,
-    ok_resp,
-)
+import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import (
-    check_ac_data_populated,
     validate_scenario,
-    wait_until_eq,
     parse_args,
     is_agent_mode,
+    sim_proxy,
 )
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimType
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,35 +105,41 @@ class LoadLog(Resource):
         """
 
         if not is_agent_mode():
-            return bad_request_resp("Can only be used in agent mode")
+            return responses.bad_request_resp("Can only be used in agent mode")
+
+        if Settings.SIM_TYPE != SimType.BlueSky:
+            return responses.bad_request_resp(
+                f"Method not supported for the {Settings.SIM_TYPE} simulator"
+            )
 
         req_args = parse_args(_PARSER)
 
         if bool(req_args["filename"]) == bool(req_args["lines"]):
-            return bad_request_resp("Either filename or lines must be specified")
+            return responses.bad_request_resp(
+                "Either filename or lines must be specified"
+            )
 
         target_time = req_args["time"]
         if target_time <= 0:
-            return bad_request_resp("Target time must be greater than 0")
+            return responses.bad_request_resp("Target time must be greater than 0")
 
-        # TODO Why get_ ?
-        prev_dt = sim_client().get_sim_speed()
+        prev_dt = sim_proxy().sim_properties.sim_speed
 
         _LOGGER.debug("Starting log reload")
 
         # Reset now so the current episode log is closed
-        err = sim_client().reset_sim()
+        err = sim_proxy().reset_sim()
 
         if err:
-            return internal_err_resp(f"Simulation not reset: {err}")
+            return responses.internal_err_resp(f"Simulation not reset: {err}")
 
         if req_args["filename"]:
             if not os.path.exists(req_args["filename"]):
-                return bad_request_resp(
+                return responses.bad_request_resp(
                     f'Could not find episode file {req_args["filename"]}'
                 )
-            with open(req_args["filename"], "r") as f:
-                lines = list(f)
+            with open(req_args["filename"], "r") as log_file:
+                lines = list(log_file)
         else:
             lines = req_args["lines"]
 
@@ -144,7 +147,9 @@ class LoadLog(Resource):
         parsed_scn = parse_lines(lines, target_time)
 
         if isinstance(parsed_scn, str):
-            return bad_request_resp(f"Could not parse episode content: {parsed_scn}")
+            return responses.bad_request_resp(
+                f"Could not parse episode content: {parsed_scn}"
+            )
 
         # TODO Move regex to outer scope and comment
         # Assert that the requested time is not past the end of the log
@@ -154,81 +159,68 @@ class LoadLog(Resource):
         last_time = int(re.search(r"\[(.*)]", last_data).group(1))
 
         if target_time > last_time:
-            return bad_request_resp(
+            return responses.bad_request_resp(
                 f"Error: Target time was greater than the latest time in the log"
             )
 
         err = validate_scenario(parsed_scn["lines"])
 
         if err:
-            return bad_request_resp(
+            return responses.bad_request_resp(
                 "Could not create a valid scenario from the given log"
             )
 
         # All good - do the reload
 
         _LOGGER.debug("Setting the simulator seed")
-        err = sim_client().set_seed(parsed_scn["seed"])
+        err = sim_proxy().set_seed(int(parsed_scn["seed"]))
 
         if err:
-            return internal_err_resp(f"Could not set seed {err}")
+            return responses.internal_err_resp(f"Could not set seed {err}")
 
         scn_name = f"reloads/{str(uuid.uuid4())[:8]}.scn"
 
         _LOGGER.debug("Uploading the new scenario")
         store_local_scn(scn_name, parsed_scn["lines"])
-        err = sim_client().upload_new_scenario(scn_name, parsed_scn["lines"])
+        err = sim_proxy().upload_new_scenario(scn_name, parsed_scn["lines"])
 
         if err:
-            return internal_err_resp(f"Error uploading scenario: {err}")
+            return responses.internal_err_resp(f"Error uploading scenario: {err}")
 
         _LOGGER.info("Starting the new scenario")
-        err = sim_client().load_scenario(scn_name, start_paused=True)
+        err = sim_proxy().load_scenario(scn_name, start_paused=True)
 
         if err:
-            return internal_err_resp(f"Could not start scenario after upload {err}")
-
-        _LOGGER.debug("Waiting for simulation to be paused")
-        # TODO Change to sim state enum
-        if not wait_until_eq(sim_state(), 1):
-            return internal_err_resp(
-                "Could not pause simulation after starting new scenario"
+            return responses.internal_err_resp(
+                f"Could not start scenario after upload {err}"
             )
 
-        diff = target_time - sim_state().sim_t
+        diff = target_time - sim_proxy().sim_properties.sim_t
 
         if diff:
             # Naive approach - set DTMULT to target, then STEP once...
             _LOGGER.debug(f"Time difference is {diff}. Stepping to {target_time}")
-            err = sim_client().set_sim_speed(diff)
+            err = sim_proxy().set_sim_speed(diff)
             if err:
-                return internal_err_resp(f"Could not change speed: {err}")
+                return responses.internal_err_resp(f"Could not change speed: {err}")
 
             _LOGGER.debug("Performing step")
-            err = sim_client().step_sim()
+            err = sim_proxy().step_sim()
 
             if err:
-                return internal_err_resp(f"Could not step simulations: {err}")
+                return responses.internal_err_resp(f"Could not step simulations: {err}")
 
         else:
             _LOGGER.debug(f"Simulation already at required time")
 
-        _LOGGER.debug("Waiting for ac_data to catch up")
-
-        err_str = check_ac_data_populated()
-        if err_str:
-            return internal_err_resp(err_str)
-
-        ac_data().log()
-
         # Reset DTMULT to the previous value
-        err = sim_client().set_sim_speed(prev_dt)
+        err = sim_proxy().set_sim_speed(prev_dt)
         if err:
-            return internal_err_resp(
+            return responses.internal_err_resp(
                 "Episode reloaded, but could not reset DTMULT to previous value"
             )
 
         # TODO Do we want to check before/after positions here and check if the
         # differences are acceptable?
 
-        return ok_resp()
+        return responses.ok_resp()

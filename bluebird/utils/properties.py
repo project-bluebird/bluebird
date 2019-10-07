@@ -1,12 +1,22 @@
 """
-Contains property definitions
+Contains property class definitions
 """
 
-# TODO Figure out if the common "_missing_" function can be refactored out
-
+from dataclasses import dataclass
+from datetime import datetime
 from enum import IntEnum
 
+from bluebird.utils.types import (
+    Altitude,
+    Callsign,
+    GroundSpeed,
+    Heading,
+    LatLon,
+    VerticalSpeed,
+)
 
+
+# TODO Figure out if the common "_missing_" function can be refactored out
 class SimMode(IntEnum):
     """
     BlueBird's operating modes
@@ -51,3 +61,49 @@ class SimType(IntEnum):
             f'SimType has no value "{value}". Options are - '
             f'{", ".join(cls.__members__)}'
         )
+
+
+# TODO Needs to (possibly) include route information
+@dataclass
+class AircraftProperties:
+    """
+    Dataclass representing all the properties of an aircraft. Equality is only computed
+    by comparison with the Callsign
+    """
+
+    aircraft_type: str
+    altitude: Altitude
+    callsign: Callsign
+    cleared_flight_level: Altitude
+    ground_speed: GroundSpeed
+    heading: Heading
+    position: LatLon
+    requested_flight_level: Altitude
+    vertical_speed: VerticalSpeed
+
+    def __eq__(self, other):
+        if other.__class__ is not self.__class__:
+            return NotImplemented
+        return self.callsign == other.callsign
+
+
+class SimState(IntEnum):
+    """
+    Simulator states
+    """
+
+    INIT = 1
+    HOLD = 2
+    RUN = 3
+    END = 4
+
+
+@dataclass(frozen=True)
+class SimProperties:
+    sim_state: SimState
+    sim_speed: float
+    sim_dt: float
+    sim_t: float
+    sim_utc: datetime  # TODO Not sure if this is needed
+    ac_count: int
+    scn_name: str

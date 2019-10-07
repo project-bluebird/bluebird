@@ -5,6 +5,7 @@ Provides logic for the HOLD (simulation pause) API endpoint
 from flask_restful import Resource
 
 from bluebird.api.resources.utils.responses import checked_resp
+from bluebird.api.resources.utils.utils import sim_proxy
 
 
 class Hold(Resource):
@@ -19,6 +20,6 @@ class Hold(Resource):
         :return:
         """
 
-        err = sim_client().pause_sim()
+        err = sim_proxy().pause_sim()
 
         return checked_resp(err)
