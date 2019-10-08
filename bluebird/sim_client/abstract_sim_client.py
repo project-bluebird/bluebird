@@ -20,20 +20,24 @@ class AbstractAircraftControls(ABC):
     @property
     @abstractmethod
     def stream_data(self) -> List[AircraftProperties]:
-        pass
+        """
+        The current stream data of AircraftProperties. May be an empty list if streaming
+        is not enabled
+        :return:
+        """
 
     @abstractmethod
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
         """
-		Set the cleared flight level for the specified aircraft
-		:param callsign: The aircraft identifier
-		:param flight_level: The flight level to set
-		:returns None: If cleared flight level was set
-		:returns str: To indicate an error
-		:return:
-		"""
+        Set the cleared flight level for the specified aircraft
+        :param callsign: The aircraft identifier
+        :param flight_level: The flight level to set
+        :returns None: If cleared flight level was set
+        :returns str: To indicate an error
+        :return:
+        """
 
     @abstractmethod
     def set_heading(
@@ -81,12 +85,12 @@ class AbstractAircraftControls(ABC):
         self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
     ) -> Optional[str]:
         """
-		Append a waypoint to an aircraft's route
-		:param callsign:
-		:param target: Can either specify an existing waypoint by name, or a LatLon
+        Append a waypoint to an aircraft's route
+        :param callsign:
+        :param target: Can either specify an existing waypoint by name, or a LatLon
         position
-		:return:
-		"""
+        :return:
+        """
 
     # TODO What are the supported aircraft types?
     @abstractmethod
@@ -133,7 +137,11 @@ class AbstractSimulatorControls(ABC):
     @property
     @abstractmethod
     def stream_data(self) -> SimProperties:
-        pass
+        """
+        The current stream data of SimProperties. May be None if streaming is not
+        enabled
+        :return:
+        """
 
     @property
     @abstractmethod
@@ -249,15 +257,6 @@ class AbstractSimulatorControls(ABC):
         """
 		Set the simulator's random seed
 		:param seed:
-		:return:
-		"""
-
-    # TODO Specify the return format so the API doesn't have to do any conversion
-    # (instead of str)
-    @abstractmethod
-    def get_time(self) -> Optional[str]:
-        """
-		Returns the current simulator time in UTC
 		:return:
 		"""
 

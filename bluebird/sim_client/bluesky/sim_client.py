@@ -2,8 +2,9 @@
 BlueSky simulation client class
 """
 
+import logging
 import os
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable, List, Union
 
 from semver import VersionInfo
 
@@ -15,10 +16,12 @@ from bluebird.sim_client.abstract_sim_client import (
     AbstractSimClient,
 )
 from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
-from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.properties import AircraftProperties, SimProperties
 from bluebird.utils.timer import Timer
 import bluebird.utils.types as types
 
+
+_LOGGER = logging.getLogger(__name__)
 
 _BS_MIN_VERSION = os.getenv("BS_MIN_VERSION")
 if not _BS_MIN_VERSION:
@@ -27,6 +30,7 @@ if not _BS_MIN_VERSION:
 MIN_SIM_VERSION = VersionInfo.parse(_BS_MIN_VERSION)
 
 
+# TODO Check cases where we need this
 def _assert_valid_args(args: list):
     """
     Since BlueSky only accepts commands in the form of (variable-length) strings, we
@@ -75,7 +79,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def set_vertical_speed(
         self, callsign: types.Callsign, vertical_speed: types.VerticalSpeed
     ):
-        cmd_str = f"SPD {callsign} {vertical_speed}"
+        cmd_str = f"VS {callsign} {vertical_speed}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
     def direct_to_waypoint(
@@ -107,15 +111,20 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
     def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
+        cmd_str = f"POS {callsign}"
+        props = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
         # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541
-        pass
+        raise NotImplementedError(f"(Unhandled) POS returned: {props}")
 
     def get_all_properties(self) -> List[AircraftProperties]:
-        # TODO
-        return []
+        cmd_str = f"LISTAC"
+        callsigns = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
+        raise NotImplementedError(f"(Unhandled) LISTAC returned: {callsigns}")
 
-    def _tmp_stack_cmd_handle_list(self, cmd_str: str) -> Optional[str]:
-        resp = self._client.send_stack_cmd(cmd_str)
+    def _tmp_stack_cmd_handle_list(
+        self, cmd_str: str, resp_expected: bool = False
+    ) -> Optional[str]:
+        resp = self._client.send_stack_cmd(cmd_str, resp_expected)
         if isinstance(resp, list):
             raise ValueError("Got a list response")
 
@@ -123,11 +132,73 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
 
 
 class BlueSkySimulatorControls(AbstractSimulatorControls):
-    pass
+    """
+    AbstractSimulatorControls implementation for BlueSky
+    """
+
+    @property
+    def stream_data(self) -> SimProperties:
+        raise NotImplementedError
+
+    @property
+    def properties(self) -> Union[SimProperties, str]:
+        # TODO This may be difficult to get from the stack command
+        raise NotImplementedError
+
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
+
+    def load_scenario(
+        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
+    ) -> Optional[str]:
+        raise NotImplementedError
+
+    def start(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def reset(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def pause(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def resume(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def step(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def get_speed(self) -> float:
+        raise NotImplementedError
+
+    def set_speed(self, speed) -> Optional[str]:
+        raise NotImplementedError
+
+    def upload_new_scenario(
+        self, scn_name: str, content: Iterable[str]
+    ) -> Optional[str]:
+        raise NotImplementedError
+
+    def get_seed(self) -> int:
+        raise NotImplementedError
+
+    def set_seed(self, seed: int) -> Optional[str]:
+        raise NotImplementedError
 
 
 class BlueSkyWaypointControls(AbstractWaypointControls):
-    pass
+    """
+    AbstractWaypointControls implementation for BlueSky
+    """
+
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
+
+    def get_all_waypoints(self) -> dict:
+        raise NotImplementedError
+
+    def define(self, name: str, position: types.LatLon, **kwargs) -> Optional[str]:
+        raise NotImplementedError
 
 
 class SimClient(AbstractSimClient):
@@ -170,3 +241,4 @@ class SimClient(AbstractSimClient):
 
     def stop(self, shutdown_sim: bool = False) -> bool:
         self._client.stop()
+        return True
