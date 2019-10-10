@@ -221,7 +221,7 @@ class AbstractSimulatorControls(ABC):
 		"""
 
     @abstractmethod
-    def set_speed(self, speed) -> Optional[str]:
+    def set_speed(self, speed: float) -> Optional[str]:
         """
 		Set the simulator speed (DTMULT for BlueSky)
 		:param speed:
@@ -343,5 +343,6 @@ class AbstractSimClient(ABC):
         Disconnect from the simulation server, and stop the client (including any
         timers)
         :param shutdown_sim: If true, also informs the simulation server to exit
-        :return:
+        :return: If shutdown_sim was requested, the return value will indicate whether
+        the simulator was shut down successfully
         """

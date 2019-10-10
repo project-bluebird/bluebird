@@ -171,7 +171,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def get_speed(self) -> float:
         raise NotImplementedError
 
-    def set_speed(self, speed) -> Optional[str]:
+    def set_speed(self, speed: float) -> Optional[str]:
         raise NotImplementedError
 
     def upload_new_scenario(
