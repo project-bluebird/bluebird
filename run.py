@@ -64,6 +64,8 @@ def _parse_args() -> Dict[str, Any]:
         Settings.set_sim_mode(args.sim_mode)
 
     if args.disable_stream:
+        if Settings.SIM_TYPE == SimType.BlueSky:
+            raise ValueError("Streaming mode cannot be disabled for BlueSky")
         Settings.STREAM_ENABLE = False
 
     return vars(args)
