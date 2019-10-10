@@ -14,13 +14,12 @@ class Provider(AbstractMetricProvider):
     BlueBird metrics provider
     """
 
-    def __init__(self, ac_data):
+    def __init__(self):
         super().__init__()
         self._logger = logging.getLogger(__package__)
-        self._ac_data = ac_data
 
     def __call__(self, metric, *args, **kwargs):
-        return getattr(metrics, metric)(self._ac_data, *args, **kwargs)
+        return getattr(metrics, metric)(*args, **kwargs) # TODO Kwargs need passed in
 
     def __str__(self):
         return "BlueBirdProvider"
