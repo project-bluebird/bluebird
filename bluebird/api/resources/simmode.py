@@ -7,8 +7,8 @@ import logging
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import parse_args, is_agent_mode, sim_proxy
-from bluebird.settings import Settings
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.settings import is_agent_mode, Settings
 from bluebird.utils.properties import SimMode as SimMode_prop
 
 

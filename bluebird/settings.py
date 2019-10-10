@@ -17,6 +17,13 @@ with open("VERSION") as version_file:
     _VERSION_STR = version_file.read().strip()
 
 
+def is_agent_mode() -> bool:
+    """
+    Checks if we are currently in Agent mode
+    """
+    return Settings.SIM_MODE == SimMode.Agent
+
+
 class Settings:
     """
     BlueBird's settings. Should be treated as a static singleton object.

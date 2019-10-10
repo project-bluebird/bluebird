@@ -5,7 +5,8 @@ Provides logic for the IC (initial condition) API endpoint
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
-from bluebird.api.resources.utils.utils import parse_args, is_agent_mode, sim_proxy
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.settings import is_agent_mode
 
 
 _PARSER = reqparse.RequestParser()

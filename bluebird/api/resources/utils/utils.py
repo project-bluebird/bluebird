@@ -122,10 +122,3 @@ def parse_route_data(route_data):
             }
         )
     return parsed
-
-
-def is_agent_mode() -> bool:
-    """
-    Checks if we are currently in Agent mode
-    """
-    return Settings.SIM_MODE == SimMode.Agent

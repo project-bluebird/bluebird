@@ -15,15 +15,10 @@ import uuid
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import (
-    validate_scenario,
-    parse_args,
-    is_agent_mode,
-    sim_proxy,
-)
+from bluebird.api.resources.utils.utils import validate_scenario, parse_args, sim_proxy
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
-from bluebird.settings import Settings
+from bluebird.settings import is_agent_mode, Settings
 from bluebird.utils.properties import SimType
 
 
