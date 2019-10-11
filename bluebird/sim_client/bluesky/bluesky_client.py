@@ -117,10 +117,11 @@ class BlueSkyClient(Client):
 
         # Fill the cache with the aircraft data
         if name == b"ACDATA":
-            self._ac_data.fill(data)
+            #TODO Ensure correct units (..., vs)
+            self._logger.warning("ACDATA unhandled")
 
         elif name == b"SIMINFO":
-            self._sim_state.update(data)
+            self._logger.warning("SIMINFO unhandled")
 
         # TODO Warn on unconsumed stream
         self.stream_received.emit(name, data, sender_id)
