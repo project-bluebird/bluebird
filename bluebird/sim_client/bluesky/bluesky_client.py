@@ -17,14 +17,16 @@ import bluebird.logging
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 
-# Import BlueSky from the git submodule
-sys.path.append(
-    os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), os.path.abspath("./bluesky")
-    )
-)
+
+# Import BlueSky from the specified path. Should default to the included submodule
+_BS_PATH = os.getenv("BS_PATH", None)
+assert _BS_PATH, "Expected BS_PATH to be set"
+assert os.path.isdir(_BS_PATH) and "bluesky" in os.listdir(
+    _BS_PATH
+), "Expected BS_PATH to point to the root BlueSky directory"
 
 # pylint: disable=wrong-import-position
+sys.path.append(_BS_PATH)
 from bluesky.network.client import Client  # type: ignore
 from bluesky.network.npcodec import decode_ndarray  # type: ignore
 
