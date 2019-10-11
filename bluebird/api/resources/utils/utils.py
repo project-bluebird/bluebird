@@ -2,19 +2,19 @@
 Contains utility functions for the API resources
 """
 
+from dataclasses import asdict
 import logging
 import re
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
 from flask import current_app
 from flask_restful import reqparse
 
-from bluebird.api.resources.utils.responses import RespTuple, bad_request_resp
+from bluebird.api.resources.utils.responses import bad_request_resp
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
-from bluebird.settings import Settings
 from bluebird.sim_client.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.sim_proxy import SimProxy
-from bluebird.utils.properties import SimMode
+from bluebird.utils.properties import AircraftProperties
 from bluebird.utils.types import LatLon
 
 
@@ -38,7 +38,7 @@ def parse_args(parser: reqparse.RequestParser) -> Dict[str, Any]:
     return dict(parser.parse_args(strict=True))
 
 
-def try_parse_lat_lon(args: dict) -> Union[LatLon, RespTuple]:
+def try_parse_lat_lon(args: dict):  # -> Union[LatLon, RespTuple]:
     """
     Attempts to parse a LatLon from an argument dict
     :param args:
@@ -122,3 +122,27 @@ def parse_route_data(route_data):
             }
         )
     return parsed
+
+
+# TODO Add test
+def convert(props: AircraftProperties) -> Dict[str, Any]:
+    """
+    Parses an AircraftProperties object into a dict suitable for returning via Flask    
+    :param props:
+    :return:
+    """
+
+    # TODO Check units
+    # vs - feet per min OR feet per sec?
+    data = {
+        str(props.callsign): {
+            "actype": props.aircraft_type,
+            "alt": props.altitude.meters,
+            "gs": props.ground_speed.meters_per_sec,
+            "hdg": props.heading.degrees,
+            "lat": props.position.lat_degrees,
+            "lon": props.position.lon_degrees,
+            "vs": props.vertical_speed.feet_per_min,
+        }
+    }
+    return data
