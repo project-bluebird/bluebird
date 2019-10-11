@@ -6,6 +6,7 @@ import logging
 import os
 from typing import Iterable, Optional, List, Union
 
+from nats.machine_college.bluebird_if.mc_client import CallsignLookup, MCClient
 from semver import VersionInfo
 
 from bluebird.settings import is_agent_mode, Settings
@@ -18,9 +19,6 @@ from bluebird.sim_client.abstract_sim_client import (
 import bluebird.utils.types as types
 from bluebird.utils.properties import AircraftProperties, SimProperties
 from bluebird.utils.timer import Timer
-
-# TODO Import this from top-level / add setup instructions
-from .interface.mc_client import CallsignLookup, MCClient
 
 
 _LOGGER = logging.getLogger(__name__)
