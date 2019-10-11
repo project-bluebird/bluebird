@@ -10,10 +10,10 @@ from typing import Optional, Union
 _METERS_PER_FOOT = 0.3048
 
 _FL_REGEX = re.compile(r"^FL[1-9]\d*$")
-_CALLSIGN_REGEX = re.compile(r"[a-z0-9]{3,}")
+_CALLSIGN_REGEX = re.compile(r"^[A-Z0-9]{3,}")
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class Altitude:
     """
     Dataclass representing an altitude in feet
@@ -30,7 +30,7 @@ class Altitude:
         if isinstance(alt, str):
             assert _FL_REGEX.match(alt), (
                 "Altitude must be a valid flight level when passed as a string "
-                '(e.g. "FL123")'
+                f"(e.g. 'FL123'). Given '{alt}'"
             )
             self.feet = int(alt[2:]) * 100
         else:
@@ -55,25 +55,28 @@ class Altitude:
         return str(self.feet)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class Callsign:
     """
-    Dataclass representing an aircraft's callsign
+    Dataclass representing an aircraft's callsign. Note that all callsigns will be
+    converted to uppercase
     """
 
     value: str
 
     def __init__(self, callsign: str):
-        assert _CALLSIGN_REGEX.match(
-            callsign, re.IGNORECASE
-        ), f"Invalid callsign {callsign}"
+        callsign = callsign.upper()
+        assert _CALLSIGN_REGEX.match(callsign), f"Invalid callsign {callsign}"
         self.value = callsign
+
+    def __hash__(self):
+        return hash(self.value)
 
     def __repr__(self):
         return self.value
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class GroundSpeed:
     """
     Dataclass representing an aircraft's ground speed [meters/sec]
@@ -96,23 +99,23 @@ class GroundSpeed:
         return str(self.meters_per_sec)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class Heading:
     """
     Dataclass representing an aircraft's heading [°]
     """
 
-    heading_degrees: int
+    degrees: int
 
     def __init__(self, heading: int):
         assert 0 <= heading < 360, "Heading must satisfy 0 <= x < 360"
-        self.heading_degrees = heading
+        self.degrees = heading
 
     def __repr__(self):
-        return str(self.heading_degrees)
+        return str(self.degrees)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class LatLon:
     """
     Dataclass representing a lat/lon pair
@@ -130,28 +133,31 @@ class LatLon:
         return f"{self.lat_degrees:f} {self.lon_degrees:f}"
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class VerticalSpeed:
     """
-    Dataclass representing a vertical speed [m/s]
+    Dataclass representing a vertical speed [feet/min]
     """
 
-    meters_per_sec: int
+    feet_per_min: int
 
     def __init__(self, vertical_speed: int):
-        self.meters_per_sec = vertical_speed
-
-    def feet_per_sec(self) -> int:
-        """
-        The (rounded) speed in feet per second
-        """
-        return int(self.meters_per_sec / _METERS_PER_FOOT)
+        self.feet_per_min = vertical_speed
 
     def __repr__(self):
-        return str(self.meters_per_sec)
+        return str(self.feet_per_min)
+
+    @staticmethod
+    def from_meters_per_sec(vertical_speed):
+        """
+        Create a VerticalSpeed from a value in meters per second
+        :param vertical_speed:
+        :return:
+        """
+        return VerticalSpeed(vertical_speed * 60 / _METERS_PER_FOOT)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True)
 class Waypoint:
     """
     Dataclass representing a named waypoint and optional altitude. __repr__ returns the

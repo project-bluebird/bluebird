@@ -20,7 +20,7 @@ from bluebird.utils.properties import AircraftProperties, SimProperties
 from bluebird.utils.timer import Timer
 
 # TODO Import this from top-level / add setup instructions
-from .interface.mc_client import MCClient
+from .interface.mc_client import CallsignLookup, MCClient
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,6 +32,11 @@ if not _MC_MIN_VERSION:
 MIN_SIM_VERSION = VersionInfo.parse(_MC_MIN_VERSION)
 
 
+def _raise_for_no_data(data):
+    if not data:
+        raise ValueError("No response received from the simulator")
+
+
 class MachCollAircraftControls(AbstractAircraftControls):
     """
     AbstractAircraftControls implementation for MachColl
@@ -41,13 +46,14 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def stream_data(self) -> List[AircraftProperties]:
         raise NotImplementedError
 
-    def __init__(self, client):
-        self._client = client
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
+        self._lookup = None
 
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
-        err = self._client.set_cfl(callsign, flight_level.flight_levels)
+        err = self._mc_client().set_cfl(callsign, flight_level.flight_levels)
         return str(err) if err else None
 
     def set_heading(
@@ -87,10 +93,55 @@ class MachCollAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
 
     def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
+        self._refresh_lookup()
+        callsign_key = self._lookup.key_for_callsign(callsign.value)
+        if not callsign_key:
+            return None
+        resp = self._mc_client().get_current_flight_route(callsign_key)
+        _raise_for_no_data(resp)
+        _LOGGER.warning(f"Unhandled data: {resp}")
         raise NotImplementedError
 
     def get_all_properties(self) -> List[AircraftProperties]:
-        raise NotImplementedError
+        self._refresh_lookup()
+        resp = self._mc_client().get_all_flights()
+        _raise_for_no_data(resp)
+
+        props = []
+        # TODO Handle route data
+        for flight in resp:
+            # _LOGGER.debug(f"Flight data:\n{flight}")
+            alt = types.Altitude("FL" + str(flight["levels"]["current"]))
+
+            # TODO Check this is appropriate
+            rfl_val = flight["levels"]["requested"]
+            _LOGGER.debug(f'!!! {flight["levels"]["requested"]}')
+            rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
+
+            # TODO Not currently available: gs, hdg, pos, vs
+            props.append(
+                AircraftProperties(
+                    flight["type"],
+                    alt,
+                    types.Callsign(flight["callsign"]),
+                    types.Altitude("FL" + str(flight["levels"]["cleared"])),
+                    types.GroundSpeed(0),
+                    types.Heading(0),
+                    types.LatLon(0, 0),
+                    rfl,
+                    types.VerticalSpeed(0),
+                )
+            )
+
+        return props
+
+    def _mc_client(self):
+        return self._sim_client.mc_client
+
+    def _refresh_lookup(self, if_set=False):
+        if not self._lookup or if_set:
+            _LOGGER.debug("Recreating CallsignLookup")
+            self._lookup = CallsignLookup(self._mc_client())
 
 
 class MachCollSimulatorControls(AbstractSimulatorControls):
@@ -106,8 +157,8 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def properties(self) -> Union[SimProperties, str]:
         raise NotImplementedError
 
-    def __init__(self, client):
-        self._client = client
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
 
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
@@ -115,55 +166,53 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         raise NotImplementedError
 
     def start(self) -> Optional[str]:
-        resp = self._client.sim_start()
-        if not resp:
-            return "Could not connect to sim"
+        # TODO If agent mode, also pause
+        resp = self._mc_client().sim_start()
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
     def reset(self) -> Optional[str]:
-        resp = self._client.sim_stop()
-        if not resp:
-            return "Could not connect to sim"
+        resp = self._mc_client().sim_stop()
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
     def pause(self) -> Optional[str]:
-        resp = self._client.sim_pause()
-        if not resp:
-            return "Could not connect to sim"
+        resp = self._mc_client().sim_pause()
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
     def resume(self) -> Optional[str]:
-        resp = self._client.sim_resume()
-        if not resp:
-            return "Could not connect to sim"
+        resp = self._mc_client().sim_resume()
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
     def step(self) -> Optional[str]:
-        resp = self._client.set_increment()
-        if not resp:
-            return "Could not connect to sim"
+        resp = self._mc_client().set_increment()
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
     def get_speed(self) -> float:
-        resp = self._client.get_step() if is_agent_mode() else self._client.get_speed()
-        if not resp:
-            raise RuntimeError("Could not connect to sim")
+        resp = (
+            self._mc_client().get_step()
+            if is_agent_mode()
+            else self._mc_client().get_speed()
+        )
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return -1
 
     def set_speed(self, speed: float) -> Optional[str]:
         resp = (
-            self._client.set_step(speed)
+            self._mc_client().set_step(speed)
             if is_agent_mode()
-            else self._client.set_speed(speed)
+            else self._mc_client().set_speed(speed)
         )
-        if not resp:
-            raise RuntimeError("Could not connect to sim")
+        _raise_for_no_data(resp)
         _LOGGER.warning(f"Unhandled data: {resp}")
         return None
 
@@ -180,17 +229,20 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         # yet
         raise NotImplementedError
 
+    def _mc_client(self):
+        return self._sim_client.mc_client
+
 
 class MachCollWaypointControls(AbstractWaypointControls):
     """
     AbstractWaypointControls implementation for MachColl
     """
 
-    def __init__(self, client):
-        self._client = client
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
 
     def get_all_waypoints(self) -> dict:
-        fixes = self._client.get_all_fixes()
+        fixes = self._mc_client().get_all_fixes()
         if not isinstance(fixes, dict):
             raise NotImplementedError(f"get_all_fixes returned: {fixes}")
         # TODO Need to create a mapping
@@ -199,6 +251,9 @@ class MachCollWaypointControls(AbstractWaypointControls):
 
     def define(self, name: str, position: types.LatLon, **kwargs) -> Optional[str]:
         raise NotImplementedError
+
+    def _mc_client(self):
+        return self._sim_client.mc_client
 
 
 class SimClient(AbstractSimClient):
@@ -216,39 +271,40 @@ class SimClient(AbstractSimClient):
 
     @property
     def sim_version(self) -> VersionInfo:
-        return self._host_version
+        return self._client_version
 
     @property
     def waypoints(self) -> AbstractWaypointControls:
         return self._waypoint_controls
 
     def __init__(self, **kwargs):  # pylint: disable=unused-argument
-        self._client = None
-        self._host_version: VersionInfo = None
-        self._sim_controls = MachCollSimulatorControls(self._client)
-        self._aircraft_controls = MachCollAircraftControls(self._client)
-        self._waypoint_controls = MachCollWaypointControls(self._client)
+        self.mc_client = None
+        self._client_version: VersionInfo = None
+        self._sim_controls = MachCollSimulatorControls(self)
+        self._aircraft_controls = MachCollAircraftControls(self)
+        self._waypoint_controls = MachCollWaypointControls(self)
 
     def connect(self, timeout: int = 1) -> None:
-        self._client = MCClient(host=Settings.SIM_HOST, port=Settings.MC_PORT)
+        self.mc_client = MCClient(host=Settings.SIM_HOST, port=Settings.MC_PORT)
 
         # Perform a request to initialise the connection
-        if not self._client.get_state():
+        if not self.mc_client.get_state():
             raise TimeoutError("Could not connect to the MachColl server")
 
         # TODO Get and handle the other versions (server, database, ?)
         # TODO Properly handle the "x.x" version string
-        version_dict = self._client.compare_api_version()
-        self._host_version = VersionInfo.parse(
+        version_dict = self.mc_client.compare_api_version()
+        self._client_version = VersionInfo.parse(
             version_dict["This client version"] + ".0"
         )
+        _LOGGER.debug(f"MCClient connected. Version: {self._client_version}")
 
     def start_timers(self) -> Iterable[Timer]:
         return []
 
     def stop(self, shutdown_sim: bool = False) -> bool:
 
-        if not self._host_version or not shutdown_sim:
+        if not self._client_version or not shutdown_sim:
             return True
 
         raise NotImplementedError("No sim shutdown method implemented")
