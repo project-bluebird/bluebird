@@ -29,6 +29,7 @@ from .time import Time
 # Application control
 from .epinfo import EpInfo
 from .eplog import EpLog
+from .siminfo import SimInfo
 from .simmode import SimMode
 from .shutdown import Shutdown
 
