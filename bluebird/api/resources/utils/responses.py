@@ -4,62 +4,45 @@ Contains utility methods to create Flask responses
 
 
 from http import HTTPStatus
-from typing import Optional, Tuple
+from typing import Optional
 
-from flask import jsonify
-
-from bluebird.settings import Settings
+from flask import jsonify, make_response
 
 
-RespTuple = Tuple[str, HTTPStatus]
-
-
-def internal_err_resp(err: str) -> RespTuple:
+def internal_err_resp(err: str):
     """
     Generates a standard flask error response for a given error
     """
-    return (err, HTTPStatus.INTERNAL_SERVER_ERROR)
+    return make_response(err, HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-def not_found_resp(err: str) -> RespTuple:
+def not_found_resp(err: str):
     """
     Generates a standard NOT_FOUND flask response
     """
-    return (err, HTTPStatus.NOT_FOUND)
+    return make_response(err, HTTPStatus.NOT_FOUND)
 
 
-def ok_resp(data: dict = None) -> RespTuple:
+def ok_resp(data: dict = None):
     """
     Generates a standard response
     """
-    if data:
-        return (jsonify(data), HTTPStatus.OK)
-    return ("", HTTPStatus.OK)
+    body = jsonify(data) if data else ""
+    return make_response(body, HTTPStatus.OK)
 
 
-def not_implemented_resp() -> RespTuple:
-    """
-    Generates a standard response for APIs which are not implemented for the current
-    simulator
-    """
-    return (
-        f"API is not supported for the {Settings.SIM_TYPE.name} simulator",
-        HTTPStatus.NOT_IMPLEMENTED,
-    )
-
-
-def bad_request_resp(msg: str) -> RespTuple:
+def bad_request_resp(msg: str):
     """
     Generates a standard BAD_REQUEST response with the given message
     """
-    return (msg, HTTPStatus.BAD_REQUEST)
+    return make_response(msg, HTTPStatus.BAD_REQUEST)
 
 
-def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK) -> RespTuple:
+def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK):
     """
     Generates a standard response or an INTERNAL_SERVER_ERROR response depending on the
     value of err
     """
     if err:
         return internal_err_resp(err)
-    return ("", code)
+    return make_response("", code)

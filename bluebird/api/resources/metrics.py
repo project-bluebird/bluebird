@@ -12,7 +12,6 @@ from bluebird.api.resources.utils.responses import (
     bad_request_resp,
     not_found_resp,
     ok_resp,
-    RespTuple,
 )
 from bluebird.api.resources.utils.utils import metrics_providers, parse_args
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
@@ -25,10 +24,8 @@ _PARSER.add_argument("provider", type=str, location="args", required=False)
 
 _LOGGER = logging.getLogger(__name__)
 
-
-def _get_provider_by_name(
-    provider_name: str
-) -> Union[RespTuple, AbstractMetricProvider]:
+# -> Union[RespTuple, AbstractMetricProvider]:
+def _get_provider_by_name(provider_name: str):
     if not provider_name:
         return bad_request_resp("Provider name must be specified")
 
@@ -67,7 +64,7 @@ class Metric(Resource):
         # TODO Check behaviour of parse_args with non-required/None
         if "provider" in req_args:
             provider = _get_provider_by_name(req_args["provider"])
-            if isinstance(provider, RespTuple):
+            if not isinstance(provider, AbstractMetricProvider):
                 return provider
 
         args = req_args["args"].split(",") if req_args["args"] else []
