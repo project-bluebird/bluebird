@@ -46,8 +46,9 @@ def setup_sim_client():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
     except ModuleNotFoundError as exc:
-        _LOGGER.info(f"Couldn't import {mod_path}. Check the module exists")
-        raise exc
+        raise ModuleNotFoundError(
+            f"Couldn't import {mod_path}. Check the module exists and is valid"
+        ) from exc
 
     if not hasattr(module, "SimClient") or not issubclass(
         module.SimClient, AbstractSimClient
