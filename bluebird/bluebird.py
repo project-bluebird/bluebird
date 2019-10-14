@@ -27,12 +27,12 @@ class BlueBird:
         )
 
         self._cli_args = args
-        self._sim_client = None
         self._min_sim_version = None
         self._metrics_providers = None
         self._timers = []
 
         self.sim_proxy = None
+        self.sim_client = None
 
     def __enter__(self):
         return self
@@ -47,8 +47,8 @@ class BlueBird:
         for timer in self._timers:
             timer.stop()
 
-        if self._sim_client:
-            self._sim_client.stop()
+        if self.sim_client:
+            self.sim_client.stop()
 
     def setup_sim_client(self):
         """
@@ -56,12 +56,12 @@ class BlueBird:
         :return:
         """
 
-        self._sim_client, self._min_sim_version = setup_sim_client()
-        self.sim_proxy = SimProxy(self._sim_client)
+        self.sim_client, self._min_sim_version = setup_sim_client()
+        self.sim_proxy = SimProxy(self.sim_client)
         self._metrics_providers = setup_metrics()
 
         # TODO What to do here?
-        self._timers.extend(self._sim_client.start_timers())
+        self._timers.extend(self.sim_client.start_timers())
 
     def connect_to_sim(self):
         """
@@ -74,21 +74,21 @@ class BlueBird:
         self._logger.info(f"Attempting to connect to {sim_name} at {Settings.SIM_HOST}")
 
         try:
-            self._sim_client.connect()
+            self.sim_client.connect()
         except TimeoutError:
             self._logger.error(f"Failed to connect to {sim_name}, exiting")
             return False
 
-        if self._sim_client.sim_version < self._min_sim_version:
+        if self.sim_client.sim_version < self._min_sim_version:
             self._logger.error(
-                f"server of version {self._sim_client.sim_version} does not meet the "
+                f"server of version {self.sim_client.sim_version} does not meet the "
                 f"minimum requirement ({self._min_sim_version})"
             )
             return False
 
-        if self._sim_client.sim_version.major > self._min_sim_version.major:
+        if self.sim_client.sim_version.major > self._min_sim_version.major:
             self._logger.error(
-                f"{sim_name} server of version {self._sim_client.sim_version} has major"
+                f"{sim_name} server of version {self.sim_client.sim_version} has major"
                 f"version greater than supported in this version of the client"
                 f"({self._min_sim_version})"
             )
@@ -97,7 +97,7 @@ class BlueBird:
         # TODO: We may want to pre-fetch the list of available aircraft types here
 
         if self._cli_args["reset_sim"]:
-            self._sim_client.reset_sim()
+            self.sim_client.reset_sim()
 
         # self._timers.extend([self.sim_state.start_timer(), self.ac_data.start_timer()])
 
