@@ -20,7 +20,7 @@ from bluebird.utils.timeutils import timeit
 
 # Import BlueSky from the specified path. Should default to the included submodule
 _BS_PATH = os.getenv("BS_PATH", None)
-assert _BS_PATH, "Expected BS_PATH to be set"
+assert _BS_PATH, "Expected BS_PATH to be set. Check the .env file"
 assert os.path.isdir(_BS_PATH) and "bluesky" in os.listdir(
     _BS_PATH
 ), "Expected BS_PATH to point to the root BlueSky directory"
@@ -119,7 +119,7 @@ class BlueSkyClient(Client):
 
         # Fill the cache with the aircraft data
         if name == b"ACDATA":
-            #TODO Ensure correct units (..., vs)
+            # TODO Ensure correct units (..., vs)
             self._logger.warning("ACDATA unhandled")
 
         elif name == b"SIMINFO":

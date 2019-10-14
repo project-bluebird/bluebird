@@ -80,7 +80,7 @@ class SimProxy:
             else self._sim_client.aircraft.get_properties(callsign)
         )
 
-        sim_t = -1  # TODO
+        sim_t = int(self._sim_client.simulation.get_time())
         return (props, sim_t)
 
     def get_all_aircraft_props(self) -> Tuple[List[AircraftProperties], int]:
@@ -90,8 +90,8 @@ class SimProxy:
             if _is_streaming()
             else self._sim_client.aircraft.get_all_properties()
         )
-
-        sim_t = -1  # TODO
+        
+        sim_t = int(self._sim_client.simulation.get_time())
         return (props, sim_t)
 
     def set_cleared_fl(
@@ -113,7 +113,8 @@ class SimProxy:
         if resp:
             return resp
 
-        self._ac_data.set_cleared_fl(callsign, flight_level)
+        #TODO
+        # self._ac_data.set_cleared_fl(callsign, flight_level)
         return None
 
     def pause_sim(self) -> Optional[str]:
@@ -126,6 +127,7 @@ class SimProxy:
         # TODO What else do we need to handle here? (see BlueSky's client class,
         # and old ac_data)
         # ac_data().resume_log()
+        #TODO Start or resume
         err = self._sim_client.simulation.resume()
         return err
 

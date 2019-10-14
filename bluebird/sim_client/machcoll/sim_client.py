@@ -4,9 +4,9 @@ MachColl simulation client class
 
 import logging
 import os
+import sys
 from typing import Iterable, Optional, List, Union
 
-from nats.machine_college.bluebird_if.mc_client import CallsignLookup, MCClient
 from semver import VersionInfo
 
 from bluebird.settings import is_agent_mode, Settings
@@ -20,6 +20,23 @@ import bluebird.utils.types as types
 from bluebird.utils.properties import AircraftProperties, SimProperties
 from bluebird.utils.timer import Timer
 
+# Attempt to import the nats package
+# TODO This should work with both the package installation from pip, or from the package
+# root as specified in MC_PATH. Not sure which should be the default.
+try:
+    from nats.machine_college.bluebird_if.mc_client import MCClient, CallsignLookup
+except ModuleNotFoundError:
+    _MC_PATH = os.getenv("MC_PATH", None)
+    assert _MC_PATH, "Expected MC_PATH to be set. Check the .env file"
+    assert os.path.isdir(_MC_PATH) and "nats" in os.listdir(
+        _MC_PATH
+    ), "Expected MC_PATH to point to the root nats directory"
+    sys.path.append(_MC_PATH)
+    from nats.machine_college.bluebird_if.mc_client import MCClient, CallsignLookup
+
+# Debug only
+# from .old.interface.mc_client import MCClient, CallsignLookup
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,8 +48,7 @@ MIN_SIM_VERSION = VersionInfo.parse(_MC_MIN_VERSION)
 
 
 def _raise_for_no_data(data):
-    if not data:
-        raise ValueError("No response received from the simulator")
+    assert data, "No data received from the simulator"
 
 
 class MachCollAircraftControls(AbstractAircraftControls):
@@ -51,7 +67,11 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
-        err = self._mc_client().set_cfl(callsign, flight_level.flight_levels)
+        self._refresh_lookup()
+        callsign_key = self._lookup.key_for_callsign(callsign.value)
+        if not callsign_key:
+            return None
+        err = self._mc_client().set_cfl(callsign_key, flight_level.flight_levels)
         return str(err) if err else None
 
     def set_heading(
@@ -95,11 +115,14 @@ class MachCollAircraftControls(AbstractAircraftControls):
         callsign_key = self._lookup.key_for_callsign(callsign.value)
         if not callsign_key:
             return None
-        resp = self._mc_client().get_current_flight_route(callsign_key)
-        _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        raise NotImplementedError
 
+        # TODO Currently have to get all the props and just return the one we want
+        data = self.get_all_properties()
+
+        flight = next(x for x in data if x.callsign == callsign)
+        return flight
+
+    # TODO This should really return a dict keyed by callsign
     def get_all_properties(self) -> List[AircraftProperties]:
         self._refresh_lookup()
         resp = self._mc_client().get_all_flights()
@@ -108,12 +131,10 @@ class MachCollAircraftControls(AbstractAircraftControls):
         props = []
         # TODO Handle route data
         for flight in resp:
-            # _LOGGER.debug(f"Flight data:\n{flight}")
             alt = types.Altitude("FL" + str(flight["levels"]["current"]))
 
             # TODO Check this is appropriate
             rfl_val = flight["levels"]["requested"]
-            _LOGGER.debug(f'!!! {flight["levels"]["requested"]}')
             rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
 
             # TODO Not currently available: gs, hdg, pos, vs
@@ -163,36 +184,39 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     ) -> Optional[str]:
         raise NotImplementedError
 
+    # TODO Assert state is as expected after all of these methods (should be in the
+    # response)
     def start(self) -> Optional[str]:
         # TODO If agent mode, also pause
         resp = self._mc_client().sim_start()
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+        return None if self._is_success(resp) else str(resp)
 
     def reset(self) -> Optional[str]:
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+        return None if self._is_success(resp) else str(resp)
 
     def pause(self) -> Optional[str]:
         resp = self._mc_client().sim_pause()
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+        return None if self._is_success(resp) else str(resp)
 
     def resume(self) -> Optional[str]:
-        resp = self._mc_client().sim_resume()
+        state = self._mc_client().get_state()
+        assert state
+        if state == "stopped":
+            resp = self._mc_client().sim_start()
+        else:
+            resp = self._mc_client().sim_resume()
+
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+        return None if self._is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
         resp = self._mc_client().set_increment()
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+        return None if self._is_success(resp) else str(resp)
 
     def get_speed(self) -> float:
         resp = (
@@ -227,8 +251,21 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         # yet
         raise NotImplementedError
 
+    def get_time(self) -> float:
+        resp = self._mc_client().get_time()
+        _raise_for_no_data(resp)
+        return resp
+
     def _mc_client(self):
         return self._sim_client.mc_client
+
+    @staticmethod
+    def _is_success(data) -> bool:
+        try:
+            return data["code"]["Short Description"] == "Success"
+        except:
+            pass
+        return False
 
 
 class MachCollWaypointControls(AbstractWaypointControls):

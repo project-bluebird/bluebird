@@ -250,6 +250,10 @@ class AbstractSimulatorControls(ABC):
 		:return:
 		"""
 
+    @abstractmethod
+    def get_time(self) -> float:
+        pass
+
     # TODO Add info on supported ranges for seed (may differ between sim
     # implementations, but needs to be fixed for the external API)
     @abstractmethod
