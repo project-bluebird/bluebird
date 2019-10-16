@@ -176,6 +176,10 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def properties(self) -> Union[SimProperties, str]:
         raise NotImplementedError
 
+    @property
+    def scenario_name(self) -> Optional[str]:
+        raise NotImplementedError
+    
     def __init__(self, sim_client):
         self._sim_client = sim_client
 

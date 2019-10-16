@@ -151,6 +151,13 @@ class AbstractSimulatorControls(ABC):
         error
         """
 
+    @property
+    @abstractmethod
+    def scenario_name(self) -> Optional[str]:
+        """        
+        :return: The name of the currently
+        """
+
     @abstractmethod
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
