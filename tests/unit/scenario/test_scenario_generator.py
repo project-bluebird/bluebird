@@ -148,3 +148,12 @@ def test_serialisation(x_target):
 
     #print(serialised)
 
+# def test_write_json_scenario(x_target):
+#     # Test JSON serialisation to file.
+#
+#     arrival_rate = 5 / 60 # Five arrivals per minute on average
+#     duration = 10 * 60 # Ten minute scenario
+#     seed = 74
+#     scenario = x_target.poisson_scenario(arrival_rate = arrival_rate, duration = duration, seed = seed)
+#
+#     x_target.write_json_scenario(scenario = scenario, filename = "x_sector_hell_poisson_scenario")

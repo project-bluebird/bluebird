@@ -8,7 +8,14 @@ import time
 import numpy as np
 import sys
 
+from json import dump
+
+import os.path
+
 import bluebird.scenario.sector_element as se
+
+# CONSTANTS
+JSON_EXTENSION = "json"
 
 # JSON keys
 CALLSIGN_KEY = "callsign"
@@ -102,7 +109,7 @@ class ScenarioGenerator():
                            for callsign, aircraft_type, start_time, current_flight_level,
                                cleared_flight_level, requested_flight_level, route_index
                            in zip(callsigns, aircraft_types, start_times, current_flight_levels,
-                              cleared_flight_levels, requested_flight_levels, route_indices)]
+                                  cleared_flight_levels, requested_flight_levels, route_indices)]
         }
         return ret
 
@@ -175,3 +182,14 @@ class ScenarioGenerator():
             raise Exception('Empty interrarival times. Try increasing scenario duration and/or arrival rate.')
 
         return interarrival_times
+
+    def write_json_scenario(self, scenario, filename, path="."):
+
+        extension = os.path.splitext(filename)[1]
+        if extension.upper() != JSON_EXTENSION:
+            filename = filename + "." + JSON_EXTENSION
+
+        file = os.path.join(path, filename)
+
+        with open(file, 'w') as f:
+            dump(scenario, f)
