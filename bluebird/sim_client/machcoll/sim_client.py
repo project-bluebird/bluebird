@@ -174,11 +174,17 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
     @property
     def properties(self) -> Union[SimProperties, str]:
-        raise NotImplementedError
+        # TODO: Error handling
+        state = self._mc_client().get_state()
+        speed = self._mc_client().get_speed()
+        step_size = self._mc_client().get_step()
+        time = self._mc_client().get_time()
+        scn_name = self._mc_client().get_scenario_filename()
 
-    @property
-    def scenario_name(self) -> Union[str, Dict]:
-        return self._mc_client().get_scenario_filename()
+        try:
+            return SimProperties(state, speed, step_size, time, scn_name)
+        except Exception as exc:
+            return str(exc)
 
     def __init__(self, sim_client):
         self._sim_client = sim_client

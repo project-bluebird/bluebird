@@ -151,13 +151,6 @@ class AbstractSimulatorControls(ABC):
         error
         """
 
-    @property
-    @abstractmethod
-    def scenario_name(self) -> Union[str, Dict]:
-        """        
-        :return: The name of the current scenario, or an error response as a Dict
-        """
-
     @abstractmethod
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False

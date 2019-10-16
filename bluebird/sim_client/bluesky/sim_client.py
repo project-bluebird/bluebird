@@ -145,10 +145,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         # TODO This may be difficult to get from the stack command
         raise NotImplementedError
 
-    @property
-    def scenario_name(self) -> Union[str, Dict]:
-        raise NotImplementedError
-
     def __init__(self, sim_client):
         self._sim_client = sim_client
 

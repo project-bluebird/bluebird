@@ -10,7 +10,7 @@ from bluebird.api.resources.utils.responses import (
     ok_resp,
     internal_err_resp,
 )
-from bluebird.api.resources.utils.utils import parse_args, sim_client, sim_proxy
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 from bluebird.settings import is_agent_mode
 
 
@@ -31,7 +31,7 @@ class Ic(Resource):
         Gets the current scenario (file)name
         """
 
-        scn_name = sim_client().simulation.scenario_name
+        scn_name = sim_proxy().sim_properties.scn_name
 
         return (
             ok_resp({"scn_name": scn_name})

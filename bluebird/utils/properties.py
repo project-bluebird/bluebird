@@ -100,10 +100,9 @@ class SimState(IntEnum):
 
 @dataclass(frozen=True)
 class SimProperties:
-    sim_state: SimState
-    sim_speed: float
-    sim_dt: float
-    sim_t: float
-    sim_utc: datetime  # TODO Not sure if this is needed
-    ac_count: int
+    state: SimState
+    speed: float
+    step_size: float
+    time: float
+    # time_utc: datetime  # TODO Not sure if this is needed
     scn_name: str
