@@ -342,6 +342,13 @@ class SimClient(AbstractSimClient):
         )
         _LOGGER.debug(f"MCClient connected. Version: {self._client_version}")
 
+        # TODO What to do with this? Ideally we shouldn't need to check this and any
+        # version incompatibilities should result in a rejected connection
+        _LOGGER.warning(
+            "MCClient server client version: "
+            f'{version_dict["Latest client version on server"]}'
+        )
+
     def start_timers(self) -> Iterable[Timer]:
         return []
 
