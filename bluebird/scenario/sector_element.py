@@ -11,8 +11,13 @@ from shapely.geometry import LineString
 
 from functools import partial
 
+from geojson import dump
+
+import os.path
+
 # CONSTANTS
 ELLIPSOID = "WGS84"
+GEOJSON_EXTENSION = "geojson"
 
 # JSON keys
 FEATURES_KEY = "features"
@@ -154,3 +159,13 @@ class SectorElement():
         return transform(partial(self.projection, inverse=True), geom)
 
 
+    def write_geojson(self, filename, path = "."):
+
+        extension = os.path.splitext(filename)[1]
+        if extension.upper() != GEOJSON_EXTENSION:
+            filename = filename + "." + GEOJSON_EXTENSION
+
+        file = os.path.join(path, filename)
+
+        with open(file, 'w') as f:
+            dump(self, f)

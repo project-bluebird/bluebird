@@ -102,4 +102,9 @@ def test_serialisation(x_element):
     assert isinstance(deserialised, dict)
     assert list(deserialised.keys()) == [se.FEATURES_KEY]
 
-    print(serialised)
+    # print(serialised)
+
+# def test_write_geojson(x_element):
+#     # Test JSON serialisation/deserialisation.
+#
+#     x_element.write_geojson(filename = "x_sector_hell")
