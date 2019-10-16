@@ -3,8 +3,8 @@ import pytest
 
 import bluebird.scenario.scenario_parser as sp
 
-import bluebird.scenario.sector_element as se
 import bluebird.scenario.scenario_generator as sg
+import bluebird.scenario.sector_element as se
 
 # geoJSON sector obtained by calling geojson.dumps() on an X-shaped SectorElement.
 i_sector_geojson = """
@@ -29,11 +29,6 @@ def test_features(target):
     # The X-shaped sector contains 14 features: 4 routes, 9 waypoints and 1 geometry.
     assert len(result) == 4 + 9 + 1
 
-
-def test_properties_features(target):
-
-    result = target.properties_features()
-    #print(result)
 
 def test_fix_features(target):
 
@@ -486,4 +481,3 @@ geojson_full = """{"type": "FeatureCollection",
     "latitude": 52.78982234612336,
     "longitude": -0.12750000000000017,
     "type": "FIX"}}]}"""
-

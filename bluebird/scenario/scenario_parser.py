@@ -1,6 +1,4 @@
 
-import sys
-
 import bluebird.scenario.sector_element as se
 import bluebird.scenario.scenario_generator as sg
 
@@ -8,7 +6,7 @@ import time
 import os.path
 import json
 import geojson
-import jmespath as jp
+import jsonpath_rw_ext as jp
 
 from pyproj import Geod
 
@@ -50,27 +48,16 @@ class ScenarioParser:
     def features(self):
         return self.sector[se.FEATURES_KEY]
 
-    def geometry_features(self):
-        expression = jp.compile(se.FEATURES_KEY + '[*].' + se.GEOMETRY_KEY)
-        return expression.search(self.sector)
-
-    def properties_features(self):
-        expression = jp.compile(se.FEATURES_KEY + '[*].' + se.PROPERTIES_KEY)
-        return expression.search(self.sector)
-
-    def aircraft_routes(self):
-        expression = jp.compile(sg.AIRCRAFT_KEY + '[*].' + sg.ROUTE_KEY)
-        return expression.search(self.scenario)
-
     def fix_features(self):
         """
         Filters the features to retain those with 'type': 'FIX'.
         Returns a list of dictionaries.
         """
-        expression = jp.compile(se.FEATURES_KEY + '[*].' + se.PROPERTIES_KEY + '.' + se.TYPE_KEY)
-        fix_types = expression.search(self.sector)
 
-        return list(compress(self.properties_features(), [fix_type == se.FIX_VALUE for fix_type in fix_types]))
+        return [
+            properties for properties in jp.match("$..{}".format(se.PROPERTIES_KEY), self.sector)
+            if properties[se.TYPE_KEY] == se.FIX_VALUE
+            ]
 
     def define_waypoint_lines(self):
         """
@@ -202,10 +189,11 @@ class ScenarioParser:
         Parses the JSON scenario definition to extract the route JSON element for the given aircraft.
         :param callsign: an aircraft callsign
         """
-        expression = jp.compile('aircraft[*].callsign')
-        callsigns = expression.search(self.scenario)
 
-        matches = list(compress(self.aircraft_routes(), [cs == callsign for cs in callsigns]))
+        matches = [
+            aircraft[sg.ROUTE_KEY] for aircraft in jp.match("$..{}".format(sg.AIRCRAFT_KEY), self.scenario)[0]
+            if aircraft[sg.CALLSIGN_KEY] == callsign
+            ]
 
         if len(matches) != 1:
             raise ValueError(f'Invalid callsign: {callsign}')
@@ -261,4 +249,3 @@ class ScenarioParser:
         fwd_azimuth,back_azimuth,distance = geodesic.inv(from_lat, from_long, to_lat, to_long)
 
         return fwd_azimuth
-
