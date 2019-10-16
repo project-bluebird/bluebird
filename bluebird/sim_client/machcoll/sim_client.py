@@ -182,7 +182,15 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
     ) -> Optional[str]:
-        raise NotImplementedError
+        _LOGGER.debug(f"Loading {scenario_name}")
+        _LOGGER.warning(f"Unhandled arguments: speed, start_paused")
+        resp = self._mc_client().set_scenario_filename(scenario_name)
+        # TODO Check this is as expected. MCClient docstring suggests that an error
+        # response will be returned on failure, however currently None is returned on
+        # failure and the scenario name is passed back on success
+        if not resp:
+            return "Error: No confirmation received from MachColl"
+        return None
 
     # TODO Assert state is as expected after all of these methods (should be in the
     # response)
@@ -256,7 +264,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         _raise_for_no_data(resp)
         return resp
 
-    def _mc_client(self):
+    def _mc_client(self) -> MCClient:
         return self._sim_client.mc_client
 
     @staticmethod
