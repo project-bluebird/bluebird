@@ -3,8 +3,8 @@ import pytest
 
 import geojson
 
-import sector_shape as ss
-import sector_element as se
+import bluebird.scenario.sector_shape as ss
+import bluebird.scenario.sector_element as se
 
 @pytest.fixture(scope="function")
 def i_element():

@@ -8,7 +8,7 @@ import time
 import numpy as np
 import sys
 
-import sector_element as se
+import bluebird.scenario.sector_element as se
 
 # JSON keys
 CALLSIGN_KEY = "callsign"

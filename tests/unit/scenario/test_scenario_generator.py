@@ -3,9 +3,9 @@ import pytest
 
 import json
 
-import scenario_generator as sg
-import sector_element as se
-import sector_shape as ss
+import bluebird.scenario.scenario_generator as sg
+import bluebird.scenario.sector_shape as ss
+import bluebird.scenario.sector_element as se
 
 @pytest.fixture(scope="function")
 def x_target():

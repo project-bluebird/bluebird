@@ -1,13 +1,10 @@
 
 import pytest
 
-import scenario_parser as sp
+import bluebird.scenario.scenario_parser as sp
 
-import sys
-sys.path.insert(1, '../ixy_scenarios')
-
-import sector_element as se
-import scenario_generator as sg
+import bluebird.scenario.sector_element as se
+import bluebird.scenario.scenario_generator as sg
 
 # geoJSON sector obtained by calling geojson.dumps() on an X-shaped SectorElement.
 i_sector_geojson = """

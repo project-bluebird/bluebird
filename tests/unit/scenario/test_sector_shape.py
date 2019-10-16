@@ -1,54 +1,53 @@
 
 import pytest
 
-import sector_shape
-
+import bluebird.scenario.sector_shape as ss
 
 def test_sector_type():
 
-    i = sector_shape.IShape()
-    assert i.sector_type == sector_shape.SectorType.I
+    i = ss.IShape()
+    assert i.sector_type == ss.SectorType.I
 
-    x = sector_shape.XShape()
-    assert x.sector_type == sector_shape.SectorType.X
+    x = ss.XShape()
+    assert x.sector_type == ss.SectorType.X
 
-    y = sector_shape.YShape()
-    assert y.sector_type == sector_shape.SectorType.Y
+    y = ss.YShape()
+    assert y.sector_type == ss.SectorType.Y
 
     # Test immutability of the sector_type
     with pytest.raises(Exception):
-        i.sector_type = sector_shape.SectorType.X
+        i.sector_type = ss.SectorType.X
 
-    assert i.sector_type == sector_shape.SectorType.I
+    assert i.sector_type == ss.SectorType.I
 
 
 def test_i_fixes():
 
     fix_names = ['a', 'b', 'c', 'd', 'e']
-    i = sector_shape.IShape(fix_names=fix_names)
+    i = ss.IShape(fix_names=fix_names)
     assert list(i.fixes.keys()) == [fix_name.upper() for fix_name in fix_names]
 
     with pytest.raises(ValueError):
-        sector_shape.IShape(fix_names = ['a', 'b', 'c'])
+        ss.IShape(fix_names = ['a', 'b', 'c'])
 
 
 def test_x_fixes():
 
     fix_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-    x = sector_shape.XShape(fix_names=fix_names)
+    x = ss.XShape(fix_names=fix_names)
     assert list(x.fixes.keys()) == [fix_name.upper() for fix_name in fix_names]
 
 
 def test_y_fixes():
 
     fix_names = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-    y = sector_shape.YShape(fix_names=fix_names)
+    y = ss.YShape(fix_names=fix_names)
     assert list(y.fixes.keys()) == [fix_name.upper() for fix_name in fix_names]
 
 def test_i_routes():
 
     length_nm = 10
-    i = sector_shape.IShape(length_nm=length_nm)
+    i = ss.IShape(length_nm=length_nm)
     result = i.routes()
 
     # There are two routes: ascending/descending along the y-axis.
@@ -78,7 +77,7 @@ def test_i_routes():
 def test_x_routes():
 
     length_nm = 10
-    x = sector_shape.XShape(length_nm=length_nm)
+    x = ss.XShape(length_nm=length_nm)
     result = x.routes()
 
     # There are four routes: ascending/descending in the y-coordinate and ascending/descending in the x-coordinate.
@@ -113,7 +112,7 @@ def test_y_routes():
 
 def test_i_named_routes():
 
-    i = sector_shape.IShape()
+    i = ss.IShape()
 
     result = i.named_routes()
     assert isinstance(result, dict)
