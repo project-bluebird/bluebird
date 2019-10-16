@@ -4,7 +4,7 @@ BlueSky simulation client class
 
 import logging
 import os
-from typing import Optional, Iterable, List, Union
+from typing import Optional, Iterable, List, Union, Dict
 
 from semver import VersionInfo
 
@@ -146,7 +146,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         raise NotImplementedError
 
     @property
-    def scenario_name(self) -> Optional[str]:
+    def scenario_name(self) -> Union[str, Dict]:
         raise NotImplementedError
 
     def __init__(self, sim_client):

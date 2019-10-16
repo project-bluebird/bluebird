@@ -4,8 +4,13 @@ Provides logic for the IC (initial condition) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
-from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.api.resources.utils.responses import (
+    bad_request_resp,
+    checked_resp,
+    ok_resp,
+    internal_err_resp,
+)
+from bluebird.api.resources.utils.utils import parse_args, sim_client, sim_proxy
 from bluebird.settings import is_agent_mode
 
 
@@ -18,6 +23,21 @@ class Ic(Resource):
     """
     IC (initial condition) command
     """
+
+    # TODO Update API.md
+    @staticmethod
+    def get():
+        """
+        Gets the current scenario (file)name
+        """
+
+        scn_name = sim_client().simulation.scenario_name
+
+        return (
+            ok_resp({"scn_name": scn_name})
+            if isinstance(scn_name, str)
+            else internal_err_resp(str(scn_name))
+        )
 
     @staticmethod
     def post():

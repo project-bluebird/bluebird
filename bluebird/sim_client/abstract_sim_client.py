@@ -3,7 +3,7 @@ Contains the AbstractSimClient class
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Union, List
+from typing import Iterable, Optional, Union, List, Dict
 
 from semver import VersionInfo
 
@@ -153,9 +153,9 @@ class AbstractSimulatorControls(ABC):
 
     @property
     @abstractmethod
-    def scenario_name(self) -> Optional[str]:
+    def scenario_name(self) -> Union[str, Dict]:
         """        
-        :return: The name of the currently
+        :return: The name of the current scenario, or an error response as a Dict
         """
 
     @abstractmethod

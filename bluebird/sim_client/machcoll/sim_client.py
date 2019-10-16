@@ -5,7 +5,7 @@ MachColl simulation client class
 import logging
 import os
 import sys
-from typing import Iterable, Optional, List, Union
+from typing import Iterable, Optional, List, Union, Dict
 
 from semver import VersionInfo
 
@@ -177,9 +177,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         raise NotImplementedError
 
     @property
-    def scenario_name(self) -> Optional[str]:
-        raise NotImplementedError
-    
+    def scenario_name(self) -> Union[str, Dict]:
+        return self._mc_client().get_scenario_filename()
+
     def __init__(self, sim_client):
         self._sim_client = sim_client
 
