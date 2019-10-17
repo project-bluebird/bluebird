@@ -3,13 +3,14 @@ Contains the BlueBird class
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
 from bluebird.settings import Settings
 from bluebird.sim_client import setup_sim_client
+from bluebird.sim_client.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.sim_proxy import SimProxy
 
 
@@ -32,7 +33,7 @@ class BlueBird:
         self._timers = []
 
         self.sim_proxy = None
-        self.sim_client = None
+        self.sim_client: Optional[AbstractSimClient] = None
 
     def __enter__(self):
         return self
@@ -97,9 +98,11 @@ class BlueBird:
         # TODO: We may want to pre-fetch the list of available aircraft types here
 
         if self._cli_args["reset_sim"]:
-            self.sim_client.reset_sim()
+            err = self.sim_client.simulation.reset()
+            if err:
+                raise RuntimeError(f"Could not reset sim on startup: {err}")
 
-        # self._timers.extend([self.sim_state.start_timer(), self.ac_data.start_timer()])
+        # self._timers.extend([self.sim_state.start_timer(), self.ac_data.start_timer()]
 
         return True
 
