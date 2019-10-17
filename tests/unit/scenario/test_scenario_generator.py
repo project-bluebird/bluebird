@@ -11,10 +11,9 @@ import bluebird.scenario.sector_element as se
 def x_target():
     """Test fixture: a scenario generator operating on an X-shaped sector element."""
 
-    name = "xshape"
+    name = "HELL"
     origin = (51.5, -0.1275)
-    fix_names = ['sin', 'gates', 'siren', 'witch', 'abyss', 'haunt', 'limbo', 'demon', 'satan']
-    shape = ss.XShape(fix_names = fix_names)
+    shape = ss.XShape()
     lower_limit = 140
     upper_limit = 400
     x_sector = se.SectorElement(name, origin, shape, lower_limit, upper_limit)
