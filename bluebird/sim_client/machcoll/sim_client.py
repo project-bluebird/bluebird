@@ -5,7 +5,7 @@ MachColl simulation client class
 import logging
 import os
 import sys
-from typing import Iterable, Optional, List, Union, Dict
+from typing import Iterable, Optional, List, Union
 
 from semver import VersionInfo
 
@@ -17,8 +17,10 @@ from bluebird.sim_client.abstract_sim_client import (
     AbstractSimClient,
 )
 import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties, SimProperties
+from bluebird.utils.properties import AircraftProperties, SimProperties, SimState
 from bluebird.utils.timer import Timer
+
+_LOGGER = logging.getLogger(__name__)
 
 # Attempt to import the nats package
 # TODO This should work with both the package installation from pip, or from the package
@@ -26,6 +28,10 @@ from bluebird.utils.timer import Timer
 try:
     from nats.machine_college.bluebird_if.mc_client import MCClient, CallsignLookup
 except ModuleNotFoundError:
+    _LOGGER.warning(
+        "Could not find the nats package in the current path. Attempting to look in "
+        "MC_PATH instead"
+    )
     _MC_PATH = os.getenv("MC_PATH", None)
     assert _MC_PATH, "Expected MC_PATH to be set. Check the .env file"
     assert os.path.isdir(_MC_PATH) and "nats" in os.listdir(
@@ -34,11 +40,6 @@ except ModuleNotFoundError:
     sys.path.append(_MC_PATH)
     from nats.machine_college.bluebird_if.mc_client import MCClient, CallsignLookup
 
-# Debug only
-# from .old.interface.mc_client import MCClient, CallsignLookup
-
-
-_LOGGER = logging.getLogger(__name__)
 
 _MC_MIN_VERSION = os.getenv("MC_MIN_VERSION")
 if not _MC_MIN_VERSION:
