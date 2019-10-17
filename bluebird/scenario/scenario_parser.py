@@ -326,6 +326,7 @@ class ScenarioParser:
         to_lat = to_properties[se.LATITUDE_KEY]
         to_long = to_properties[se.LONGITUDE_KEY]
 
-        fwd_azimuth,back_azimuth,distance = geodesic.inv(from_lat, from_long, to_lat, to_long)
+        # Note: order of arguments is long, lat.
+        fwd_azimuth,back_azimuth,distance = geodesic.inv(from_long, from_lat, to_long, to_lat)
 
         return fwd_azimuth

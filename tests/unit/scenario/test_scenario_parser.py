@@ -91,10 +91,13 @@ def test_waypoint_properties(target):
 
 def test_bearing(target):
 
-    assert target.bearing(from_waypoint = "WITCH", to_waypoint="SIREN") < 1
-    assert target.bearing(from_waypoint = "SIREN", to_waypoint="WITCH") + 180 < 1
-    assert 90 - target.bearing(from_waypoint = "LIMBO", to_waypoint="HAUNT") < 1
-    assert target.bearing(from_waypoint = "HAUNT", to_waypoint="LIMBO") + 90 < 1
+    # WITCH is the left exterior and SIREN the left interior waypoint.
+    assert target.bearing(from_waypoint = "WITCH", to_waypoint="SIREN") - 90 < 1
+    assert target.bearing(from_waypoint = "SIREN", to_waypoint="WITCH") + 90 < 1
+
+    # LIMBO is the bottom exterior and HAUNT the bottom interior waypoint.
+    assert abs(target.bearing(from_waypoint = "LIMBO", to_waypoint="HAUNT")) < 1
+    assert abs(target.bearing(from_waypoint = "HAUNT", to_waypoint="LIMBO")) - 180 < 1
 
 
 def test_route(target):
