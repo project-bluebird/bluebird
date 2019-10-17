@@ -3,7 +3,7 @@ Contains the AbstractSimClient class
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Union, List, Dict
+from typing import Iterable, Optional, Union, List
 
 from semver import VersionInfo
 

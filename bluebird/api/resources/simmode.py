@@ -51,7 +51,7 @@ class SimMode(Resource):
                 )
 
         elif Settings.SIM_MODE == SimMode_prop.Sandbox:
-            err = sim_proxy().resume_sim()
+            err = sim_proxy().start_or_resume_sim()
             if err:
                 return responses.internal_err_resp(
                     f"Could not resume sim when changing mode: {err}"

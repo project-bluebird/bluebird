@@ -174,16 +174,35 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
     @property
     def properties(self) -> Union[SimProperties, str]:
-        # TODO: Error handling
-        state = self._mc_client().get_state()
-        speed = self._mc_client().get_speed()
-        step_size = self._mc_client().get_step()
-        time = self._mc_client().get_time()
-        scn_name = self._mc_client().get_scenario_filename()
+        # TODO: This results in a request for each property. Can we construct a request
+        # for multiple properties at once?
+
+        responses = []
+        for req in [
+            self._mc_client().get_state,
+            self._mc_client().get_speed,
+            self._mc_client().get_step,
+            self._mc_client().get_time,
+        ]:
+            responses.append(req())
+            if not responses[-1]:
+                return f"Could not get property from sim ({req.__name__})"
+
+        responses[0] = self._parse_sim_state(responses[0])
+        if not isinstance(responses[0], SimState):
+            return f"Could not parse the sim state value: {responses[0]}"
+
+        # Different type returned on failure, have to handle separately
+        responses.append(self._mc_client().get_scenario_filename())
+        if not isinstance(responses[-1], str):
+            return f"Could not get the current scenario name: {responses[-1]}"
 
         try:
-            return SimProperties(state, speed, step_size, time, scn_name)
-        except Exception as exc:
+            assert len(responses) == len(
+                SimProperties.__annotations__  # pylint: disable=no-member
+            )
+            return SimProperties(*responses)  # Splat!
+        except Exception as exc:  # pylint: disable=broad-except
             return str(exc)
 
     def __init__(self, sim_client):
@@ -284,6 +303,19 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         except:
             pass
         return False
+
+    @staticmethod
+    def _parse_sim_state(val) -> Union[SimState, str]:
+        # TODO There is also a possible "stepping" mode (?)
+        if val.lower() == "init":
+            return SimState.INIT
+        if val.lower() == "running":
+            return SimState.RUN
+        if val.lower() == "stopped":
+            return SimState.END
+        if val.lower() == "paused":
+            return SimState.HOLD
+        return f"Unknown state: {val}"
 
 
 class MachCollWaypointControls(AbstractWaypointControls):

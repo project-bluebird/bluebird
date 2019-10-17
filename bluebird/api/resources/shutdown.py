@@ -27,10 +27,9 @@ class Shutdown(Resource):
 
         req_args = parse_args(_PARSER)
 
-        sim_quit_msg = ""
-        if req_args.get("stop_sim", False):
-            sim_quit = sim_proxy().stop_sim(shutdown_sim=True)
-            sim_quit_msg = f". (Sim exited ok: {sim_quit})"
+        shutdown_sim = req_args.get("stop_sim", False)
+        sim_quit = sim_proxy().stop_client(shutdown_sim=shutdown_sim)
+        sim_quit_msg = f". (Sim exited ok: {sim_quit})"
 
         try:
             # TODO Check we still get a response before this executes. If not, need to

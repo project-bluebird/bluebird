@@ -25,13 +25,13 @@ class SimInfo(Resource):
             return internal_err_resp(traceback.format_exc())
 
         data = {
-            "sim_state": sim_props.state,
-            "sim_speed": sim_props.speed,
-            "step_size": sim_props.step_size,
-            "sim_time": sim_props.time,
             "callsigns": callsigns,
-            "scn_name": sim_props.scn_name,
             "mode": Settings.SIM_MODE.name,
+            "scn_name": sim_props.scn_name,
+            "sim_speed": sim_props.speed,
+            "sim_state": sim_props.state.name,
+            "sim_time": sim_props.time,
+            "step_size": sim_props.step_size,
         }
 
         return ok_resp(data)

@@ -20,6 +20,6 @@ class Op(Resource):
         :return:
         """
 
-        err = sim_proxy().resume_sim()
+        err = sim_proxy().start_or_resume_sim()
 
         return checked_resp(err)

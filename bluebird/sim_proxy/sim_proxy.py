@@ -10,7 +10,7 @@ from bluebird.sim_client.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.aircraft_data_cache import AircraftDataCache
 from bluebird.settings import Settings
 from bluebird.utils.types import Altitude, Callsign, LatLon
-from bluebird.utils.properties import AircraftProperties, SimProperties
+from bluebird.utils.properties import AircraftProperties, SimProperties, SimState
 from bluebird.utils.timer import Timer
 
 
@@ -23,7 +23,12 @@ def _is_streaming():
 
 class SimProxy:
     """
-    Class for handling and routing requests to the simulator client
+    Class for handling and routing requests to the simulator client.
+
+    Note that the API layer is free to use the sim client directly, however this class
+    can be used as a passthrough in order to redcue calls to the simulator (if in
+    streaming mode and using the AircraftDataCache) or for handling any commands which
+    require special processing before the request is passed to the simulator
     """
 
     def __init__(self, sim_client: AbstractSimClient):
@@ -90,7 +95,7 @@ class SimProxy:
             if _is_streaming()
             else self._sim_client.aircraft.get_all_properties()
         )
-        
+
         sim_t = int(self._sim_client.simulation.get_time())
         return (props, sim_t)
 
@@ -113,36 +118,64 @@ class SimProxy:
         if resp:
             return resp
 
-        #TODO
+        # TODO
         # self._ac_data.set_cleared_fl(callsign, flight_level)
         return None
+
+    def start_or_resume_sim(self) -> Optional[str]:
+        # TODO What else do we need to handle here? (see BlueSky's client class,
+        # and old ac_data)
+        # ac_data().resume_log()
+
+        props = self._sim_client.simulation.properties
+        if isinstance(props, str):
+            return props
+
+        err = None
+        if props.state == SimState.INIT:
+            err = self._sim_client.simulation.resume()
+        elif props.state == SimState.HOLD:
+            err = self._sim_client.simulation.start()
+        elif props.state == SimState.END:
+            err = "Invalid initial state. Sim is stopped"
+
+        return err
 
     def pause_sim(self) -> Optional[str]:
         # TODO What else do we need to handle here? (see BlueSky's client class)
         # ac_data().set_log_rate(0)
-        err = self._sim_client.simulation.pause()
-        return err
 
-    def resume_sim(self) -> Optional[str]:
-        # TODO What else do we need to handle here? (see BlueSky's client class,
-        # and old ac_data)
-        # ac_data().resume_log()
-        #TODO Start or resume
-        err = self._sim_client.simulation.resume()
+        props = self._sim_client.simulation.properties
+        if isinstance(props, str):
+            return props
+
+        if props.state == SimState.RUN:
+            err = self._sim_client.simulation.pause()
+        elif props.state == SimState.HOLD:
+            err = None
+        else:
+            err = f"Invalid initial state: {props.state.name}"
+
         return err
 
     def reset_sim(self) -> Optional[str]:
         # TODO What else do we need to handle here? (see BlueSky's client class)
         # - Clear all data
         # - Stop episode logging
-        # - reset sim state to "init"
-        err = self._sim_client.simulation.reset()
-        return err
 
-    def stop_sim(self, shutdown_sim: bool = False) -> bool:
-        # TODO What else to do here?
-        shutdown_ok = self._sim_client.stop(shutdown_sim)
-        return shutdown_ok
+        props = self._sim_client.simulation.properties
+        if isinstance(props, str):
+            return props
+
+        return (
+            self._sim_client.simulation.reset()
+            if props.state == SimState.RUN or props.state == SimState.HOLD
+            else f"Invalid initial state: {props.state.name}"
+        )
+
+    def stop_client(self, shutdown_sim: bool = False) -> bool:
+        # TODO What else to do here? - Maybe close logging?
+        return self._sim_client.stop(shutdown_sim)
 
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
@@ -165,23 +198,26 @@ class SimProxy:
 
     @property
     def sim_properties(self) -> SimProperties:
+        """
+        :return: The current sim properties, either from the proxy value or from a sim
+        request
+        """
+
         props = (
             self._sim_props
             if _is_streaming()
             else self._sim_client.simulation.properties
         )
 
-        # TODO Probably a better way of doing this
         if not isinstance(props, SimProperties):
-            err_str = "Couldn't get a value for SimProperties"
-            if isinstance(props, str):
-                err_str += f"({props})"
-            raise AttributeError(err_str)
+            raise RuntimeError(f"Could not get the sim properties: {props}")
 
         return props
 
     def set_sim_speed(self, speed: float) -> Optional[str]:
+
         err = self._sim_client.simulation.set_speed(speed)
+
         if err:
             return err
 
