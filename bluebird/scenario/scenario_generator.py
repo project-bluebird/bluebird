@@ -192,4 +192,4 @@ class ScenarioGenerator():
         file = os.path.join(path, filename)
 
         with open(file, 'w') as f:
-            dump(scenario, f)
+            dump(scenario, f, indent = 4)
