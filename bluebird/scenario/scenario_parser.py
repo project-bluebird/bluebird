@@ -14,7 +14,7 @@ from pyproj import Geod
 from itertools import compress, chain
 
 BS_PROMPT = ">"
-BS_DEFWPT_PREFIX = "00:00:00.00" + BS_PROMPT
+BS_DEFWPT_PREFIX = "00:00:00.00" + BS_PROMPT # TODO: replace this with a generic (not DEFWPT) prefix.
 BS_POLY = "POLYALT"
 BS_DEFINE_WAYPOINT = "DEFWPT"
 BS_CREATE_AIRCRAFT = "CRE"
@@ -24,10 +24,6 @@ BS_ADD_WAYPOINT = "ADDWPT"
 BS_ASAS_OFF = "ASAS OFF"
 BS_PAN = "PAN"
 BS_SCENARIO_EXTENSION = "scn"
-
-# CONSTANTS
-CHECK_POS_DELAY = 1
-ADD_WAYPOINT_DELAY = 2
 
 class ScenarioParser:
     """A parser of geoJSON sectors and JSON scenarios for translation into BlueSky format"""
@@ -164,25 +160,6 @@ class ScenarioParser:
                 for start_time, callsign, aircraft_type, lat, lon, heading, flight_level, speed
                 in zip(start_times, callsigns, aircraft_types, latitudes, longitudes, headings, flight_levels, speeds)]
 
-    def aircraft_position_lines(self):
-        """
-        Parses a JSON scenario definition for aircraft information and returns a list of POS commands of the form:
-        f'HH:MM:SS.00>POS {callsign}'
-        """
-
-        aircraft = self.scenario[sg.AIRCRAFT_KEY]
-        callsigns = [ac[sg.CALLSIGN_KEY] for ac in aircraft]
-
-        # Wait for ADD_WAYPOINT_DELAY second after aircraft creation before adding waypoints.
-        aircraft_start_times = [self.aircraft_start_time(callsign) for callsign in callsigns]
-        check_pos_times = [t + timedelta(seconds = CHECK_POS_DELAY) for t in aircraft_start_times]
-
-        start_times = [t.strftime("%H:%M:%S") + ".00" for t in check_pos_times]
-
-        return [f'{start_time}{BS_PROMPT}{BS_AIRCRAFT_POSITION} {callsign}'
-                for start_time, callsign
-                in zip(start_times, callsigns)]
-
     def define_waypoint_lines(self):
         """
         Parses a geoJSON sector definition for waypoint information and returns a list of BlueSky DEFWPT commands
@@ -225,8 +202,8 @@ class ScenarioParser:
 
         aircraft_start_time = self.aircraft_start_time(callsign)
 
-        # Wait for ADD_WAYPOINT_DELAY second after aircraft creation before adding waypoints.
-        add_waypoint_time = aircraft_start_time + timedelta(seconds = ADD_WAYPOINT_DELAY)
+        # Wait for 1 second after aircraft creation before adding waypoints to its route.
+        add_waypoint_time = aircraft_start_time + timedelta(seconds = 1)
         start_time = add_waypoint_time.strftime("%H:%M:%S") + ".00"
 
         route = self.route(callsign)
@@ -270,18 +247,19 @@ class ScenarioParser:
 
     def all_lines(self):
         """
-        Returns a list containing all lines in the BlueSky scenario.
+        Returns a list containing all lines in the BlueSky scenario, sorted by timestamp.
         """
 
-        ret = []
-        ret.extend(self.polyalt_lines())
-        ret.extend(self.define_waypoint_lines())
-        ret.extend(self.create_aircraft_lines())
-        # Include POS commands before ADDWPT commands else BlueSky fails to find the aircraft (an upstream bug).
-        ret.extend(self.aircraft_position_lines())
-        ret.extend(self.add_waypoint_lines())
-        ret.extend(self.asas_off_lines())
-        return ret
+        lines = []
+        lines.extend(self.polyalt_lines())
+        lines.extend(self.define_waypoint_lines())
+        lines.extend(self.create_aircraft_lines())
+        lines.extend(self.add_waypoint_lines())
+        lines.extend(self.asas_off_lines())
+
+        # Sort lines by timestamp only (*not* the whole line else waypoints are added in incorrect order).
+        # BlueSky expects this and will behave erratically if they're not properly sorted.
+        return sorted(lines, key = lambda x : x[:len(BS_DEFWPT_PREFIX)])
 
     def write_bluesky_scenario(self, filename, path = "."):
 
