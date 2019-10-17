@@ -15,7 +15,7 @@ from itertools import compress, chain
 
 BS_PROMPT = ">"
 BS_DEFWPT_PREFIX = "00:00:00.00" + BS_PROMPT
-BS_POLY = "POLY"
+BS_POLY = "POLYALT"
 BS_DEFINE_WAYPOINT = "DEFWPT"
 BS_CREATE_AIRCRAFT = "CRE"
 BS_FLIGHT_LEVEL = "FL"
@@ -326,6 +326,7 @@ class ScenarioParser:
         to_lat = to_properties[se.LATITUDE_KEY]
         to_long = to_properties[se.LONGITUDE_KEY]
 
-        fwd_azimuth,back_azimuth,distance = geodesic.inv(from_lat, from_long, to_lat, to_long)
+        # Note: order of arguments is long, lat.
+        fwd_azimuth,back_azimuth,distance = geodesic.inv(from_long, from_lat, to_long, to_lat)
 
         return fwd_azimuth

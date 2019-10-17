@@ -50,7 +50,8 @@ class SectorElement():
         self.name = name
 
         # Construct the proj-string (see https://proj.org/usage/quickstart.html)
-        proj_string = f'+proj=stere +lat_0={origin[0]} +lon_0={origin[1]} +k=1 +x_0=0 +y_0=0 +ellps={ELLIPSOID} +units=m +no_defs'
+        # Note the unit kmi is "International Nautical Mile" (for full list run $ proj -lu).
+        proj_string = f'+proj=stere +lat_0={origin[0]} +lon_0={origin[1]} +k=1 +x_0=0 +y_0=0 +ellps={ELLIPSOID} +units=kmi +no_defs'
 
         self.projection = Proj(proj_string, preserve_units=True)
         self.shape = shape
