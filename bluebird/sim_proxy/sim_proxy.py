@@ -126,6 +126,8 @@ class SimProxy:
         # TODO What else do we need to handle here? (see BlueSky's client class,
         # and old ac_data)
         # ac_data().resume_log()
+        # TODO For BlueSky && if in agent mode, also pause. Check if we can't just step
+        # straight from "init" first though
 
         props = self._sim_client.simulation.properties
         if isinstance(props, str):
@@ -167,6 +169,11 @@ class SimProxy:
         if isinstance(props, str):
             return props
 
+        if props.state == SimState.INIT:
+            return ""
+
+        # TODO The transition from "stopped" to "init" appears to be disallowed
+        # (for MachColl)
         return (
             self._sim_client.simulation.reset()
             if props.state == SimState.RUN or props.state == SimState.HOLD

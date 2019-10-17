@@ -222,10 +222,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             return "Error: No confirmation received from MachColl"
         return None
 
-    # TODO Assert state is as expected after all of these methods (should be in the
-    # response)
     def start(self) -> Optional[str]:
-        # TODO If agent mode, also pause
         resp = self._mc_client().sim_start()
         _raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
@@ -391,6 +388,11 @@ class SimClient(AbstractSimClient):
             "MCClient server client version: "
             f'{version_dict["Latest client version on server"]}'
         )
+
+        # Reset the initial step size        
+        resp = self.mc_client.set_step(1)
+        if resp != 1:
+            raise RuntimeError(f"Could not reset the step size on connection: {resp}")
 
     def start_timers(self) -> Iterable[Timer]:
         return []
