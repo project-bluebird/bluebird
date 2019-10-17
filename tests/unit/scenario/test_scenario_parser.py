@@ -30,6 +30,17 @@ def test_features(target):
     assert len(result) == 4 + 9 + 1
 
 
+def test_features_of_type(target):
+
+    # Get the (singleton) list of sector features.
+    result = target.features_of_type(se.SECTOR_VALUE)
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+
+    assert isinstance(result[0], dict)
+    assert sorted(result[0].keys()) == sorted([se.NAME_KEY, se.LOWER_LIMIT_KEY, se.UPPER_LIMIT_KEY, se.TYPE_KEY, se.ROUTES_KEY])
+
 def test_fix_features(target):
 
     result = target.fix_features()
@@ -39,6 +50,22 @@ def test_fix_features(target):
     for fix in result:
         assert isinstance(fix, dict)
         assert sorted(fix.keys()) == sorted([se.LATITUDE_KEY, se.LONGITUDE_KEY, se.TYPE_KEY, se.NAME_KEY])
+
+def test_polygon_geometries(target):
+
+    result = target.polygon_geometries()
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert isinstance(result[0], dict)
+
+
+def test_polyalt_lines(target):
+
+    result = target.polyalt_lines()
+
+    assert isinstance(result, list)
+
 
 def test_define_waypoint_lines(target):
 
@@ -52,6 +79,7 @@ def test_define_waypoint_lines(target):
     for x in result:
         assert x[0:len(sp.BS_DEFWPT_PREFIX)] == sp.BS_DEFWPT_PREFIX
         assert x[len(sp.BS_DEFWPT_PREFIX):(len(sp.BS_DEFWPT_PREFIX) + len(sp.BS_DEFINE_WAYPOINT))] == sp.BS_DEFINE_WAYPOINT
+
 
 def test_waypoint_properties(target):
 
@@ -113,6 +141,11 @@ def test_add_waypoint_lines(target):
     # The test scenario contains 3 aircraft and each route contains 5 waypoints, including the initial position,
     # we expect 4 add waypoint commands per aircraft.
     assert len(result) == 3 * 4
+
+
+def test_write_bluesky_scenario(target):
+
+    target.write_bluesky_scenario(filename = "x_sector_parsed_scenario")
 
 
 geojson_full = """{"type": "FeatureCollection",

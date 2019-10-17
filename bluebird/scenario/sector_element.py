@@ -40,6 +40,7 @@ FEATURE_VALUE = "Feature"
 SECTOR_VALUE = "SECTOR"
 FIX_VALUE = "FIX"
 ROUTE_VALUE = "ROUTE"
+POLYGON_VALUE = "Polygon"
 
 class SectorElement():
     """An elemental sector of airspace"""
