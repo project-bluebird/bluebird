@@ -95,7 +95,7 @@ def test_geo_interface(i_element):
 def test_serialisation(x_element):
     # Test JSON serialisation/deserialisation.
 
-    serialised = geojson.dumps(x_element, sort_keys=True)
+    serialised = geojson.dumps(x_element, sort_keys=True, indent = 4)
 
     deserialised = geojson.loads(serialised)
 

@@ -170,4 +170,4 @@ class SectorElement():
         file = os.path.join(path, filename)
 
         with open(file, 'w') as f:
-            dump(self, f)
+            dump(self, f, indent = 4)
