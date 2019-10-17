@@ -2,7 +2,7 @@
 import bluebird.scenario.sector_element as se
 import bluebird.scenario.scenario_generator as sg
 
-import time
+from datetime import datetime, timedelta
 import os.path
 import numpy as np
 import json
@@ -18,11 +18,16 @@ BS_DEFWPT_PREFIX = "00:00:00.00" + BS_PROMPT
 BS_POLY = "POLYALT"
 BS_DEFINE_WAYPOINT = "DEFWPT"
 BS_CREATE_AIRCRAFT = "CRE"
+BS_AIRCRAFT_POSITION = "POS"
 BS_FLIGHT_LEVEL = "FL"
 BS_ADD_WAYPOINT = "ADDWPT"
 BS_ASAS_OFF = "ASAS OFF"
 BS_PAN = "PAN"
 BS_SCENARIO_EXTENSION = "scn"
+
+# CONSTANTS
+CHECK_POS_DELAY = 1
+ADD_WAYPOINT_DELAY = 2
 
 class ScenarioParser:
     """A parser of geoJSON sectors and JSON scenarios for translation into BlueSky format"""
@@ -139,13 +144,13 @@ class ScenarioParser:
     def create_aircraft_lines(self):
         """
         Parses a JSON scenario definition for aircraft information and returns a list of CRE commands of the form:
-        f'HH:MM:SS.00>CRE {callsign} {aircraft_type} {lat} {lon} {heading} {flight_level} {knots}
+        f'HH:MM:SS.00>CRE {callsign} {aircraft_type} {lat} {lon} {heading} {flight_level} {knots}'
         """
 
-        start_time = self.scenario[sg.START_TIME_KEY] + ".00"
-
         aircraft = self.scenario[sg.AIRCRAFT_KEY]
+
         callsigns = [ac[sg.CALLSIGN_KEY] for ac in aircraft]
+        start_times = [self.aircraft_start_time(callsign).strftime("%H:%M:%S") + ".00" for callsign in callsigns]
         aircraft_types = [ac[sg.TYPE_KEY] for ac in aircraft]
 
         # TODO: round lat/longs to 6 d.p.
@@ -156,8 +161,27 @@ class ScenarioParser:
         speeds = [ScenarioParser.default_speed] * len(aircraft) # TODO. Not given in the JSON. Need to infer from aircraft type. Temporarily set all to the default speed.
 
         return [f'{start_time}{BS_PROMPT}{BS_CREATE_AIRCRAFT} {callsign} {aircraft_type} {lat} {lon} {heading} {flight_level} {speed}'
-                for callsign, aircraft_type, lat, lon, heading, flight_level, speed
-                in zip(callsigns, aircraft_types, latitudes, longitudes, headings, flight_levels, speeds)]
+                for start_time, callsign, aircraft_type, lat, lon, heading, flight_level, speed
+                in zip(start_times, callsigns, aircraft_types, latitudes, longitudes, headings, flight_levels, speeds)]
+
+    def aircraft_position_lines(self):
+        """
+        Parses a JSON scenario definition for aircraft information and returns a list of POS commands of the form:
+        f'HH:MM:SS.00>POS {callsign}'
+        """
+
+        aircraft = self.scenario[sg.AIRCRAFT_KEY]
+        callsigns = [ac[sg.CALLSIGN_KEY] for ac in aircraft]
+
+        # Wait for ADD_WAYPOINT_DELAY second after aircraft creation before adding waypoints.
+        aircraft_start_times = [self.aircraft_start_time(callsign) for callsign in callsigns]
+        check_pos_times = [t + timedelta(seconds = CHECK_POS_DELAY) for t in aircraft_start_times]
+
+        start_times = [t.strftime("%H:%M:%S") + ".00" for t in check_pos_times]
+
+        return [f'{start_time}{BS_PROMPT}{BS_AIRCRAFT_POSITION} {callsign}'
+                for start_time, callsign
+                in zip(start_times, callsigns)]
 
     def define_waypoint_lines(self):
         """
@@ -199,7 +223,11 @@ class ScenarioParser:
         where {flight_level} is optional.
         """
 
-        start_time = self.scenario[sg.START_TIME_KEY] + ".00"
+        aircraft_start_time = self.aircraft_start_time(callsign)
+
+        # Wait for ADD_WAYPOINT_DELAY second after aircraft creation before adding waypoints.
+        add_waypoint_time = aircraft_start_time + timedelta(seconds = ADD_WAYPOINT_DELAY)
+        start_time = add_waypoint_time.strftime("%H:%M:%S") + ".00"
 
         route = self.route(callsign)
 
@@ -249,6 +277,8 @@ class ScenarioParser:
         ret.extend(self.polyalt_lines())
         ret.extend(self.define_waypoint_lines())
         ret.extend(self.create_aircraft_lines())
+        # Include POS commands before ADDWPT commands else BlueSky fails to find the aircraft (an upstream bug).
+        ret.extend(self.aircraft_position_lines())
         ret.extend(self.add_waypoint_lines())
         ret.extend(self.asas_off_lines())
         return ret
@@ -264,21 +294,28 @@ class ScenarioParser:
             for item in self.all_lines():
                 f.write("%s\n" % item)
 
+    def aircraft_property(self, callsign, property_key):
+        """
+        Parses the JSON scenario definition to extract a particular JSON element for the given aircraft.
+        :param callsign: an aircraft callsign
+        """
+
+        ret = [aircraft[property_key] for aircraft in jp.match("$..{}".format(sg.AIRCRAFT_KEY), self.scenario)[0]
+            if aircraft[sg.CALLSIGN_KEY] == callsign]
+
+        if len(ret) != 1:
+            raise Exception("Expected a single aircraft property {property_key} for aircraft {callsign}. Found {len(ret)}.")
+
+        return ret[0]
+
     def route(self, callsign):
         """
         Parses the JSON scenario definition to extract the route JSON element for the given aircraft.
         :param callsign: an aircraft callsign
         """
 
-        matches = [
-            aircraft[sg.ROUTE_KEY] for aircraft in jp.match("$..{}".format(sg.AIRCRAFT_KEY), self.scenario)[0]
-            if aircraft[sg.CALLSIGN_KEY] == callsign
-        ]
+        return self.aircraft_property(callsign = callsign, property_key = sg.ROUTE_KEY)
 
-        if len(matches) != 1:
-            raise ValueError(f'Invalid callsign: {callsign}')
-
-        return matches[0]
 
     def aircraft_initial_positions(self, latitudes = True):
         """Get the latitudes (or longitudes) of all aircraft in the scenario"""
@@ -296,18 +333,33 @@ class ScenarioParser:
         """Get the properties of a waypoint by name"""
 
         fixes = self.fix_features()
-        matches = [fix for fix in fixes if fix[se.NAME_KEY] == name]
+        matching_fixes = [fix for fix in fixes if fix[se.NAME_KEY] == name]
 
-        if len(matches) != 1:
+        if len(matching_fixes) != 1:
             raise ValueError(f'Invalid waypoint name: {name}')
 
-        return matches[0]
+        return matching_fixes[0]
+
+    def aircraft_start_time(self, callsign):
+        """
+        Returns the datetime object representing the given aircraft's *absolute* start time.
+        """
+
+        # Get the *relative* aircraft start times (in seconds).
+        aircraft_start_time = self.aircraft_property(callsign = callsign, property_key = sg.START_TIME_KEY)
+
+        # Get the scenario start time as a datetime.
+        scenario_start_time = datetime.strptime(self.scenario[sg.START_TIME_KEY], "%H:%M:%S")
+
+        # Return the *absolute* aircraft start time.
+        return scenario_start_time + timedelta(seconds = aircraft_start_time)
+
 
     def aircraft_headings(self):
 
         aircraft = self.scenario[sg.AIRCRAFT_KEY]
-        from_waypoints = [ac[sg.START_POSITION_KEY] for ac in aircraft]
 
+        from_waypoints = [ac[sg.START_POSITION_KEY] for ac in aircraft]
         # To find the to_waypoints, use the *second* waypoint on each aircraft's route.
         to_waypoints = [self.route(ac[sg.CALLSIGN_KEY])[1][sg.ROUTE_ELEMENT_NAME_KEY] for ac in aircraft]
 

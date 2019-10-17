@@ -122,10 +122,9 @@ def test_create_aircraft_lines(target):
 
     # All create aircraft commands begin with "HH:MM:SS.00>CRE"
     for x in result:
-        assert x[0:len(sp.BS_DEFWPT_PREFIX)] == sp.BS_DEFWPT_PREFIX
         assert x[len(sp.BS_DEFWPT_PREFIX):(len(sp.BS_DEFWPT_PREFIX) + len(sp.BS_CREATE_AIRCRAFT))] == sp.BS_CREATE_AIRCRAFT
 
-    # print(result)
+    # TODO: check aircraft start times.
 
 
 def test_add_aircraft_waypoint_lines(target):
@@ -148,7 +147,7 @@ def test_add_waypoint_lines(target):
 
 def test_write_bluesky_scenario(target):
 
-    target.write_bluesky_scenario(filename = "x_sector_parsed_scenario_test", path = "/Users/thobson/Documents/temp")
+    target.write_bluesky_scenario(filename = "x_sector_parsed_scenario_test")
 
 
 geojson_full = """{"type": "FeatureCollection",
