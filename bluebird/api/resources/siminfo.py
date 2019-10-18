@@ -2,8 +2,6 @@
 SimInfo endpoint
 """
 
-import traceback
-
 from flask_restful import Resource
 
 from bluebird.api.resources.utils.responses import ok_resp, internal_err_resp
@@ -15,14 +13,13 @@ class SimInfo(Resource):
     @staticmethod
     def get():
 
-        # TODO Better error handling
         try:
             sim_props = sim_proxy().sim_properties
             callsigns = [
                 str(x.callsign) for x in sim_proxy().get_all_aircraft_props()[0]
             ]
-        except Exception:
-            return internal_err_resp(traceback.format_exc())
+        except Exception as exc:
+            return internal_err_resp(f"Error reading data from sim: {exc}")
 
         data = {
             "callsigns": callsigns,

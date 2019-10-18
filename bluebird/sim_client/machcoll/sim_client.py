@@ -305,8 +305,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             else self._mc_client().set_speed(speed)
         )
         _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return None
+
+        _LOGGER.warning(f"Unhandled data {resp}")
+        return None if (resp == speed) else f"Unknown response: {resp}"
 
     def upload_new_scenario(
         self, scn_name: str, content: Iterable[str]
