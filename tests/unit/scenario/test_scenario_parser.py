@@ -60,10 +60,15 @@ def test_polygon_geometries(target):
     assert isinstance(result[0], dict)
 
 
+def test_pan_lines(target):
+
+    result = target.pan_lines()
+    assert isinstance(result, list)
+
+
 def test_polyalt_lines(target):
 
     result = target.polyalt_lines()
-
     assert isinstance(result, list)
 
 

@@ -10,6 +10,7 @@ import geojson
 import jsonpath_rw_ext as jp
 
 from pyproj import Geod
+import shapely.geometry as geom
 
 from itertools import compress, chain
 
@@ -90,6 +91,28 @@ class ScenarioParser:
 
         return self.geometries_of_type(type_value = se.POLYGON_VALUE)
 
+    def sector_polygon(self):
+
+        polygons = self.polygon_geometries()
+        if len(polygons) != 1:
+            raise Exception("Expected precisely one polygon; found {len(polygons)} polygons.")
+        return polygons[0]
+
+    def sector_centroid(self):
+        """
+        Returns the centroid of the sector polygon.
+        :return: a shapely.geometry.point.Point object representing the centroid of the sector.
+        """
+
+        # Determine the centroid of the sector polygon.
+        coords = self.sector_polygon()[se.COORDINATES_KEY]
+
+        while len(coords) == 1:
+            coords = coords[0]
+
+        polygon = geom.Polygon(coords)
+        return polygon.centroid
+
     def polyalt_lines(self):
         """
         Parses a geoJSON sector definition for sector polygon & altitude information and returns a list
@@ -106,10 +129,7 @@ class ScenarioParser:
             raise Exception("Expected precisely one sector; found {len(sectors)} sectors.")
         sector = sectors[0]
 
-        polygons = self.polygon_geometries()
-        if len(polygons) != 1:
-            raise Exception("Expected precisely one polygon; found {len(polygons)} polygons.")
-        polygon = polygons[0]
+        polygon = self.sector_polygon()
 
         sector_name = sector[se.NAME_KEY]
         upper_limit = BS_FLIGHT_LEVEL + str(sector[se.UPPER_LIMIT_KEY][0])
@@ -237,10 +257,10 @@ class ScenarioParser:
         00:00:00.00>PAN {lat} {long}
         """
 
-        # TODO. This requires determining the centroid of the sector polygon.
+        centroid_coords = self.sector_centroid().coords[0]
 
-        latitude = 0
-        longitude = 0
+        latitude = centroid_coords[1]
+        longitude = centroid_coords[0]
 
         start_time = self.scenario[sg.START_TIME_KEY] + ".00"
         return [f'{start_time}{BS_PROMPT}{BS_PAN} {latitude} {longitude}']
@@ -251,6 +271,7 @@ class ScenarioParser:
         """
 
         lines = []
+        lines.extend(self.pan_lines())
         lines.extend(self.polyalt_lines())
         lines.extend(self.define_waypoint_lines())
         lines.extend(self.create_aircraft_lines())
