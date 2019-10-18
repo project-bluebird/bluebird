@@ -3,7 +3,7 @@ Contains the AbstractSimClient class
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Union, List
+from typing import Iterable, Optional, Union, List, Dict
 
 from semver import VersionInfo
 
@@ -25,6 +25,11 @@ class AbstractAircraftControls(ABC):
         is not enabled
         :return:
         """
+    
+    @property
+    @abstractmethod
+    def routes(self) -> Dict[types.Callsign, List]:
+        pass
 
     @abstractmethod
     def set_cleared_fl(

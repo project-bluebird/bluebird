@@ -5,7 +5,7 @@ MachColl simulation client class
 import logging
 import os
 import sys
-from typing import Iterable, Optional, List, Union
+from typing import Iterable, Optional, List, Union, Dict
 
 from semver import VersionInfo
 
@@ -52,6 +52,23 @@ def _raise_for_no_data(data):
     assert data, "No data received from the simulator"
 
 
+_lookup = None
+
+
+def _refresh_lookup(mc_client, if_set=False):
+    global _lookup  # Yes, I know
+    if not _lookup or if_set:
+        _LOGGER.debug("Recreating CallsignLookup")
+        _lookup = CallsignLookup(mc_client)
+
+
+def _is_success(data) -> bool:
+    try:
+        return data["code"]["Short Description"] == "Success"
+    except:  # KeyError, ...
+        return False
+
+
 class MachCollAircraftControls(AbstractAircraftControls):
     """
     AbstractAircraftControls implementation for MachColl
@@ -61,6 +78,17 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def stream_data(self) -> List[AircraftProperties]:
         raise NotImplementedError
 
+    @property
+    def routes(self) -> Dict[types.Callsign, Dict]:
+        resp = self._mc_client().get_all_flights()
+        _raise_for_no_data(resp)
+
+        routes = {}
+        for flight in resp:
+            callsign = types.Callsign(flight["callsign"])
+            routes[callsign] = flight["route"]
+        return routes
+
     def __init__(self, sim_client):
         self._sim_client = sim_client
         self._lookup = None
@@ -68,12 +96,14 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
-        self._refresh_lookup()
-        callsign_key = self._lookup.key_for_callsign(callsign.value)
+
+        _refresh_lookup(self._mc_client())
+        callsign_key = _lookup.key_for_callsign(callsign.value)
         if not callsign_key:
             return None
-        err = self._mc_client().set_cfl(callsign_key, flight_level.flight_levels)
-        return str(err) if err else None
+
+        resp = self._mc_client().set_cfl(callsign_key, flight_level.flight_levels[2:])
+        return None if _is_success(resp) else str(resp)
 
     def set_heading(
         self, callsign: types.Callsign, heading: types.Heading
@@ -112,25 +142,27 @@ class MachCollAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
 
     def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
-        self._refresh_lookup()
-        callsign_key = self._lookup.key_for_callsign(callsign.value)
-        if not callsign_key:
-            return None
+        _refresh_lookup(self._mc_client())
+
+        # TODO Fix callsign lookup
+        # callsign_key = _lookup.key_for_callsign(callsign.value)
+        # if not callsign_key:
+        #     _LOGGER.debug(f"Could not get key for callsign {callsign}")
+        #     return None
 
         # TODO Currently have to get all the props and just return the one we want
         data = self.get_all_properties()
 
-        flight = next(x for x in data if x.callsign == callsign)
+        flight = next((x for x in data if x.callsign == callsign), None)
         return flight
 
     # TODO This should really return a dict keyed by callsign
     def get_all_properties(self) -> List[AircraftProperties]:
-        self._refresh_lookup()
+        _refresh_lookup(self._mc_client())
         resp = self._mc_client().get_all_flights()
         _raise_for_no_data(resp)
 
         props = []
-        # TODO Handle route data
         for flight in resp:
             alt = types.Altitude("FL" + str(flight["levels"]["current"]))
 
@@ -157,11 +189,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     def _mc_client(self):
         return self._sim_client.mc_client
-
-    def _refresh_lookup(self, if_set=False):
-        if not self._lookup or if_set:
-            _LOGGER.debug("Recreating CallsignLookup")
-            self._lookup = CallsignLookup(self._mc_client())
 
 
 class MachCollSimulatorControls(AbstractSimulatorControls):
@@ -220,22 +247,30 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         # failure and the scenario name is passed back on success
         if not resp:
             return "Error: No confirmation received from MachColl"
+
+        _refresh_lookup(self._mc_client())  # Refresh on reload
         return None
 
     def start(self) -> Optional[str]:
         resp = self._mc_client().sim_start()
         _raise_for_no_data(resp)
-        return None if self._is_success(resp) else str(resp)
+        return None if _is_success(resp) else str(resp)
 
     def reset(self) -> Optional[str]:
+        props = self.properties
+        if isinstance(props, str):
+            return props
+        if props.state == SimState.INIT or props.state == SimState.END:
+            return None
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
-        return None if self._is_success(resp) else str(resp)
+        _refresh_lookup(self._mc_client())  # Refresh on reset(?)
+        return None if _is_success(resp) else str(resp)
 
     def pause(self) -> Optional[str]:
         resp = self._mc_client().sim_pause()
         _raise_for_no_data(resp)
-        return None if self._is_success(resp) else str(resp)
+        return None if _is_success(resp) else str(resp)
 
     def resume(self) -> Optional[str]:
         state = self._mc_client().get_state()
@@ -246,12 +281,12 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             resp = self._mc_client().sim_resume()
 
         _raise_for_no_data(resp)
-        return None if self._is_success(resp) else str(resp)
+        return None if _is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
         resp = self._mc_client().set_increment()
         _raise_for_no_data(resp)
-        return None if self._is_success(resp) else str(resp)
+        return None if _is_success(resp) else str(resp)
 
     def get_speed(self) -> float:
         resp = (
@@ -293,14 +328,6 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
     def _mc_client(self) -> MCClient:
         return self._sim_client.mc_client
-
-    @staticmethod
-    def _is_success(data) -> bool:
-        try:
-            return data["code"]["Short Description"] == "Success"
-        except:
-            pass
-        return False
 
     @staticmethod
     def _parse_sim_state(val) -> Union[SimState, str]:
@@ -389,10 +416,11 @@ class SimClient(AbstractSimClient):
             f'{version_dict["Latest client version on server"]}'
         )
 
-        # Reset the initial step size        
-        resp = self.mc_client.set_step(1)
-        if resp != 1:
-            raise RuntimeError(f"Could not reset the step size on connection: {resp}")
+        # TODO Need to check mode - can't do this when running or paused(?)
+        # # Reset the initial step size
+        # resp = self.mc_client.set_step(1)
+        # if resp != 1:
+        #     raise RuntimeError(f"Could not reset the step size on connection: {resp}")
 
     def start_timers(self) -> Iterable[Timer]:
         return []

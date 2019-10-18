@@ -4,7 +4,11 @@ Provides logic for the POS (position) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import bad_request_resp, ok_resp
+from bluebird.api.resources.utils.responses import (
+    bad_request_resp,
+    internal_err_resp,
+    ok_resp,
+)
 from bluebird.api.resources.utils.utils import (
     CALLSIGN_LABEL,
     parse_args,
@@ -20,7 +24,7 @@ _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=Fa
 
 class Pos(Resource):
     """
-    BlueSky POS (position) command
+    POS (position) command
     """
 
     @staticmethod
@@ -33,9 +37,14 @@ class Pos(Resource):
         req_args = parse_args(_PARSER)
         callsign = req_args[CALLSIGN_LABEL]
 
+        # TODO Check units
+
         # TODO Update API docs
         if not callsign:
-            props, sim_t = sim_proxy().get_all_aircraft_props()
+            try:
+                props, sim_t = sim_proxy().get_all_aircraft_props()
+            except AssertionError as exc:
+                return internal_err_resp(f"Error reading data from sim: {exc}")
             if not props:
                 return bad_request_resp("No aircraft in the simulation")
 
@@ -51,7 +60,7 @@ class Pos(Resource):
             return bad_request_resp(f"Aircraft {callsign} was not found")
 
         props, sim_t = sim_proxy().get_aircraft_props(callsign)
-        
+
         data = {**convert(props), "sim_t": sim_t}
 
         return ok_resp(data)

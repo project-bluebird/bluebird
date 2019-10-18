@@ -6,7 +6,11 @@ import logging
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import internal_err_resp, bad_request_resp
+from bluebird.api.resources.utils.responses import (
+    internal_err_resp,
+    ok_resp,
+    bad_request_resp,
+)
 from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
 from bluebird.utils.types import Callsign
 
@@ -15,6 +19,10 @@ _LOGGER = logging.getLogger(__name__)
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
+
+
+# req_args = parse_args(_PARSER)
+# callsign = req_args[CALLSIGN_LABEL]
 
 
 class ListRoute(Resource):
@@ -33,10 +41,12 @@ class ListRoute(Resource):
         req_args = parse_args(_PARSER)
         callsign = req_args[CALLSIGN_LABEL]
 
-        # TODO Refactor this - how do we want to handle aircraft routes in BlueBird?
-        props = sim_proxy().get_aircraft_props(callsign)
-        if not props:
+        if not sim_proxy().contains(callsign):
             return bad_request_resp(f"Aircraft {callsign} was not found")
 
-        # TODO
-        return internal_err_resp("Not implemented")
+        route = sim_proxy().get_aircraft_route(callsign)
+        if isinstance(route, str):
+            return internal_err_resp(route)
+
+        return ok_resp({CALLSIGN_LABEL: callsign.value, "route": route})
+

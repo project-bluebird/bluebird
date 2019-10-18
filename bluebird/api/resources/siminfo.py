@@ -31,6 +31,7 @@ class SimInfo(Resource):
             "sim_speed": sim_props.speed,
             "sim_state": sim_props.state.name,
             "sim_time": sim_props.time,
+            "sim_type": Settings.SIM_TYPE.name,
             "step_size": sim_props.step_size,
         }
 

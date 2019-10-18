@@ -3,7 +3,7 @@ Contains the SimProxy class
 """
 
 import logging
-from typing import Optional, Tuple, List, Iterable, Union
+from typing import Optional, Tuple, List, Iterable, Union, Dict
 
 from bluebird.logging import store_local_scn
 from bluebird.sim_client.abstract_sim_client import AbstractSimClient
@@ -14,13 +14,14 @@ from bluebird.utils.properties import AircraftProperties, SimProperties, SimStat
 from bluebird.utils.timer import Timer
 
 
-def _is_streaming():
+def _is_streaming() -> bool:
     """
     Checks if the streaming option is enabled
     """
     return Settings.STREAM_ENABLE
 
 
+# TODO Refactor to match abstract_sim_client - maybe use the same ABC?
 class SimProxy:
     """
     Class for handling and routing requests to the simulator client.
@@ -43,6 +44,9 @@ class SimProxy:
 
         self._sim_client: AbstractSimClient = sim_client
         self._ac_data = AircraftDataCache()
+
+        # Simple cache of aircraft routes
+        self._routes : Dict[Callsign, List]= {}
 
         # TODO What do we need this for?
         self._seed = None
@@ -98,6 +102,16 @@ class SimProxy:
 
         sim_t = int(self._sim_client.simulation.get_time())
         return (props, sim_t)
+
+    def get_aircraft_route(self, callsign: Callsign) -> Union[List, str]:
+        if not self._routes:
+            self._routes = self._sim_client.aircraft.routes
+
+        return (
+            self._routes[callsign]
+            if callsign in self._routes
+            else f"Could not find aircraft {callsign}"
+        )
 
     def set_cleared_fl(
         self, callsign: Callsign, flight_level: Altitude, **kwargs
@@ -172,6 +186,8 @@ class SimProxy:
         if props.state == SimState.INIT:
             return ""
 
+        self._routes = {}
+
         # TODO The transition from "stopped" to "init" appears to be disallowed
         # (for MachColl)
         return (
@@ -201,7 +217,12 @@ class SimProxy:
         err = self._sim_client.simulation.load_scenario(
             scenario_name, speed, start_paused
         )
-        return err
+
+        if err:
+            return err
+
+        self._routes = {}
+        return None
 
     @property
     def sim_properties(self) -> SimProperties:

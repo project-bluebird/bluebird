@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "ba8e63ab-d56c-4c5a-ba21-5cff27ff441b",
+		"name": "MachColl Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "IC",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/ic",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"ic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SIMINFO",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/siminfo",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"siminfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POS - All",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/pos",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"pos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "IC - Small",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"filename\": \"/home/rkm/dev/ati-nats/Machine_College/nats/machine_college/data/scenarios/small.json\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5001/api/v1/ic",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"ic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POS - Callsign",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/pos?acid=AWC767T",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"pos"
+					],
+					"query": [
+						{
+							"key": "acid",
+							"value": "AWC767T"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ALT - Callsign",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "localhost:5001/api/v1/alt?acid=AWC767T",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"alt"
+					],
+					"query": [
+						{
+							"key": "acid",
+							"value": "AWC767T"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ALT - Callsign",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"acid\": \"AWC767T\",\n\t\"alt\": \"FL120\"\n}"
+				},
+				"url": {
+					"raw": "localhost:5001/api/v1/alt",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"alt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LISTROUTE",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/listroute?acid=AWC767T",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"listroute"
+					],
+					"query": [
+						{
+							"key": "acid",
+							"value": "AWC767T"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "IC - X Scenario",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"filename\": \"/home/rkm/dev/ati-nats/Machine_College/nats/machine_college/data/scenarios/x_sector_hell_poisson_scenario.json\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5001/api/v1/ic",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"ic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SHUTDOWN",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/shutdown?stop_sim",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"shutdown"
+					],
+					"query": [
+						{
+							"key": "stop_sim",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "STEP",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:5001/api/v1/step",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"step"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DTMULT",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"multiplier\": 1.2\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5001/api/v1/dtmult",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"dtmult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "HDG",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"acid\": \"EZE94G\",\n\t\"hdg\": 123\n}"
+				},
+				"url": {
+					"raw": "localhost:5001/api/v1/hdg",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"v1",
+						"hdg"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "6a0a64ee-127b-4874-920f-884c95da061e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "1d1faca5-1fec-413b-a65e-7743ecd0cf5d",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "f0a05598-f7e2-4551-a8d9-2056741075eb",
+			"key": "BB_API_ROOT",
+			"value": "localhost:5001/api/v1",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

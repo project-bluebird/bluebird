@@ -4,8 +4,9 @@ Provides logic for the HDG (heading) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import checked_resp, bad_request_resp
+from bluebird.api.resources.utils.responses import checked_resp, not_implemented_resp
 import bluebird.api.resources.utils.utils as utils
+from bluebird.settings import Settings
 from bluebird.utils.types import Callsign, Heading
 
 
@@ -30,13 +31,12 @@ class Hdg(Resource):
         """
 
         req_args = utils.parse_args(_PARSER)
-
         callsign = req_args[utils.CALLSIGN_LABEL]
-
-        if not utils.sim_proxy().contains(callsign):
-            return bad_request_resp(f"Aircraft {callsign} was not found")
-
         heading = req_args["hdg"]
-        err = utils.sim_client().aircraft.set_heading(callsign, heading)
+
+        try:
+            err = utils.sim_client().aircraft.set_heading(callsign, heading)
+        except NotImplementedError:
+            return not_implemented_resp("HDG")
 
         return checked_resp(err)

@@ -137,11 +137,13 @@ def convert(props: AircraftProperties) -> Dict[str, Any]:
     data = {
         str(props.callsign): {
             "actype": props.aircraft_type,
-            "alt": props.altitude.meters,
+            "cleared_fl": props.cleared_flight_level.feet,
+            "current_fl": props.altitude.feet,
             "gs": props.ground_speed.meters_per_sec,
             "hdg": props.heading.degrees,
             "lat": props.position.lat_degrees,
             "lon": props.position.lon_degrees,
+            "requested_fl": props.requested_flight_level.feet,
             "vs": props.vertical_speed.feet_per_min,
         }
     }

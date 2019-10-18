@@ -8,6 +8,8 @@ from typing import Optional
 
 from flask import jsonify, make_response
 
+from bluebird.settings import Settings
+
 
 def internal_err_resp(err: str):
     """
@@ -27,7 +29,7 @@ def ok_resp(data: dict = None):
     """
     Generates a standard response
     """
-    body = jsonify(data) if data else ""
+    body = jsonify(data) if data else "Ok"
     return make_response(body, HTTPStatus.OK)
 
 
@@ -45,4 +47,11 @@ def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK):
     """
     if err:
         return internal_err_resp(err)
-    return make_response("", code)
+    return make_response("Ok", code)
+
+
+def not_implemented_resp(api: str):
+    return make_response(
+        f"API '{api}' not currently supported for sim type '{Settings.SIM_TYPE.name}'",
+        HTTPStatus.NOT_IMPLEMENTED,
+    )
