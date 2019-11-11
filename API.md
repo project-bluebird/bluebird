@@ -5,7 +5,7 @@ Version `1`
 
 Notes:
 
-- If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.  
+- If sending a JSON body, the correct HTTP header must be sent: `Content-Type: application/json`.
 - In future, this documentation will be auto-generated 😅
 - Parameters should follow the [Docopt](http://docopt.org/) format
 - Unless otherwise noted, all references to 'speed' refer to the aircraft airspeed (usually in CAS)
@@ -98,7 +98,7 @@ Pauses the simulation:
 POST /api/v1/hold
 ```
 
-Returns:  
+Returns:
 
 - `200 Ok` - Simulation was paused
 - `500 Internal Server Error` - Simulation could not be paused
@@ -113,7 +113,7 @@ POST /api/v1/ic
   "filename": "scenario/<scenario>.scn",
   ["multiplier": 1.0]   // Optional: simulation rate multiplier
 }
-```  
+```
 
 Where the file path is relative to the BlueSky root directory. In future there will hopefully be some central store of scenario files which can be used in addition to the ones bundled with BlueSky.
 
@@ -159,7 +159,7 @@ Resumes the simulation:
 POST /api/v1/op
 ```
 
-Returns:  
+Returns:
 
 - `200 Ok` - Simulation was resumed
 - `500 Internal Server Error` - Simulation could not be resumed
@@ -189,7 +189,7 @@ Notes:
 - Each line in `content` must contain a timestamp and a valid BlueSky command. The timestamp must be in the format `hh:mm:ss`
 - A small delay should be included between creating an aircraft and issuing commands to it
 
-Returns:  
+Returns:
 
 - `200 Ok` - Simulation was created and started
 - `201 Created` - Simulation was created
@@ -204,7 +204,7 @@ Resets the simulation and clears all aircraft data:
 POST /api/v1/reset
 ```
 
-Returns:  
+Returns:
 
 - `200 Ok` - Simulation was reset
 - `500 Internal Server Error` - Simulation could not be reset
@@ -217,7 +217,7 @@ Get the current simulated time:
 GET /api/v1/time
 ```
 
-Returns:  
+Returns:
 
 - `200 Ok` - Time retrieved. Data will of the form:
 
@@ -245,7 +245,7 @@ Notes:
 Returns:
 
 - `200 Ok` - Simulation was stepped
-- `400 Bad Request` - If the request was not made while in `agent` mode 
+- `400 Bad Request` - If the request was not made while in `agent` mode
 - `500 Internal Server Error` - Could not step - response will contain error info
 
 ---
@@ -261,7 +261,7 @@ POST /api/v1/addwpt
     ("wpname": "<waypoint>" | "lat": 123, "lon": 456),
     ["alt": "FL250"],
     ["spd": 250]
-}  
+}
 ```
 
 Notes:
@@ -286,7 +286,7 @@ POST /api/v1/alt
   "acid": <acid>,	// Aircraft ID
   "alt": "FL250",	// Requested altitude (feet or FL)
   ["vspd": "50"]	// Optional: vertical speed (ft/min)
-}  
+}
 ```
 
 Returns:
@@ -323,7 +323,7 @@ Returns:
 
 ## Create Aircraft (CRE)
 
-Creates an aircraft. The following data must be provided:  
+Creates an aircraft. The following data must be provided:
 
 ```javascript
 POST /api/v1/cre
@@ -335,7 +335,7 @@ POST /api/v1/cre
   "hdg": "0",			// Initial heading (deg)
   "alt": "FL250",		// Initial altitude (feet or FL)
   "spd": "250"			// Initial calibrated air speed (CAS) (kts or Mach)
-}  
+}
 ```
 
 Returns:
@@ -352,14 +352,14 @@ Returns:
 
 ## Direct to Waypoint (DIRECT)
 
-Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist on the aircraft's route.  
+Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist on the aircraft's route.
 
 ```javascript
 POST /api/v1/direct
 {
     "acid": "TST1000",      // Aircraft ID (alphanumeric, at least 3 characters)
     "waypoint": "TESTWPT"   // The name of the waypoint to go to
-}  
+}
 ```
 
 Returns:
@@ -378,7 +378,7 @@ POST /api/v1/hdg
 {
   "acid": <acid>,	// Aircraft ID
   "hdg": "123.45"	// Requested heading (deg)
-}  
+}
 ```
 
 Returns:
@@ -400,7 +400,7 @@ Returns:
 - `200 Ok` - Returns the following data:
 
 ```javascript
-{   
+{
     "acid": "SCN1001",
     "route": [
         {
@@ -416,7 +416,7 @@ Returns:
             "wpt_name": "SPY"
         }
     ],
-    "sim_t": 1234  
+    "sim_t": 1234
 }
 ```
 
@@ -443,12 +443,12 @@ Returns:
     "alt": 6096,			// Altitude (m)
     "gs": 293.6780042365748,		// Ground speed (m/s)
     "lat": 53.8,			// Latitude (deg)
-    "lon": 2.0364214816067467,		// Longitude (deg)    
+    "lon": 2.0364214816067467,		// Longitude (deg)
     "vs": 0				// Vertical speed (ft/min)
   },
   "sim_t": 123                  	// Sim time (seconds since start of scenario)
-}  
-```  
+}
+```
 
 - `400 Bad Request` - Aircraft ID was invalid, or no aircraft exist (when `?acid=ALL` specified)
 - `404 Not Found` - Aircraft was not found. It may have been removed after travelling outside an experiment area.
@@ -462,7 +462,7 @@ POST /api/v1/spd
 {
   "acid": <acid>,	// Aircraft ID
   "spd": "250"		// Requested calibrated air speed (CAS) (kts or Mach)
-}  
+}
 ```
 
 Returns:
@@ -480,7 +480,7 @@ POST /api/v1/vs
 {
   "acid": <acid>,	// Aircraft ID
   "vspd": "250"		// Requested vertical speed (ft/min)
-}  
+}
 ```
 
 Returns:
@@ -532,7 +532,7 @@ Returns:
 
 Where the `lines` array contains each line from the log file.
 
-- `404 Not Found` - No episode is being recorded  
+- `404 Not Found` - No episode is being recorded
 
 ## Simulator Mode
 

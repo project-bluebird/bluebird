@@ -203,4 +203,3 @@ class AircraftDataCache:
 #     bluebird.logging.EP_LOGGER.debug(
 #         f"[{sim_t}] {json_data}", extra={"PREFIX": LOG_PREFIX}
 #     )
-

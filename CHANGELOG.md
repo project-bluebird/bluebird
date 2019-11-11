@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed static page which rendered and served the README markdown file
 - Removed the markdown pip dependency
- 
+
 
 ## [1.2.1] - 2019-06-11
 

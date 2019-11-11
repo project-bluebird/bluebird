@@ -19,7 +19,7 @@ class Provider(AbstractMetricProvider):
         self._logger = logging.getLogger(__package__)
 
     def __call__(self, metric, *args, **kwargs):
-        return getattr(metrics, metric)(*args, **kwargs) # TODO Kwargs need passed in
+        return getattr(metrics, metric)(*args, **kwargs)  # TODO Kwargs need passed in
 
     def __str__(self):
         return "BlueBirdProvider"

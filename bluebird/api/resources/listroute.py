@@ -49,4 +49,3 @@ class ListRoute(Resource):
             return internal_err_resp(route)
 
         return ok_resp({CALLSIGN_LABEL: callsign.value, "route": route})
-

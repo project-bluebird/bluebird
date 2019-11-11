@@ -127,7 +127,7 @@ def parse_route_data(route_data):
 # TODO Add test
 def convert(props: AircraftProperties) -> Dict[str, Any]:
     """
-    Parses an AircraftProperties object into a dict suitable for returning via Flask    
+    Parses an AircraftProperties object into a dict suitable for returning via Flask
     :param props:
     :return:
     """
