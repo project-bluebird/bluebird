@@ -59,6 +59,8 @@ class BlueBird:
 
         self.sim_client, self._min_sim_version = setup_sim_client()
         self.sim_proxy = SimProxy(self.sim_client)
+
+        # TODO: Need to add/initialise any metrics providers from simulator clients... i.e. MachColl!
         self._metrics_providers = setup_metrics()
 
         # TODO What to do here?

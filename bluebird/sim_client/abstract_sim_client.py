@@ -9,7 +9,7 @@ from semver import VersionInfo
 
 from bluebird.utils.timer import Timer
 import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties, SimProperties
+from bluebird.utils.properties import AircraftProperties, SimProperties, SimState
 
 
 class AbstractAircraftControls(ABC):
@@ -25,11 +25,14 @@ class AbstractAircraftControls(ABC):
         is not enabled
         :return:
         """
-    
+
     @property
     @abstractmethod
     def routes(self) -> Dict[types.Callsign, List]:
-        pass
+        """
+        A dict of the current aircraft routes in the scenario, keyed by callsign
+        :return:
+        """
 
     @abstractmethod
     def set_cleared_fl(
@@ -120,17 +123,19 @@ class AbstractAircraftControls(ABC):
         """
 
     @abstractmethod
-    def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
+    def get_properties(
+        self, callsign: types.Callsign
+    ) -> Union[AircraftProperties, str]:
         """
         Get all the properties for the specified aircraft
         :param callsign: The aircraft callsign
-        :return: None if the aircraft could not be found
+        :return: String on error
         """
 
-    def get_all_properties(self) -> List[AircraftProperties]:
+    def get_all_properties(self) -> Dict[types.Callsign, AircraftProperties]:
         """
-        Get all aircraft properties
-        :return: A (possibly empty) list of all aircraft properties in the simulation
+        Get properties for all aircraft in the scenario
+        :return: A dict of all aircraft properties in the simulation
         """
 
 
@@ -208,6 +213,23 @@ class AbstractSimulatorControls(ABC):
 		"""
 
     @abstractmethod
+    def stop(self) -> Optional[str]:
+        """
+        Stop the simulation
+        :returns None: If simulation was stopped
+		:returns str: To indicate an error
+		:return:
+        """
+
+    @staticmethod
+    @abstractmethod
+    def parse_sim_state(val: str) -> Union[SimState, str]:
+        """
+        Parses a value SimState value from the simulator's set of states. Returns a
+        string for errors
+        """
+
+    @abstractmethod
     def step(self) -> Optional[str]:
         """
 		Step the simulation forward one increment (specified by the step_size)
@@ -228,9 +250,10 @@ class AbstractSimulatorControls(ABC):
     @abstractmethod
     def set_speed(self, speed: float) -> Optional[str]:
         """
-		Set the simulator speed (DTMULT for BlueSky)
+		Set the simulator speed, or the step size if in agent mode (i.e. the meaning of
+        this is overloaded and depends on the mode of operation)
 		:param speed:
-		:returns None: If speed set
+		:returns None: If the speed is set
 		:returns str: To indicate an error
 		:return:
 		"""
