@@ -1,8 +1,8 @@
 
 # In addition to requirements.txt, the following are required for development and testing
 
-pytest == 4.1.*
-pytest-docker-compose == 1.0.*
+pytest == 4.*
+pytest-docker-compose
 
 pre-commit
 pylint
