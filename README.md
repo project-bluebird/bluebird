@@ -70,6 +70,12 @@ To install development packages, pass the `--dev` option to the install script. 
 > pip install -r requirements-dev.txt
 ```
 
+After setting up your virtual environment for the first time, you should also run:
+
+```bash
+> pre-commit install
+```
+
 ### Testing
 
 The unit test suite can be run with:

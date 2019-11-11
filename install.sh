@@ -96,6 +96,9 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
+printf "Installing pre-commit hooks"
+pre-commit install
+
 printf "Setting up BlueSky submodule"
 git submodule update --init --recursive
 
@@ -103,4 +106,3 @@ printf "Installation successful\n"
 printf "To run BlueBird locally:\n"
 printf "> source $venvname/bin/activate\n"
 printf "> python ./run.py\n"
-
