@@ -96,10 +96,10 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
-printf "Installing pre-commit hooks"
+printf "Installing pre-commit hooks\n"
 pre-commit install
 
-printf "Setting up BlueSky submodule"
+printf "Setting up BlueSky submodule\n"
 git submodule update --init --recursive
 
 printf "Installation successful\n"
