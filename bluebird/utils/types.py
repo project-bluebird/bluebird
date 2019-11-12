@@ -142,6 +142,7 @@ class VerticalSpeed:
     feet_per_min: int
 
     def __init__(self, vertical_speed: int):
+        assert isinstance(vertical_speed, int), "Vertical speed must be an integer"
         self.feet_per_min = vertical_speed
 
     def __repr__(self):
