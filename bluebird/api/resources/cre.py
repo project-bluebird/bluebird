@@ -48,7 +48,7 @@ class Cre(Resource):
         if not isinstance(position, LatLon):
             return position
 
-        if req_args["spd"] <= 0:
+        if req_args["spd"].meters_per_sec <= 0:
             return bad_request_resp("Speed must be positive")
 
         if not req_args["type"]:
