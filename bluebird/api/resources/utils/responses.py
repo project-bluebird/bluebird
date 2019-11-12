@@ -29,7 +29,7 @@ def ok_resp(data: dict = None):
     """
     Generates a standard response
     """
-    body = jsonify(data) if data else "Ok"
+    body = jsonify(data) if data else ""
     return make_response(body, HTTPStatus.OK)
 
 
@@ -51,6 +51,9 @@ def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK):
 
 
 def not_implemented_resp(api: str):
+    """
+    Generates a standard NOT_IMPLEMENTED response
+    """
     return make_response(
         f"API '{api}' not currently supported for sim type '{Settings.SIM_TYPE.name}'",
         HTTPStatus.NOT_IMPLEMENTED,

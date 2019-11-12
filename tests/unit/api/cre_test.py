@@ -30,7 +30,7 @@ def test_cre_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-
     data = {
         "acid": callsign,
         "type": "A380",
-        "lat": TEST_LAT,
+        "lat": -91,
         "lon": TEST_LON,
         "hdg": 123,
         "alt": 18_500,
@@ -38,8 +38,13 @@ def test_cre_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-
     }
     resp = test_flask_client.post(f"{API_PREFIX}/cre", json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert "Aircraft TEST already exists" == resp.data.decode()
+    assert resp.data.decode() == "Aircraft TEST already exists"
 
     data["acid"] = "ZZZZ"
+    resp = test_flask_client.post(f"{API_PREFIX}/cre", json=data)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode().startswith("Invalid LatLon")
+
+    data["lat"] = TEST_LAT
     resp = test_flask_client.post(f"{API_PREFIX}/cre", json=data)
     assert resp.status_code == HTTPStatus.CREATED

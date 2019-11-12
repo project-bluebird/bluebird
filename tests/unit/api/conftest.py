@@ -19,6 +19,8 @@ from bluebird.utils.types import (
 
 import bluebird.sim_proxy.sim_proxy as sim_proxy
 
+from tests.unit.api import TEST_LATLON
+
 
 @pytest.fixture(autouse=True)
 def patch_streaming(monkeypatch):
@@ -54,6 +56,7 @@ class MockSimProxy:
 
     def __init__(self):
         self.last_cfl = None
+        self.last_wpt = None
 
     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude, **kwargs):
         self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
@@ -77,6 +80,11 @@ class MockSimProxy:
     def contains(self, callsign: Callsign):
         # "TEST*" aircraft exist, all others do not
         return str(callsign).upper().startswith("TEST")
+
+    def define_waypoint(self, name: str, position: LatLon, **kwargs):
+        if kwargs["type"] and kwargs["type"] != "FIX":
+            return "Invalid waypoint type"
+        self.last_wpt = {"name": name, "position": position, **kwargs}
 
 
 class MockBlueBird:
