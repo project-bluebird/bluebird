@@ -97,56 +97,6 @@ def test_reset_command(test_flask_client):
     assert bb_app().sim_client.was_reset, "Expected the client simulation to be reset"
 
 
-def test_cre_new_aircraft(test_flask_client):
-    """
-    Test the CRE endpoint handles new aircraft correctly
-    :param test_flask_client
-    :return:
-    """
-
-    acid = "TST1234"
-    assert not bb_app().ac_data.contains(
-        acid
-    ), "Expected the test aircraft not to exist"
-
-    cre_data = {
-        "acid": acid,
-        "type": "testeroni",
-        "lat": 0,
-        "lon": 0,
-        "hdg": 0,
-        "alt": 0,
-        "spd": 0,
-    }
-    resp = test_flask_client.post(API_PREFIX + "/cre", json=cre_data)
-
-    assert resp.status == "201 CREATED"
-
-
-def test_cre_existing_aircraft(test_flask_client):
-    """
-    Test the CRE endpoint handles existing aircraft correctly
-    :param test_flask_client
-    :return:
-    """
-
-    acid = TEST_ACIDS[0]
-    assert bb_app().ac_data.get(acid) is not None, "Expected the test aircraft to exist"
-
-    cre_data = {
-        "acid": acid,
-        "type": "testeroni",
-        "lat": 0,
-        "lon": 0,
-        "hdg": 0,
-        "alt": 0,
-        "spd": 0,
-    }
-    resp = test_flask_client.post(API_PREFIX + "/cre", json=cre_data)
-
-    assert resp.status == "400 BAD REQUEST"
-
-
 def test_scenario_endpoint(test_flask_client):
     """
     Tests the create scenario endpoint

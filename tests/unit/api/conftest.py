@@ -2,6 +2,7 @@
 Configuration for the api tests
 """
 
+from typing import Container
 import pytest
 
 from bluebird.utils.properties import AircraftProperties
@@ -16,8 +17,41 @@ from bluebird.utils.types import (
     VerticalSpeed,
 )
 
+import bluebird.sim_proxy.sim_proxy as sim_proxy
+
+
+@pytest.fixture(autouse=True)
+def patch_streaming(monkeypatch):
+    monkeypatch.setattr(sim_proxy, "_is_streaming", lambda x: True)
+
+
+class MockAircraftControls:
+    """
+    Simple test mock of AbstractAircraftControls
+    """
+
+    def create(self, *args, **kwargs):
+        pass
+
+
+class MockSimClient:
+    """
+    Simple test mock of a SimClient
+    """
+
+    @property
+    def aircraft(self):
+        return self._aircraft_controls
+
+    def __init__(self):
+        self._aircraft_controls = MockAircraftControls()
+
 
 class MockSimProxy:
+    """
+    Simple test mock of the SimProxy class
+    """
+
     def __init__(self):
         self.last_cfl = None
 
@@ -40,10 +74,15 @@ class MockSimProxy:
             0,
         )
 
+    def contains(self, callsign: Callsign):
+        # "TEST*" aircraft exist, all others do not
+        return str(callsign).upper().startswith("TEST")
+
 
 class MockBlueBird:
     def __init__(self):
         self.sim_proxy = MockSimProxy()
+        self.sim_client = MockSimClient()
 
 
 @pytest.fixture

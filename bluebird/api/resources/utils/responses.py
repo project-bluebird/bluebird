@@ -47,7 +47,7 @@ def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK):
     """
     if err:
         return internal_err_resp(err)
-    return make_response("Ok", code)
+    return make_response("", code)
 
 
 def not_implemented_resp(api: str):
