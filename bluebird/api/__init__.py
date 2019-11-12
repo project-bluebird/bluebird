@@ -50,12 +50,14 @@ def after_req(response):
     :return:
     """
 
-    json = response.get_json()
+    data = response.get_json()
+    if not data:
+        data = response.data.decode()
 
     if "eplog" in request.url.lower():
-        json = "EPLOG data"
+        data = "EPLOG data"
 
-    LOGGER.info(f'RESP: {response.status_code} "{json if json else ""}"')
+    LOGGER.info(f'RESP: {response.status_code} "{data if data else ""}"')
 
     return response
 
