@@ -10,14 +10,14 @@ from bluebird.api.resources.utils.responses import (
     ok_resp,
 )
 from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
-from bluebird.utils.types import Altitude, Callsign
+from bluebird.utils.types import Altitude, Callsign, VerticalSpeed
 
 # Parser for post requests
 _PARSER_POST = reqparse.RequestParser()
 _PARSER_POST.add_argument(CALLSIGN_LABEL, type=Callsign, location="json", required=True)
 # TODO Update API.md and make all type args match their __init__ options (i.e. str or int here)
 _PARSER_POST.add_argument("alt", type=Altitude, location="json", required=True)
-_PARSER_POST.add_argument("vspd", type=int, location="json", required=False)
+_PARSER_POST.add_argument("vspd", type=VerticalSpeed, location="json", required=False)
 
 # Parser for get requests
 _PARSER_GET = reqparse.RequestParser()

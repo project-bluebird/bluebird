@@ -1,17 +1,18 @@
 """
 Tests each of the API endpoints.
 
-Provides a Flask test_client fixture which is generated from the BlueBird app definition. This
-is then used to test the app endpoints with various HTTP requests. Test aircraft data is manually
-defined, so we don't have any test dependencies on BlueSky.
+Provides a Flask test_client fixture which is generated from the BlueBird app
+definition. This is then used to test the app endpoints with various HTTP requests. Test
+aircraft data is manually defined, so we don't have any test dependencies on BlueSky
 """
 
-# pylint: disable=redefined-outer-name, unused-argument, no-member
+# TODO: Split into separate files
+
+# _pylint: disable=redefined-outer-name, unused-argument, no-member
 
 import os
 
 import bluebird.settings as settings
-from bluebird.api.resources.utils import bb_app
 from tests.unit import API_PREFIX, SIM_DATA, TEST_ACIDS, TEST_DATA, TEST_DATA_KEYS
 
 
@@ -70,7 +71,7 @@ def test_ic_command(test_flask_client):
     assert resp.status == "200 OK"
 
     assert (
-        bb_app().sim_client.last_scenario == filename
+        sim_client_patch().last_scenario == filename
     ), "Expected the filename to be loaded"
 
     filename = "testeroni.SCN"
@@ -285,28 +286,3 @@ def test_set_seed(test_flask_client):
     data = {"value": 2 ** 32}
     resp = test_flask_client.post(API_PREFIX + "/seed", json=data)
     assert resp.status == "400 BAD REQUEST"
-
-
-def test_alt_fl_parsing(test_flask_client):
-    """
-    Tests that we correctly parse the altitude argument
-    :param test_flask_client
-    :return:
-    """
-
-    acid = TEST_ACIDS[0]
-    data = {"acid": acid, "alt": "FL120"}
-
-    resp = test_flask_client.post(API_PREFIX + "/alt", json=data)
-    assert resp.status_code == 200, "Expected OK"
-    assert (
-        bb_app().sim_client.last_stack_cmd == "ALT TST1001 FL120"
-    ), "Expected ALT to match"
-
-    data["alt"] = "12345"
-
-    resp = test_flask_client.post(API_PREFIX + "/alt", json=data)
-    assert resp.status_code == 200, "Expected OK"
-    assert (
-        bb_app().sim_client.last_stack_cmd == "ALT TST1001 12345"
-    ), "Expected ALT to match"

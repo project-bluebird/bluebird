@@ -1,5 +1,7 @@
 """
 Provides logic for the ADDWPT (add waypoint to route) API endpoint
+
+TODO: Consider renaming this since it's meaning can be confusing
 """
 
 import logging

@@ -9,8 +9,7 @@ Unit tests for the metric endpoints
 import pytest
 
 import bluebird.metrics as bb_metrics
-import bluebird.settings as bb_settings
-from bluebird.cache import AcDataCache, SimState
+from bluebird.settings import Settings
 from tests.unit import API_PREFIX, TEST_ACIDS
 
 

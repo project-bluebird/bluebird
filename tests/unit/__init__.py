@@ -2,9 +2,9 @@
 BlueBird unit test package
 """
 
-from bluebird import settings
+from bluebird.settings import Settings
 
-API_PREFIX = "/api/v" + str(settings.API_VERSION)
+API_PREFIX = "/api/v" + str(Settings.API_VERSION)
 
 TEST_ACIDS = ["TST1001", "TST1002"]
 

@@ -6,12 +6,10 @@ Tests for BlueBird's built-in metrics
 
 import pytest
 
-import bluebird.cache as bb_cache
 from bluebird.metrics import setup_metrics
 import bluebird.metrics.bluebird.config as cfg
 from bluebird.metrics.bluebird import Provider
 from tests.unit import TEST_ACIDS, TEST_DATA
-from bluebird.cache import AcDataCache, SimState
 
 
 @pytest.fixture

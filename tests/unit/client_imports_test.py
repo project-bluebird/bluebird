@@ -11,7 +11,7 @@ def test_bluesky_sim_client_import():
     :return:
     """
 
-    mod_path = "bluebird.simclient.bluesky"
+    mod_path = "bluebird.sim_client.bluesky"
     importlib.import_module(mod_path)
 
 
@@ -21,5 +21,5 @@ def test_bluesky_sim_client_create():
     :return:
     """
 
-    mod_path = "bluebird.simclient.bluesky.simclient"
-    importlib.import_module(mod_path).SimClient(None, None)
+    mod_path = "bluebird.sim_client.bluesky.simclient"
+    importlib.import_module(mod_path).SimClient()
