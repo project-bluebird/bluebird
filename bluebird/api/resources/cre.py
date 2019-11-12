@@ -44,9 +44,9 @@ class Cre(Resource):
         if utils.sim_proxy().contains(callsign):
             return bad_request_resp(f"Aircraft {callsign} already exists")
 
-        position = utils.try_parse_lat_lon(req_args)
-        if not isinstance(position, LatLon):
-            return position
+        position_or_resp = utils.try_parse_lat_lon(req_args)
+        if not isinstance(position_or_resp, LatLon):
+            return position_or_resp
 
         if req_args["spd"].meters_per_sec <= 0:
             return bad_request_resp("Speed must be positive")
@@ -57,7 +57,7 @@ class Cre(Resource):
         err = utils.sim_client().aircraft.create(
             callsign,
             req_args["type"],
-            position,
+            position_or_resp,
             req_args["hdg"],
             req_args["alt"],
             req_args["spd"],

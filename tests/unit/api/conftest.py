@@ -32,8 +32,11 @@ class MockAircraftControls:
     Simple test mock of AbstractAircraftControls
     """
 
-    def create(self, *args, **kwargs):
-        pass
+    def __init__(self):
+        self.created_aricraft = None
+
+    def create(self, *args):
+        self.created_aricraft = list(args)
 
 
 class MockSimClient:
@@ -55,26 +58,27 @@ class MockSimProxy:
     """
 
     def __init__(self):
-        self.last_cfl = None
-        self.last_wpt = None
+        self.last_cfl = self.last_wpt = self.last_direct = None
 
     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude, **kwargs):
         self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
 
     def get_aircraft_props(self, callsign: Callsign):
+        if not self.contains(callsign):
+            return (None, 31)
         return (
             AircraftProperties(
                 "A380",
-                Altitude(0),
+                Altitude(18_500),
                 callsign,
-                Altitude(0),
-                GroundSpeed(0),
-                Heading(0),
-                LatLon(0, 0),
-                Altitude(0),
-                VerticalSpeed(0),
+                Altitude(22_000),
+                GroundSpeed(53),
+                Heading(74),
+                LatLon(51.529761, -0.127531),
+                Altitude(25_300),
+                VerticalSpeed(73),
             ),
-            0,
+            42,
         )
 
     def contains(self, callsign: Callsign):
@@ -82,9 +86,13 @@ class MockSimProxy:
         return str(callsign).upper().startswith("TEST")
 
     def define_waypoint(self, name: str, position: LatLon, **kwargs):
+        self.last_wpt = None
         if kwargs["type"] and kwargs["type"] != "FIX":
             return "Invalid waypoint type"
         self.last_wpt = {"name": name, "position": position, **kwargs}
+
+    def direct_to_waypoint(self, callsign: Callsign, waypoint: str):
+        self.last_direct = {"callsign": callsign, "waypoint": waypoint}
 
 
 class MockBlueBird:

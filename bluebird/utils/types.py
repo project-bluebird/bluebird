@@ -85,6 +85,7 @@ class GroundSpeed:
     meters_per_sec: int
 
     def __init__(self, ground_speed: int):
+        assert isinstance(ground_speed, int), "Ground speed must be an int"
         assert ground_speed >= 0, "Ground speed must be positive"
         self.meters_per_sec = ground_speed
 
@@ -108,6 +109,7 @@ class Heading:
     degrees: int
 
     def __init__(self, heading: int):
+        assert isinstance(heading, int), "Heading must be an int"
         assert 0 <= heading < 360, "Heading must satisfy 0 <= x < 360"
         self.degrees = heading
 
