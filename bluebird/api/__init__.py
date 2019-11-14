@@ -39,7 +39,7 @@ def before_req():
     """
 
     json = request.get_json()
-    LOGGER.info(f'REQ: {request.method} {request.full_path} "{json if json else ""}"')
+    LOGGER.info(f'REQ {request.method} {request.full_path} "{json if json else ""}"')
 
 
 @FLASK_APP.after_request
@@ -55,9 +55,10 @@ def after_req(response):
         data = response.data.decode()
 
     if "eplog" in request.url.lower():
-        data = "EPLOG data"
+        data = "<EPLOG data>"
 
-    LOGGER.info(f'RESP: {response.status_code} "{data if data else ""}"')
+    data = data.replace("\n", "") if data else ""
+    LOGGER.info(f'RESP {response.status_code} "{data}"')
 
     return response
 
