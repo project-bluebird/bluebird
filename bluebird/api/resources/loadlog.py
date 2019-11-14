@@ -9,8 +9,9 @@ import logging
 import os
 import re
 import time
-from typing import Union
 import uuid
+from pathlib import Path
+from typing import Union
 
 from flask_restful import Resource, reqparse
 
@@ -118,7 +119,7 @@ class LoadLog(Resource):
         if target_time <= 0:
             return responses.bad_request_resp("Target time must be greater than 0")
 
-        prev_dt = sim_proxy().sim_properties.sim_speed
+        prev_dt = sim_proxy().sim_properties.step_size
 
         _LOGGER.debug("Starting log reload")
 
@@ -129,7 +130,8 @@ class LoadLog(Resource):
             return responses.internal_err_resp(f"Simulation not reset: {err}")
 
         if req_args["filename"]:
-            if not os.path.exists(req_args["filename"]):
+            log_path = Path(os.getcwd(), req_args["filename"])
+            if not log_path.exists():
                 return responses.bad_request_resp(
                     f'Could not find episode file {req_args["filename"]}'
                 )
@@ -190,7 +192,7 @@ class LoadLog(Resource):
                 f"Could not start scenario after upload {err}"
             )
 
-        diff = target_time - sim_proxy().sim_properties.sim_t
+        diff = target_time - sim_proxy().sim_properties.time
 
         if diff:
             # Naive approach - set DTMULT to target, then STEP once...

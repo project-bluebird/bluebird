@@ -1,14 +1,86 @@
 """
-Tests for the episode log reloading feature
+Tests for the LOADLOG endpoint
 """
+
+import os
+from pathlib import Path
+
+import pytest
+
+from bluebird.api.resources.loadlog import parse_lines
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.properties import SimProperties, SimState
+
+from tests.unit import API_PREFIX
+
+_TEST_FILE = "tests/unit/api/testEpisode.log"
+_TEST_FILE_PATH = Path(os.getcwd(), _TEST_FILE)
 
 # pylint: disable=redefined-outer-name, unused-argument, no-member
 
-import os
 
-from tests.unit import API_PREFIX
-from bluebird.api.resources.loadlog import parse_lines
-from . import API_PREFIX
+class MockSimProxy:
+    """
+    Simple tset mock of the SimProxy class for this test
+    """
+
+    # pylint: disable=no-self-use, missing-docstring
+
+    @property
+    def sim_properties(self) -> SimProperties:
+        return SimProperties(SimState.RUN, 1.0, 1.0, 0.0, "test_scn")
+
+    @property
+    def seed(self):
+        return self._seed
+
+    def __init__(self):
+        self._seed = self.last_scenario = None
+        self.reset_flag = self.scn_uploaded = self.was_stepped = False
+
+    def pause_sim(self):
+        return None
+
+    def set_seed(self, seed: int):
+        assert isinstance(seed, int)
+        self._seed = seed
+
+    def reset_sim(self):
+        self.reset_flag = True
+
+    def upload_new_scenario(self, scn_name: str, content):
+        assert isinstance(scn_name, str)
+        assert content
+        self.scn_uploaded = True
+
+    def load_scenario(
+        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
+    ):
+        self.last_scenario = scenario_name
+
+    def set_sim_speed(self, speed: float):
+        return None
+
+    def step_sim(self):
+        self.was_stepped = True
+
+
+class MockBlueBird:
+    def __init__(self):
+        self.sim_proxy = MockSimProxy()
+
+
+@pytest.fixture
+def patch_sim_proxy_loadlog(monkeypatch):
+    """
+    Patches the _bb_app function in the api utils module
+    """
+    mock_bluebird = MockBlueBird()
+
+    def yield_mock():
+        return mock_bluebird
+
+    monkeypatch.setattr(utils, "_bb_app", yield_mock)
 
 
 def test_parse_lines():
@@ -99,7 +171,7 @@ def test_parse_lines_time():
     assert "ALT KL204 9144" in data["lines"][-1], ""
 
 
-def test_log_reload_from_lines(test_flask_client):
+def test_log_reload_from_lines(test_flask_client, patch_sim_proxy_loadlog):
     """
     Tests the episode reloading given a full logfile in the request
     :param test_flask_client
@@ -112,16 +184,15 @@ def test_log_reload_from_lines(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    test_file = "tests/unit/testEpisode.log"
-    assert os.path.isfile(test_file), ""
-    lines = tuple(open(test_file, "r"))
+    assert _TEST_FILE_PATH.exists()
+    lines = tuple(open(_TEST_FILE_PATH, "r"))
 
     data = {"lines": lines, "time": 123}
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_from_file(test_flask_client):
+def test_log_reload_from_file(test_flask_client, patch_sim_proxy_loadlog):
     """
     Tests that the episode reloading works when given a logfile
     :param test_flask_client
@@ -134,12 +205,12 @@ def test_log_reload_from_file(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    data = {"filename": "tests/unit/testEpisode.log", "time": 123}
+    data = {"filename": _TEST_FILE, "time": 123}
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_full(test_flask_client):
+def test_log_reload_full(test_flask_client, patch_sim_proxy_loadlog):
     """
     Tests the full functionality of the log reloading
     :param test_flask_client
@@ -152,9 +223,7 @@ def test_log_reload_full(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    logfile = "tests/unit/testEpisode.log"
-
-    data = {"filename": logfile, "time": -1}
+    data = {"filename": _TEST_FILE, "time": -1}
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 400, "Expected a 400 due to invalid time"
 
@@ -162,14 +231,14 @@ def test_log_reload_full(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 200, "Expected a 200"
 
-    assert bb_app().sim_client.was_reset, "Expected that the simulator was reset"
-    assert bb_app().sim_client.seed == 5678, "Expected that the seed was set"
-    assert bb_app().sim_client.scn_uploaded, "Expected that the scenario was uploaded"
-    assert bb_app().sim_client.last_scenario, "Expected that the scenario was started"
-    assert bb_app().sim_client.was_stepped, "Expected that the simulation was stepped"
+    assert utils.sim_proxy().reset_flag, "Expected that the simulator was reset"
+    assert utils.sim_proxy().seed == 5678, "Expected that the seed was set"
+    assert utils.sim_proxy().scn_uploaded, "Expected that the scenario was uploaded"
+    assert utils.sim_proxy().last_scenario, "Expected that the scenario was started"
+    assert utils.sim_proxy().was_stepped, "Expected that the simulation was stepped"
 
 
-def test_log_reload_invalid_time(client, patch_client_sim):
+def test_log_reload_invalid_time(test_flask_client, patch_sim_proxy_loadlog):
     """
     Tests that an error is returned if a reload time was requested which is after the
     last time in the log file
@@ -178,16 +247,15 @@ def test_log_reload_invalid_time(client, patch_client_sim):
     :return:
     """
 
-    resp = client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
+    resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
 
-    resp = client.post(API_PREFIX + "/seed", json={"value": 1234})
+    resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    test_file = "tests/unit/testEpisode.log"
-    assert os.path.isfile(test_file), ""
-    lines = tuple(open(test_file, "r"))
+    assert _TEST_FILE_PATH.exists()
+    lines = tuple(open(_TEST_FILE_PATH, "r"))
 
     data = {"lines": lines, "time": 999}
-    resp = client.post(API_PREFIX + "/loadlog", json=data)
+    resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 400, "Expected a 400"

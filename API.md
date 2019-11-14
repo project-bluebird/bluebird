@@ -142,6 +142,7 @@ POST /api/v1/loadlog
 Notes:
 
 - Either `filename` or `lines` must be specified
+- `filename` must be relative to BlueBird's root directory
 - This API can only be used in agent mode
 - Only logfiles which have had their random seed set can be loaded
 

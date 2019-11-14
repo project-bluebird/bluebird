@@ -40,6 +40,10 @@ def before_req():
     """
 
     json = request.get_json()
+
+    if "loadlog" in request.url.lower():
+        json = "<LOADLOG data>"
+
     LOGGER.info(f'REQ {request.method} {request.full_path} "{json if json else ""}"')
 
 
