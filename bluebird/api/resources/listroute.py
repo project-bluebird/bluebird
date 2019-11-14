@@ -21,10 +21,6 @@ _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
 
 
-# req_args = parse_args(_PARSER)
-# callsign = req_args[CALLSIGN_LABEL]
-
-
 class ListRoute(Resource):
     """
     Contains logic for the LISTROUTE endpoint
@@ -48,4 +44,4 @@ class ListRoute(Resource):
         if isinstance(route, str):
             return internal_err_resp(route)
 
-        return ok_resp({CALLSIGN_LABEL: callsign.value, "route": route})
+        return ok_resp({CALLSIGN_LABEL: str(callsign), "route": route})

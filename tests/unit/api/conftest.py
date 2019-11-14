@@ -85,6 +85,7 @@ class MockSimProxy:
     def __init__(self):
         self.last_cfl = self.last_wpt = self.last_direct = self.last_scn = None
         self._props_called = self._reset_flag = self._pause_called = False
+        self._get_route_called = False
 
     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude, **kwargs):
         self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
@@ -143,6 +144,13 @@ class MockSimProxy:
             "speed": speed,
             "start_paused": start_paused,
         }
+
+    def get_aircraft_route(self, callsign: Callsign):
+        assert callsign
+        if not self._get_route_called:
+            self._get_route_called = True
+            return "Could not get aircraft route"
+        return ["A", "B"]  # TODO What should the route look like?
 
 
 class MockBlueBird:

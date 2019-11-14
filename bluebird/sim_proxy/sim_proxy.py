@@ -45,9 +45,6 @@ class SimProxy:
         self._sim_client: AbstractSimClient = sim_client
         self._ac_data = AircraftDataCache()
 
-        # Simple cache of aircraft routes
-        self._routes : Dict[Callsign, List]= {}
-
         # TODO What do we need this for?
         self._seed = None
 
@@ -102,16 +99,6 @@ class SimProxy:
 
         sim_t = int(self._sim_client.simulation.get_time())
         return (props, sim_t)
-
-    def get_aircraft_route(self, callsign: Callsign) -> Union[List, str]:
-        if not self._routes:
-            self._routes = self._sim_client.aircraft.routes
-
-        return (
-            self._routes[callsign]
-            if callsign in self._routes
-            else f"Could not find aircraft {callsign}"
-        )
 
     def set_cleared_fl(
         self, callsign: Callsign, flight_level: Altitude, **kwargs
@@ -217,35 +204,27 @@ class SimProxy:
         err = self._sim_client.simulation.load_scenario(
             scenario_name, speed, start_paused
         )
-
-        if err:
-            return err
-
-        self._routes = {}
-        return None
+        return err
 
     @property
     def sim_properties(self) -> SimProperties:
-        """
-        :return: The current sim properties, either from the proxy value or from a sim
-        request
-        """
-
         props = (
             self._sim_props
             if _is_streaming()
             else self._sim_client.simulation.properties
         )
 
+        # TODO Probably a better way of doing this
         if not isinstance(props, SimProperties):
-            raise RuntimeError(f"Could not get the sim properties: {props}")
+            err_str = "Couldn't get a value for SimProperties"
+            if isinstance(props, str):
+                err_str += f"({props})"
+            raise AttributeError(err_str)
 
         return props
 
     def set_sim_speed(self, speed: float) -> Optional[str]:
-
         err = self._sim_client.simulation.set_speed(speed)
-
         if err:
             return err
 
@@ -301,6 +280,9 @@ class SimProxy:
         # TODO We may want to do something here after passing the request to the sim
         return None
 
+    def get_aircraft_route(self, callsign: Callsign) -> Union[List, str]:
+        raise NotImplementedError
+
     def _log_sim_props(self):
 
         props = self.sim_properties
@@ -317,4 +299,3 @@ class SimProxy:
 
     def _log_ac_data(self):
         pass
-
