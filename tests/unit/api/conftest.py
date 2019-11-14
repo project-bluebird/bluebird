@@ -2,12 +2,12 @@
 Configuration for the api tests
 """
 
-from typing import Container
 import pytest
 
 from bluebird.utils.properties import AircraftProperties
 import bluebird.api as bluebird_api
 import bluebird.api.resources.utils.utils as api_utils
+from bluebird.utils.properties import SimProperties, SimState
 from bluebird.utils.types import (
     Callsign,
     Altitude,
@@ -22,6 +22,10 @@ import bluebird.sim_proxy.sim_proxy as sim_proxy
 
 @pytest.fixture(autouse=True)
 def patch_streaming(monkeypatch):
+    """
+    Set streaming mode on so that all the sim_proxy functions call through to sim_client
+    instead of trying to use the internal state
+    """
     monkeypatch.setattr(sim_proxy, "_is_streaming", lambda x: True)
 
 
@@ -71,10 +75,16 @@ class MockSimProxy:
     Simple test mock of the SimProxy class
     """
 
+    @property
+    def sim_properties(self) -> SimProperties:
+        if not self._props_called:
+            self._props_called = True
+            raise AttributeError
+        return SimProperties(SimState.RUN, 1.0, 1.0, 0.0, "test_scn")
+
     def __init__(self):
-        self.last_cfl = self.last_wpt = self.last_direct = None
-        self._reset_flag = False
-        self._pause_called = False
+        self.last_cfl = self.last_wpt = self.last_direct = self.last_scn = None
+        self._props_called = self._reset_flag = self._pause_called = False
 
     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude, **kwargs):
         self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
@@ -124,6 +134,15 @@ class MockSimProxy:
             self._pause_called = True
             return "Couldn't pause sim"
         return None
+
+    def load_scenario(
+        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
+    ):
+        self.last_scn = {
+            "scenario_name": scenario_name,
+            "speed": speed,
+            "start_paused": start_paused,
+        }
 
 
 class MockBlueBird:

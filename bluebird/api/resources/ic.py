@@ -11,7 +11,7 @@ from bluebird.api.resources.utils.responses import (
     internal_err_resp,
 )
 from bluebird.api.resources.utils.utils import parse_args, sim_proxy
-from bluebird.settings import is_agent_mode
+import bluebird.settings as bb_settings
 
 
 _PARSER = reqparse.RequestParser()
@@ -31,13 +31,13 @@ class Ic(Resource):
         Gets the current scenario (file)name
         """
 
-        scn_name = sim_proxy().sim_properties.scn_name
+        try:
+            scn_name = sim_proxy().sim_properties.scn_name
+        except AttributeError as exc:
+            return internal_err_resp(f"Error getting sim properties: {exc}")
 
-        return (
-            ok_resp({"scn_name": scn_name})
-            if isinstance(scn_name, str)
-            else internal_err_resp(str(scn_name))
-        )
+        data = {"scn_name": scn_name}
+        return ok_resp(data)
 
     @staticmethod
     def post():
@@ -59,7 +59,7 @@ class Ic(Resource):
             return bad_request_resp(f"Invalid speed {speed}")
 
         err = sim_proxy().load_scenario(
-            filename, speed=speed, start_paused=is_agent_mode()
+            filename, speed=speed, start_paused=bb_settings.is_agent_mode()
         )
 
         return checked_resp(err)
