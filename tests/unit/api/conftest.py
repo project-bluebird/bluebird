@@ -73,7 +73,8 @@ class MockSimProxy:
 
     def __init__(self):
         self.last_cfl = self.last_wpt = self.last_direct = None
-        self.reset_flag = False
+        self._reset_flag = False
+        self._pause_called = False
 
     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude, **kwargs):
         self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
@@ -113,10 +114,16 @@ class MockSimProxy:
         return None if speed < 50 else "Requested speed too large"
 
     def reset_sim(self):
-        if self.reset_flag:
+        if self._reset_flag:
             return None
-        self.reset_flag = True
+        self._reset_flag = True
         return "Error!"
+
+    def pause_sim(self):
+        if not self._pause_called:
+            self._pause_called = True
+            return "Couldn't pause sim"
+        return None
 
 
 class MockBlueBird:
