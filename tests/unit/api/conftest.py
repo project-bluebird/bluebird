@@ -19,8 +19,6 @@ from bluebird.utils.types import (
 
 import bluebird.sim_proxy.sim_proxy as sim_proxy
 
-from tests.unit.api import TEST_LATLON
-
 
 @pytest.fixture(autouse=True)
 def patch_streaming(monkeypatch):
@@ -37,6 +35,12 @@ class MockAircraftControls:
 
     def create(self, *args):
         self.created_aricraft = list(args)
+
+    def direct_to_waypoint(self, callsign: Callsign, waypoint: str):
+        assert callsign
+        if not waypoint.upper() == "FIX":
+            return "Invalid waypoint"
+        return None
 
 
 class MockSimClient:
