@@ -4,7 +4,7 @@ Provides logic for the DTMULT API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
+from bluebird.api.resources.utils.responses import bad_request_resp, ok_resp
 from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 
 
@@ -33,4 +33,4 @@ class DtMult(Resource):
         # TODO Check if we still need to keep track of step_dt in the client
         err = sim_proxy().set_sim_speed(multiplier)
 
-        return checked_resp(err)
+        return bad_request_resp(err) if err else ok_resp()

@@ -98,6 +98,9 @@ class MockSimProxy:
     def direct_to_waypoint(self, callsign: Callsign, waypoint: str):
         self.last_direct = {"callsign": callsign, "waypoint": waypoint}
 
+    def set_sim_speed(self, speed: float):
+        return None if speed < 50 else "Requested speed too large"
+
 
 class MockBlueBird:
     def __init__(self):

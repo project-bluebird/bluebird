@@ -15,9 +15,10 @@ def test_defwpt_post(
     Tests the POST method
     """
 
+    endpoint = f"{API_PREFIX}/defwpt"
+
     # Test arg parsing
 
-    endpoint = f"{API_PREFIX}/defwpt"
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
