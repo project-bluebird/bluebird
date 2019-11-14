@@ -2,6 +2,7 @@
 Contains logic for flask and our app routes
 """
 
+from http import HTTPStatus
 import logging
 
 from flask import Flask, request
@@ -54,7 +55,7 @@ def after_req(response):
     if not data:
         data = response.data.decode()
 
-    if "eplog" in request.url.lower():
+    if "eplog" in request.url.lower() and response.status_code == HTTPStatus.OK:
         data = "<EPLOG data>"
 
     data = data.replace("\n", "") if data else ""

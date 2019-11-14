@@ -3,6 +3,7 @@ Provides logic for the 'eplog' (episode log file) API endpoint
 """
 
 import os
+from pathlib import Path
 
 from flask_restful import Resource, reqparse
 
@@ -40,12 +41,15 @@ class EpLog(Resource):
             if err:
                 return responses.internal_err_resp(f"Could not reset simulation: {err}")
 
-        full_ep_file = os.path.join(os.getcwd(), ep_file_path)
-        lines = tuple(line.rstrip("\n") for line in open(full_ep_file))
+        full_ep_file = Path(os.getcwd(), ep_file_path)
+        if not full_ep_file.exists():
+            return responses.internal_err_resp(f"Could not find episode file")
+
+        lines = list(line.rstrip("\n") for line in open(full_ep_file))
 
         data = {
             "cur_ep_id": bb_logging.EP_ID,
-            "cur_ep_file": full_ep_file,
+            "cur_ep_file": str(full_ep_file),
             "lines": lines,
         }
 
