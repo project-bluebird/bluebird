@@ -32,14 +32,24 @@ class MockAircraftControls:
 
     def __init__(self):
         self.created_aricraft = None
+        self._set_hdg_called = False
 
     def create(self, *args):
         self.created_aricraft = list(args)
 
     def direct_to_waypoint(self, callsign: Callsign, waypoint: str):
-        assert callsign
+        assert isinstance(callsign, Callsign)
         if not waypoint.upper() == "FIX":
             return "Invalid waypoint"
+        return None
+
+    def set_heading(self, callsign: Callsign, heading: Heading):
+        if not self._set_hdg_called:
+            self._set_hdg_called = True
+            raise NotImplementedError
+        assert isinstance(heading, Heading)
+        if not str(callsign) == "TEST":
+            return "Invalid callsign"
         return None
 
 

@@ -58,7 +58,8 @@ def after_req(response):
     if "eplog" in request.url.lower() and response.status_code == HTTPStatus.OK:
         data = "<EPLOG data>"
 
-    data = data.replace("\n", "") if data else ""
+    if isinstance(data, str):
+        data = data.replace("\n", "")
     LOGGER.info(f'RESP {response.status_code} "{data}"')
 
     return response

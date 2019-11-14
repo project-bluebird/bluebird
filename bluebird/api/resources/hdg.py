@@ -4,9 +4,12 @@ Provides logic for the HDG (heading) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import checked_resp, not_implemented_resp
+from bluebird.api.resources.utils.responses import (
+    bad_request_resp,
+    not_implemented_resp,
+    ok_resp,
+)
 import bluebird.api.resources.utils.utils as utils
-from bluebird.settings import Settings
 from bluebird.utils.types import Callsign, Heading
 
 
@@ -39,4 +42,4 @@ class Hdg(Resource):
         except NotImplementedError:
             return not_implemented_resp("HDG")
 
-        return checked_resp(err)
+        return bad_request_resp(err) if err else ok_resp()
