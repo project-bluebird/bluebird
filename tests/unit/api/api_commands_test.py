@@ -52,38 +52,6 @@ def test_pos_command(test_flask_client):
             assert TEST_DATA[prop][idx] == ac_data[prop]
 
 
-def test_ic_command(test_flask_client):
-    """
-    Tests the /ic endpoint
-    :param test_flask_client:
-    :return:
-    """
-
-    resp = test_flask_client.post(API_PREFIX + "/ic")
-    assert resp.status == "400 BAD REQUEST"
-
-    resp = test_flask_client.post(API_PREFIX + "/ic", json={})
-    assert resp.status == "400 BAD REQUEST"
-
-    filename = "testeroni.scn"
-
-    resp = test_flask_client.post(API_PREFIX + "/ic", json={"filename": filename})
-    assert resp.status == "200 OK"
-
-    assert (
-        sim_client_patch().last_scenario == filename
-    ), "Expected the filename to be loaded"
-
-    filename = "testeroni.SCN"
-
-    resp = test_flask_client.post(API_PREFIX + "/ic", json={"filename": filename})
-    assert resp.status == "200 OK"
-
-    assert (
-        bb_app().sim_client.last_scenario == filename
-    ), "Expected the filename to be loaded"
-
-
 def test_reset_command(test_flask_client):
     """
     Tests the /reset endpoint
