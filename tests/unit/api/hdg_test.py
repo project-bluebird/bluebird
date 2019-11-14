@@ -9,7 +9,7 @@ import bluebird.api.resources.utils.utils as utils
 from tests.unit import API_PREFIX
 
 
-def test_hdg_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-argument
+def test_hdg_post(test_flask_client, patch_bb_app):  # pylint:disable=unused-argument
     """
     Tests the POST method
     """

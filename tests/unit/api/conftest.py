@@ -160,7 +160,7 @@ class MockBlueBird:
 
 
 @pytest.fixture
-def patch_sim_proxy(monkeypatch):
+def patch_bb_app(monkeypatch):
     """
     Patches the _bb_app function in the api utils module
     """

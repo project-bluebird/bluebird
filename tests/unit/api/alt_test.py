@@ -13,7 +13,7 @@ from tests.unit import API_PREFIX
 _ENDPOINT = f"{API_PREFIX}/alt"
 
 
-def test_alt_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-argument
+def test_alt_post(test_flask_client, patch_bb_app):  # pylint:disable=unused-argument
     """
     Tests the POST method
     """
@@ -65,7 +65,7 @@ def test_alt_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-
     assert cfl_args["vspd"] == VerticalSpeed(20), ""
 
 
-def test_alt_get(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-argument
+def test_alt_get(test_flask_client, patch_bb_app):  # pylint:disable=unused-argument
     """
     Tests the GET method
     """

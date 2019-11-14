@@ -11,9 +11,7 @@ import bluebird.logging as bb_logging
 from tests.unit import API_PREFIX
 
 
-def test_eplog_get(
-    test_flask_client, patch_sim_proxy
-):  # pylint: disable=unused-argument
+def test_eplog_get(test_flask_client, patch_bb_app):  # pylint: disable=unused-argument
     """
     Tests the GET method
     """

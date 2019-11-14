@@ -13,7 +13,7 @@ from bluebird.utils.properties import SimMode
 _ENDPOINT = f"{API_PREFIX}/ic"
 
 
-def test_ic_get(test_flask_client, patch_sim_proxy):  # pylint: disable=unused-argument
+def test_ic_get(test_flask_client, patch_bb_app):  # pylint: disable=unused-argument
     """
     Tests the GET method
     """
@@ -30,7 +30,7 @@ def test_ic_get(test_flask_client, patch_sim_proxy):  # pylint: disable=unused-a
     assert resp.json == {"scn_name": "test_scn"}
 
 
-def test_ic_post(test_flask_client, patch_sim_proxy):  # pylint: disable=unused-argument
+def test_ic_post(test_flask_client, patch_bb_app):  # pylint: disable=unused-argument
     """
     Tests the POST method
     """

@@ -11,7 +11,7 @@ from tests.unit import API_PREFIX
 from tests.unit.api import TEST_LAT, TEST_LON
 
 
-def test_cre_post(test_flask_client, patch_sim_proxy):  # pylint:disable=unused-argument
+def test_cre_post(test_flask_client, patch_bb_app):  # pylint:disable=unused-argument
     """
     Tests the POST method
     """

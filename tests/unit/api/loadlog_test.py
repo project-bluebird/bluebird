@@ -71,7 +71,7 @@ class MockBlueBird:
 
 
 @pytest.fixture
-def patch_sim_proxy_loadlog(monkeypatch):
+def patch_bb_app_loadlog(monkeypatch):
     """
     Patches the _bb_app function in the api utils module
     """
@@ -171,7 +171,7 @@ def test_parse_lines_time():
     assert "ALT KL204 9144" in data["lines"][-1], ""
 
 
-def test_log_reload_from_lines(test_flask_client, patch_sim_proxy_loadlog):
+def test_log_reload_from_lines(test_flask_client, patch_bb_app_loadlog):
     """
     Tests the episode reloading given a full logfile in the request
     :param test_flask_client
@@ -192,7 +192,7 @@ def test_log_reload_from_lines(test_flask_client, patch_sim_proxy_loadlog):
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_from_file(test_flask_client, patch_sim_proxy_loadlog):
+def test_log_reload_from_file(test_flask_client, patch_bb_app_loadlog):
     """
     Tests that the episode reloading works when given a logfile
     :param test_flask_client
@@ -210,7 +210,7 @@ def test_log_reload_from_file(test_flask_client, patch_sim_proxy_loadlog):
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_full(test_flask_client, patch_sim_proxy_loadlog):
+def test_log_reload_full(test_flask_client, patch_bb_app_loadlog):
     """
     Tests the full functionality of the log reloading
     :param test_flask_client
@@ -238,7 +238,7 @@ def test_log_reload_full(test_flask_client, patch_sim_proxy_loadlog):
     assert utils.sim_proxy().was_stepped, "Expected that the simulation was stepped"
 
 
-def test_log_reload_invalid_time(test_flask_client, patch_sim_proxy_loadlog):
+def test_log_reload_invalid_time(test_flask_client, patch_bb_app_loadlog):
     """
     Tests that an error is returned if a reload time was requested which is after the
     last time in the log file
