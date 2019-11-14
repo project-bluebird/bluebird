@@ -127,6 +127,7 @@ class LatLon:
     lon_degrees: float
 
     def __init__(self, lat: float, lon: float):
+        assert isinstance(lat, (int, float)) and isinstance(lon, (int, float))
         assert abs(lat) <= 90, "Latitude must satisfy abs(x) <= 90"
         assert abs(lon) <= 180, "Longitude must satisfy abs(x) <= 180"
         self.lat_degrees, self.lon_degrees = (lat, lon)

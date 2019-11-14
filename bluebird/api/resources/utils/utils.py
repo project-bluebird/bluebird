@@ -2,7 +2,6 @@
 Contains utility functions for the API resources
 """
 
-from dataclasses import asdict
 import logging
 import re
 from typing import List, Optional, Dict, Any
@@ -124,7 +123,6 @@ def parse_route_data(route_data):
     return parsed
 
 
-# TODO Add test
 def convert(props: AircraftProperties) -> Dict[str, Any]:
     """
     Parses an AircraftProperties object into a dict suitable for returning via Flask
