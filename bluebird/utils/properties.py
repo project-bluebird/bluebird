@@ -5,15 +5,9 @@ Contains property class definitions
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
+from typing import Optional, List
 
-from bluebird.utils.types import (
-    Altitude,
-    Callsign,
-    GroundSpeed,
-    Heading,
-    LatLon,
-    VerticalSpeed,
-)
+import bluebird.utils.types as types
 
 
 # TODO Figure out if the common "_missing_" function can be refactored out
@@ -63,7 +57,6 @@ class SimType(IntEnum):
         )
 
 
-# TODO Needs to (possibly) include route information
 @dataclass
 class AircraftProperties:
     """
@@ -72,19 +65,36 @@ class AircraftProperties:
     """
 
     aircraft_type: str
-    altitude: Altitude
-    callsign: Callsign
-    cleared_flight_level: Altitude
-    ground_speed: GroundSpeed
-    heading: Heading
-    position: LatLon
-    requested_flight_level: Altitude
-    vertical_speed: VerticalSpeed
+    altitude: types.Altitude
+    callsign: types.Callsign
+    cleared_flight_level: types.Altitude
+    ground_speed: types.GroundSpeed
+    heading: types.Heading
+    position: types.LatLon
+    requested_flight_level: types.Altitude
+    vertical_speed: types.VerticalSpeed
 
     def __eq__(self, other):
         if other.__class__ is not self.__class__:
             return NotImplemented
         return self.callsign == other.callsign
+
+
+@dataclass
+class RouteItem:
+    waypoint: types.Waypoint
+    required_gspd: Optional[types.GroundSpeed]
+
+
+@dataclass
+class AircraftRoute:
+
+    callsign: types.Callsign
+    segments: List[RouteItem]
+    current_segment_index: int
+
+    def __post_init__(self):
+        assert self.current_segment_index < len(self.segments)
 
 
 class SimState(IntEnum):
@@ -100,9 +110,11 @@ class SimState(IntEnum):
 
 @dataclass(frozen=True)
 class SimProperties:
+    """Encapsulates the properties of the current simulation state"""
+
     state: SimState
     speed: float
     step_size: float
-    time: float
-    # time_utc: datetime  # TODO Not sure if this is needed
+    scenario_time: float  # The number of seconds since the start of the scenario
+    utc_time: datetime
     scn_name: str

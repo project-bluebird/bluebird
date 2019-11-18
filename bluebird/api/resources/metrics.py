@@ -3,7 +3,6 @@ Logic for metric endpoints
 """
 
 import logging
-from typing import Union
 
 from flask_restful import Resource, reqparse
 
@@ -61,8 +60,7 @@ class Metric(Resource):
         # BlueBird's built-in metrics
         provider = metrics_providers()[0]
 
-        # TODO Check behaviour of parse_args with non-required/None
-        if "provider" in req_args:
+        if req_args["provider"]:
             provider = _get_provider_by_name(req_args["provider"])
             if not isinstance(provider, AbstractMetricProvider):
                 return provider
@@ -71,17 +69,15 @@ class Metric(Resource):
 
         try:
             result = provider(metric_name, *args)
-
+        # Catch cases where a wrong metric name is given
         except AttributeError:
             return not_found_resp(
                 f"Provider {str(provider)} (version {provider.version()}) has no "
                 f"metric named '{metric_name}'"
             )
-
-        except (TypeError, AssertionError) as exc:
-            return bad_request_resp(
-                f"Invalid arguments for metric function: {str(exc)}"
-            )
+        # Catch all other cases
+        except Exception as exc:  # pylint:disable=broad-except
+            return bad_request_resp(f"Metric function returned an error: {str(exc)}")
 
         data = {metric_name: result}
         return ok_resp(data)

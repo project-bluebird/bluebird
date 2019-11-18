@@ -4,24 +4,26 @@ Provides logic for the ALT (altitude) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    bad_request_resp,
-    checked_resp,
-    ok_resp,
-)
-from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.properties import AircraftProperties
 from bluebird.utils.types import Altitude, Callsign, VerticalSpeed
 
 # Parser for post requests
 _PARSER_POST = reqparse.RequestParser()
-_PARSER_POST.add_argument(CALLSIGN_LABEL, type=Callsign, location="json", required=True)
-# TODO Update API.md and make all type args match their __init__ options (i.e. str or int here)
+_PARSER_POST.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+)
+# TODO Update API.md and make all type args match their __init__ options (i.e. str or
+# int here)
 _PARSER_POST.add_argument("alt", type=Altitude, location="json", required=True)
 _PARSER_POST.add_argument("vspd", type=VerticalSpeed, location="json", required=False)
 
 # Parser for get requests
 _PARSER_GET = reqparse.RequestParser()
-_PARSER_GET.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
+_PARSER_GET.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="args", required=True
+)
 
 
 class Alt(Resource):
@@ -37,15 +39,15 @@ class Alt(Resource):
         :return:
         """
 
-        req_args = parse_args(_PARSER_POST)
-        callsign: Callsign = req_args[CALLSIGN_LABEL]
+        req_args = utils.parse_args(_PARSER_POST)
+        callsign: Callsign = req_args[utils.CALLSIGN_LABEL]
         fl_cleared: Altitude = req_args["alt"]
 
-        err = sim_proxy().set_cleared_fl(
+        err = utils.sim_proxy().aircraft.set_cleared_fl(
             callsign, fl_cleared, vspd=req_args.get("vspd")
         )
 
-        return checked_resp(err)
+        return responses.checked_resp(err)
 
     @staticmethod
     def get():
@@ -56,15 +58,22 @@ class Alt(Resource):
         :return:
         """
 
-        req_args = parse_args(_PARSER_GET)
-        callsign = req_args[CALLSIGN_LABEL]
+        req_args = utils.parse_args(_PARSER_GET)
+        callsign = req_args[utils.CALLSIGN_LABEL]
 
-        aircraft_props, _ = sim_proxy().get_aircraft_props(callsign)
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
 
-        if not aircraft_props:
-            return bad_request_resp(f"Aircraft {callsign} not found")
+        aircraft_props = utils.sim_proxy().aircraft.get_properties(callsign)
 
-        # TODO Check units (from BlueSky) - should be meters, but have changed to feet here
+        if not isinstance(aircraft_props, AircraftProperties):
+            return responses.internal_err_resp(
+                f"Could not get properties for {callsign}: {aircraft_props}"
+            )
+
+        # TODO Check units (from BlueSky) - should be meters, but have changed to feet
+        # here
         data = {
             callsign.value: {
                 "fl_current": aircraft_props.altitude.feet,
@@ -73,4 +82,4 @@ class Alt(Resource):
             }
         }
 
-        return ok_resp(data)
+        return responses.ok_resp(data)

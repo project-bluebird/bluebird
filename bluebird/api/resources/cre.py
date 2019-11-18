@@ -41,7 +41,7 @@ class Cre(Resource):
 
         # TODO Replace ac_data keys with callsigns (also need to parse callsigns coming
         # from the simulators)
-        if utils.sim_proxy().contains(callsign):
+        if utils.sim_proxy().aircraft.exists(callsign):
             return bad_request_resp(f"Aircraft {callsign} already exists")
 
         position_or_resp = utils.try_parse_lat_lon(req_args)
@@ -54,7 +54,7 @@ class Cre(Resource):
         if not req_args["type"]:
             return bad_request_resp("Aircraft type must be specified")
 
-        err = utils.sim_client().aircraft.create(
+        err = utils.sim_proxy().aircraft.create(
             callsign,
             req_args["type"],
             position_or_resp,

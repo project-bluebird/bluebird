@@ -5,7 +5,7 @@ Provides logic for the VS (vertical speed) API endpoint
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import checked_resp
-from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_client
+from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
 from bluebird.utils.types import Callsign, VerticalSpeed
 
 
@@ -31,7 +31,7 @@ class Vs(Resource):
 
         req_args = parse_args(_PARSER)
 
-        err = sim_client().aircraft.set_vertical_speed(
+        err = sim_proxy().aircraft.set_vertical_speed(
             req_args[CALLSIGN_LABEL], req_args["vspd"]
         )
 

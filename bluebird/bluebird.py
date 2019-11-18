@@ -10,7 +10,7 @@ from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
 from bluebird.settings import Settings
 from bluebird.sim_client import setup_sim_client
-from bluebird.sim_client.abstract_sim_client import AbstractSimClient
+from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.sim_proxy import SimProxy
 
 
@@ -29,11 +29,12 @@ class BlueBird:
 
         self._cli_args = args
         self._min_sim_version = None
-        self._metrics_providers = None
         self._timers = []
 
         self.sim_proxy = None
         self.sim_client: Optional[AbstractSimClient] = None
+
+        self.metrics_providers = None
 
     def __enter__(self):
         return self
@@ -48,8 +49,8 @@ class BlueBird:
         for timer in self._timers:
             timer.stop()
 
-        if self.sim_client:
-            self.sim_client.stop()
+        if self.sim_proxy:
+            self.sim_proxy.shutdown()
 
     def setup_sim_client(self):
         """
@@ -60,11 +61,9 @@ class BlueBird:
         self.sim_client, self._min_sim_version = setup_sim_client()
         self.sim_proxy = SimProxy(self.sim_client)
 
-        # TODO: Need to add/initialise any metrics providers from simulator clients... i.e. MachColl!
-        self._metrics_providers = setup_metrics()
-
-        # TODO What to do here?
-        self._timers.extend(self.sim_client.start_timers())
+        # TODO: Need to add/initialise any metrics providers from simulator clients...
+        # i.e. MachColl!
+        self.metrics_providers = setup_metrics()
 
     def connect_to_sim(self):
         """
@@ -77,21 +76,21 @@ class BlueBird:
         self._logger.info(f"Attempting to connect to {sim_name} at {Settings.SIM_HOST}")
 
         try:
-            self.sim_client.connect()
+            self.sim_proxy.connect()
         except TimeoutError:
             self._logger.error(f"Failed to connect to {sim_name}, exiting")
             return False
 
-        if self.sim_client.sim_version < self._min_sim_version:
+        if self.sim_proxy.sim_version < self._min_sim_version:
             self._logger.error(
-                f"server of version {self.sim_client.sim_version} does not meet the "
+                f"server of version {self.sim_proxy.sim_version} does not meet the "
                 f"minimum requirement ({self._min_sim_version})"
             )
             return False
 
-        if self.sim_client.sim_version.major > self._min_sim_version.major:
+        if self.sim_proxy.sim_version.major > self._min_sim_version.major:
             self._logger.error(
-                f"{sim_name} server of version {self.sim_client.sim_version} has major"
+                f"{sim_name} server of version {self.sim_proxy.sim_version} has major"
                 f"version greater than supported in this version of the client"
                 f"({self._min_sim_version})"
             )
@@ -100,11 +99,11 @@ class BlueBird:
         # TODO: We may want to pre-fetch the list of available aircraft types here
 
         if self._cli_args["reset_sim"]:
-            err = self.sim_client.simulation.reset()
+            err = self.sim_proxy.simulation.reset()
             if err:
                 raise RuntimeError(f"Could not reset sim on startup: {err}")
 
-        # self._timers.extend([self.sim_state.start_timer(), self.ac_data.start_timer()]
+        self._timers.extend(self.sim_proxy.start_timers())
 
         return True
 

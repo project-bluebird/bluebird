@@ -2,22 +2,19 @@
 Contains utility functions for the API resources
 """
 
-import logging
 import re
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
-from flask import current_app
+from flask import current_app, Response
 from flask_restful import reqparse
 
+import bluebird.utils.types as types
+import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.responses import bad_request_resp
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
-from bluebird.sim_client.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.sim_proxy import SimProxy
-from bluebird.utils.properties import AircraftProperties
-from bluebird.utils.types import LatLon
+from bluebird.utils.properties import AircraftProperties, AircraftRoute
 
-
-_LOGGER = logging.getLogger(__name__)
 
 # Name of the Flask config which contains the BlueBird instance
 FLASK_CONFIG_LABEL = "bluebird_app"
@@ -31,13 +28,11 @@ _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
 
 
 def parse_args(parser: reqparse.RequestParser) -> Dict[str, Any]:
-    """
-    Parse the request arguments and return them as a dict
-    """
+    """Parse the request arguments and return them as a dict"""
     return dict(parser.parse_args(strict=True))
 
 
-def try_parse_lat_lon(args: dict):  # -> Union[LatLon, RespTuple]:
+def try_parse_lat_lon(args: dict) -> Union[types.LatLon, Response]:
     """
     Attempts to parse a LatLon from an argument dict
     :param args:
@@ -46,15 +41,13 @@ def try_parse_lat_lon(args: dict):  # -> Union[LatLon, RespTuple]:
     try:
         assert "lat" in args, "Expected args to contain 'lat'"
         assert "lon" in args, "Expected args to contain 'lon'"
-        return LatLon(args["lat"], args["lon"])
+        return types.LatLon(args["lat"], args["lon"])
     except AssertionError as exc:
         return bad_request_resp(f"Invalid LatLon: {exc}")
 
 
 def _bb_app():
-    """
-    Gets the BlueBird app instance
-    """
+    """Gets the BlueBird app instance"""
     # pylint: disable=protected-access
     if not hasattr(_bb_app, "_instance"):
         _bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
@@ -63,32 +56,40 @@ def _bb_app():
 
 def sim_proxy() -> SimProxy:
     """
-    Utility function to return the sim_proxy instance
+    Utility function to return the sim_proxy instance. This is the single point of
+    entry from the API layer to the rest of the app
     """
     return _bb_app().sim_proxy
 
 
-def sim_client() -> AbstractSimClient:
-    """
-    Utility function to return the sim_client instance
-    """
-    return _bb_app().sim_client
-
-
 def metrics_providers() -> List[AbstractMetricProvider]:
-    """
-    Utility function to return the metrics_providers instance
-    """
+    """Utility function to return the metrics_providers instance"""
     return _bb_app().metrics_providers
 
 
-# TODO This is specific to BlueSky and will be replaced
+def check_exists(callsign: types.Callsign) -> Optional[Response]:
+    """Checks if an aircraft exists, and returns an appropriate response if not"""
+    exists = sim_proxy().aircraft.exists(callsign)
+    if not isinstance(exists, bool):
+        return responses.internal_err_resp(
+            f"Could not check if the aircraft exists: {exists}"
+        )
+
+    if not exists:
+        return responses.bad_request_resp(f"Aircraft {callsign} does not exist")
+
+    return None
+
+
+# TODO This is specific to BlueSky and will be replaced by the GeoJSON version
 def validate_scenario(scn_lines: List[str]) -> Optional[str]:
     """
     Checks that each line in the given list matches the requirements
     :param scn_lines:
     :return:
     """
+
+    return "validate_scenario is depreciated"
 
     for line in scn_lines:
         if not _SCN_RE.match(line):
@@ -123,11 +124,9 @@ def parse_route_data(route_data):
     return parsed
 
 
-def convert(props: AircraftProperties) -> Dict[str, Any]:
+def convert_aircraft_props(props: AircraftProperties) -> Dict[str, Any]:
     """
     Parses an AircraftProperties object into a dict suitable for returning via Flask
-    :param props:
-    :return:
     """
 
     # TODO Check units
@@ -145,4 +144,31 @@ def convert(props: AircraftProperties) -> Dict[str, Any]:
             "vs": props.vertical_speed.feet_per_min,
         }
     }
+
+    return data
+
+
+def convert_aircraft_route(route: AircraftRoute) -> Dict[str, Any]:
+    """
+    Parses an AircraftRoute object into a dict suitable for returning via Flask
+    """
+    callsign_str = str(route.callsign)
+    data = {callsign_str: [], "current_segment_index": route.current_segment_index}
+    for segment in route.segments:
+        data[callsign_str].append(
+            {
+                "wpt_name": segment.waypoint.name,
+                "req_alt": (
+                    segment.waypoint.altitude.feet
+                    if segment.waypoint.altitude
+                    else None
+                ),
+                "req_gspd": (
+                    segment.required_gspd.feet_per_sec
+                    if segment.required_gspd
+                    else None
+                ),
+            }
+        )
+
     return data

@@ -165,12 +165,15 @@ class VerticalSpeed:
 class Waypoint:
     """
     Dataclass representing a named waypoint and optional altitude. __repr__ returns the
-    waypoint name
+    waypoint name only
     """
 
     name: str
     position: LatLon
     altitude: Optional[Altitude]
+
+    def __post_init__(self):
+        assert self.name, "Name must not be empty or None"
 
     def __repr__(self):
         return self.name

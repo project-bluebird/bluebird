@@ -2,23 +2,23 @@
 BlueSky simulation client class
 """
 
+# TODO: Need to re-add the tests for string parsing/units from the old API tests
+
 import logging
 import os
 from typing import Optional, Iterable, List, Union, Dict
 
 from semver import VersionInfo
 
-from bluebird.settings import Settings
-from bluebird.sim_client.abstract_sim_client import (
-    AbstractAircraftControls,
-    AbstractSimulatorControls,
-    AbstractWaypointControls,
-    AbstractSimClient,
-)
-from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
-from bluebird.utils.properties import AircraftProperties, SimProperties
-from bluebird.utils.timer import Timer
+import bluebird.utils.properties as bb_props
 import bluebird.utils.types as types
+from bluebird.settings import Settings
+from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
+from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
+from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
+from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
+from bluebird.utils.abstract_sim_client import AbstractSimClient
+from bluebird.utils.timer import Timer
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,8 +49,12 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     """
 
     @property
-    def stream_data(self) -> List[AircraftProperties]:
+    def stream_data(self) -> List[bb_props.AircraftProperties]:
         return self._client.aircraft_stream_data
+
+    # @property
+    # def routes(self) -> Dict[types.Callsign, List]:
+    #     raise NotImplementedError
 
     def __init__(self, client):
         self._client = client
@@ -79,11 +83,14 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def set_vertical_speed(
         self, callsign: types.Callsign, vertical_speed: types.VerticalSpeed
     ):
+        # TODO Correct unit conversion for BlueSky
         cmd_str = f"VS {callsign} {vertical_speed}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
+    # NOTE(RKM 2019-11-18) For BlueSky, I think the waypoint has to exist on the
+    # aircraft's route
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: str
+        self, callsign: types.Callsign, waypoint: types.Waypoint
     ) -> Optional[str]:
         cmd_str = f"DIRECT {callsign} {waypoint}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
@@ -92,6 +99,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def add_waypoint_to_route(
         self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
     ) -> Optional[str]:
+        raise NotImplementedError
         cmd_str = f"ADDWPT {callsign} {waypoint}"
         cmd_str += " " + kwargs.get("alt", "")
         cmd_str += " " + kwargs.get("spd", "")
@@ -110,16 +118,26 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         cmd_str = f"CRE {callsign} {ac_type} {position} {heading} {altitude} {speed}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
-    def get_properties(self, callsign: types.Callsign) -> Optional[AircraftProperties]:
+    def get_properties(
+        self, callsign: types.Callsign
+    ) -> Union[bb_props.AircraftProperties, str]:
         cmd_str = f"POS {callsign}"
         props = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
         # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541
         raise NotImplementedError(f"(Unhandled) POS returned: {props}")
 
-    def get_all_properties(self) -> List[AircraftProperties]:
+    def get_route(self, callsign: types.Callsign) -> Union[bb_props.AircraftRoute, str]:
+        raise NotImplementedError
+
+    def get_all_properties(
+        self,
+    ) -> Union[Dict[types.Callsign, AircraftProperties], str]:
         cmd_str = f"LISTAC"
         callsigns = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
         raise NotImplementedError(f"(Unhandled) LISTAC returned: {callsigns}")
+
+    def exists(self, callsign: types.Callsign) -> Union[bool, str]:
+        raise NotImplementedError
 
     def _tmp_stack_cmd_handle_list(
         self, cmd_str: str, resp_expected: bool = False
@@ -137,13 +155,17 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     """
 
     @property
-    def stream_data(self) -> SimProperties:
+    def stream_data(self) -> bb_props.SimProperties:
         raise NotImplementedError
 
     @property
-    def properties(self) -> Union[SimProperties, str]:
+    def properties(self) -> Union[bb_props.SimProperties, str]:
         # TODO This may be difficult to get from the stack command
         raise NotImplementedError
+
+    # @property
+    # def time(self) -> Union[bb_props.SimProperties, float]:
+    #     raise NotImplementedError
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
@@ -163,6 +185,13 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         raise NotImplementedError
 
     def resume(self) -> Optional[str]:
+        raise NotImplementedError
+
+    def stop(self) -> Optional[str]:
+        raise NotImplementedError
+
+    @staticmethod
+    def parse_sim_state(val: str) -> Union[bb_props.SimState, str]:
         raise NotImplementedError
 
     def step(self) -> Optional[str]:
@@ -191,13 +220,19 @@ class BlueSkyWaypointControls(AbstractWaypointControls):
     AbstractWaypointControls implementation for BlueSky
     """
 
+    @property
+    def waypoints(self) -> Union[str, dict]:
+        raise NotImplementedError
+
     def __init__(self, sim_client):
         self._sim_client = sim_client
 
-    def get_all_waypoints(self) -> dict:
+    def find(self, waypoint_name: str) -> Optional[types.Waypoint]:
         raise NotImplementedError
 
-    def define(self, name: str, position: types.LatLon, **kwargs) -> Optional[str]:
+    def define(
+        self, name: Optional[str], position: types.LatLon, **kwargs
+    ) -> Union[types.Waypoint, str]:
         raise NotImplementedError
 
 
@@ -239,6 +274,6 @@ class SimClient(AbstractSimClient):
             timeout=timeout,
         )
 
-    def stop(self, shutdown_sim: bool = False) -> bool:
+    def shutdown(self, shutdown_sim: bool = False) -> bool:
         self._client.stop()
         return True

@@ -6,15 +6,17 @@ import importlib.util
 import logging
 
 from bluebird.settings import Settings
-from .abstract_sim_client import AbstractSimClient
+from bluebird.utils.abstract_sim_client import AbstractSimClient
 
 
 _LOGGER = logging.getLogger(__name__)
 
 _CLIENT_INIT_STR = """
 from semver import VersionInfo
-from bluebird.sim_client.abstract_sim_client import AbstractSimClient
+from bluebird.utils.abstract_sim_client import AbstractSimClient
 
+# NOTE: Deliberate relative import here! Grabs the particular sim_client module for the
+# sim implementation we are trying to load
 from .sim_client import SimClient, MIN_SIM_VERSION
 
 assert issubclass(

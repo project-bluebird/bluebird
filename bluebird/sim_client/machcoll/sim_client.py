@@ -1,40 +1,39 @@
 """
 MachColl simulation client class
 
-NOTE: The assumed MachColl state transitions are -
+NOTE: The allowed state transitions appear to be -
 Init        -> Running, Stepping
 Running     -> Paused, Stopped
 Stopped     -> Running, Stepping
 Paused      -> Running, Stepping, Stopped
 Stepping    -> Paused, Stopped
-
-TODO: Check if Stopped is indeed the "terminal" state (the implementation below assumes
-this is the case). If so, why can we increment from it?
 """
+
+# TODO(RKM 2019-11-17) Refactor the classes to separate files
 
 import logging
 import os
 import sys
+import traceback
 from typing import Iterable, Optional, List, Union, Dict
 
 from semver import VersionInfo
 
-from bluebird.settings import is_agent_mode, Settings
-from bluebird.sim_client.abstract_sim_client import (
-    AbstractAircraftControls,
-    AbstractSimulatorControls,
-    AbstractWaypointControls,
-    AbstractSimClient,
-)
+import bluebird.utils.properties as bb_props
 import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties, SimProperties, SimState
+from bluebird.settings import is_agent_mode, Settings
+from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
+from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
+from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
+from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
+
 
 _LOGGER = logging.getLogger(__name__)
 
-# Attempt to import the MCClientMetrics class from the machine_college module.
-# TODO This should work with both the package installation from pip, or from the package
-# root as specified in MC_PATH. Not sure which should be the default.
+# Attempt to import the MCClientMetrics class from the machine_college module
+# TODO(RKM 2019-11-18) Refactor this so that the import from MC_PATH is tested first.
+# This is to allow faster development and debugging
 try:
     from nats.machine_college.bluebird_if.mc_client_metrics import MCClientMetrics
 except ModuleNotFoundError:
@@ -69,21 +68,21 @@ class MachCollAircraftControls(AbstractAircraftControls):
     """
 
     @property
-    def stream_data(self) -> List[AircraftProperties]:
+    def stream_data(self) -> List[bb_props.AircraftProperties]:
         raise NotImplementedError
 
-    @property
-    def routes(self) -> Dict[types.Callsign, List]:
-        resp = self._mc_client().get_active_callsigns()
-        _raise_for_no_data(resp)
-        routes = {}
-        for callsign_str in resp:
-            callsign = types.Callsign(callsign_str)
-            # TODO: Check that a None response *only* implies a connection error
-            route = self._mc_client().get_flight_plan_for_callsign(str(callsign))
-            # TODO: Check the type of route
-            routes[callsign] = route
-        return routes
+    # @property
+    # def routes(self) -> Dict[types.Callsign, List]:
+    #     resp = self._mc_client().get_active_callsigns()
+    #     _raise_for_no_data(resp)
+    #     routes = {}
+    #     for callsign_str in resp:
+    #         callsign = types.Callsign(callsign_str)
+    #         # TODO: Check that a None response *only* implies a connection error
+    #         route = self._mc_client().get_flight_plan_for_callsign(str(callsign))
+    #         # TODO: Check the type of route
+    #         routes[callsign] = route
+    #     return routes
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
@@ -113,7 +112,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
 
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: str
+        self, callsign: types.Callsign, waypoint: types.Waypoint
     ) -> Optional[str]:
         raise NotImplementedError
 
@@ -135,12 +134,17 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     def get_properties(
         self, callsign: types.Callsign
-    ) -> Union[AircraftProperties, str]:
+    ) -> Union[bb_props.AircraftProperties, str]:
         resp = self._mc_client().get_active_flight_by_callsign(str(callsign))
         _raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
 
-    def get_all_properties(self) -> Dict[types.Callsign, AircraftProperties]:
+    def get_route(self, callsign: types.Callsign) -> Union[bb_props.AircraftRoute, str]:
+        raise NotImplementedError
+
+    def get_all_properties(
+        self,
+    ) -> Union[Dict[types.Callsign, bb_props.AircraftProperties], str]:
         resp = self._mc_client().get_active_callsigns()
         _raise_for_no_data(resp)
         all_props = {}
@@ -150,18 +154,23 @@ class MachCollAircraftControls(AbstractAircraftControls):
             all_props[callsign] = props
         return all_props
 
+    def exists(self, callsign: types.Callsign) -> Union[bool, str]:
+        raise NotImplementedError
+
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
 
     @staticmethod
-    def _parse_aircraft_properties(ac_props: dict) -> Union[AircraftProperties, str]:
+    def _parse_aircraft_properties(
+        ac_props: dict,
+    ) -> Union[bb_props.AircraftProperties, str]:
         try:
             alt = types.Altitude("FL" + str(ac_props["pos"]["afl"]))
             # TODO Check this is appropriate
             rfl_val = ac_props["flight-plan"]["rfl"]
             rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
             # TODO Not currently available: gs, hdg, pos, vs
-            return AircraftProperties(
+            return bb_props.AircraftProperties(
                 ac_props["flight-data"]["type"],
                 alt,
                 types.Callsign(ac_props["flight-data"]["callsign"]),
@@ -182,11 +191,11 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     """
 
     @property
-    def stream_data(self) -> SimProperties:
+    def stream_data(self) -> bb_props.SimProperties:
         raise NotImplementedError
 
     @property
-    def properties(self) -> Union[SimProperties, str]:
+    def properties(self) -> Union[bb_props.SimProperties, str]:
         responses = []
         for req in [
             self._mc_client().get_state,
@@ -200,8 +209,8 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
         try:
             responses[0] = self.parse_sim_state(responses[0])
-        except ValueError as exc:
-            return str(exc)
+        except ValueError:
+            return traceback.format_exc()
 
         # Different type returned on failure, have to handle separately
         responses.append(self._mc_client().get_scenario_filename())
@@ -210,11 +219,17 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
         try:
             assert len(responses) == len(
-                SimProperties.__annotations__  # pylint: disable=no-member
-            )
-            return SimProperties(*responses)  # Splat!
-        except Exception as exc:  # pylint: disable=broad-except
-            return str(exc)
+                bb_props.SimProperties.__annotations__  # pylint: disable=no-member
+            ), "Expected the number of arguments to match"
+            return bb_props.SimProperties(*responses)  # Splat!
+        except AssertionError:  # pylint: disable=broad-except
+            return traceback.format_exc()
+
+    # @property
+    # def time(self) -> Union[float, str]:
+    #     resp = self._mc_client().get_time()
+    #     _raise_for_no_data(resp)
+    #     return resp
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
@@ -239,7 +254,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == SimState.RUN:
+        if state == bb_props.SimState.RUN:
             return
         resp = self._mc_client().sim_start()
         _raise_for_no_data(resp)
@@ -249,7 +264,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == SimState.INIT:
+        if state == bb_props.SimState.INIT:
             return
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
@@ -259,7 +274,11 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state in [SimState.INIT, SimState.HOLD, SimState.END]:
+        if state in [
+            bb_props.SimState.INIT,
+            bb_props.SimState.HOLD,
+            bb_props.SimState.END,
+        ]:
             return None
         resp = self._mc_client().sim_pause()
         _raise_for_no_data(resp)
@@ -269,9 +288,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == SimState.RUN:
+        if state == bb_props.SimState.RUN:
             return None
-        if state == SimState.END:
+        if state == bb_props.SimState.END:
             return 'Can\'t resume sim from "END" state'
         resp = self._mc_client().sim_resume()
         _raise_for_no_data(resp)
@@ -281,23 +300,23 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == SimState.END:
+        if state == bb_props.SimState.END:
             return
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     @staticmethod
-    def parse_sim_state(val: str) -> SimState:
+    def parse_sim_state(val: str) -> bb_props.SimState:
         # TODO There is also a possible "stepping" mode (?)
         if val.upper() == "INIT":
-            return SimState.INIT
+            return bb_props.SimState.INIT
         if val.upper() == "RUNNING":
-            return SimState.RUN
+            return bb_props.SimState.RUN
         if val.upper() == "STOPPED":
-            return SimState.END
+            return bb_props.SimState.END
         if val.upper() == "PAUSED":
-            return SimState.HOLD
+            return bb_props.SimState.HOLD
         raise ValueError(f'Unknown state: "{val}"')
 
     def step(self) -> Optional[str]:
@@ -340,15 +359,10 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         # yet
         raise NotImplementedError
 
-    def get_time(self) -> float:
-        resp = self._mc_client().get_time()
-        _raise_for_no_data(resp)
-        return resp
-
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
 
-    def _get_state(self) -> Union[SimState, str]:
+    def _get_state(self) -> Union[bb_props.SimState, str]:
         state = self._mc_client().get_state()
         if not state:
             return f"Could not get the sim state"
@@ -361,7 +375,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def _is_success(data) -> bool:
         try:
             return data["code"]["Short Description"] == "Success"
-        except:
+        except:  # pylint:disable=bare-except
             pass
         return False
 
@@ -374,7 +388,8 @@ class MachCollWaypointControls(AbstractWaypointControls):
     def __init__(self, sim_client):
         self._sim_client = sim_client
 
-    def get_all_waypoints(self) -> dict:
+    @property
+    def waypoints(self) -> Union[str, dict]:
         fixes = self._mc_client().get_all_fixes()
         if not isinstance(fixes, dict):
             raise NotImplementedError(f"get_all_fixes returned: {fixes}")
@@ -382,7 +397,12 @@ class MachCollWaypointControls(AbstractWaypointControls):
         _LOGGER.warning(f"Unhandled data: {fixes}")
         return {}
 
-    def define(self, name: str, position: types.LatLon, **kwargs) -> Optional[str]:
+    def find(self, waypoint_name: str) -> Optional[types.Waypoint]:
+        raise NotImplementedError
+
+    def define(
+        self, name: Optional[str], position: types.LatLon, **kwargs
+    ) -> Union[types.Waypoint, str]:
         raise NotImplementedError
 
     def _mc_client(self) -> MCClientMetrics:
@@ -426,16 +446,27 @@ class SimClient(AbstractSimClient):
 
         version_dict = self.mc_client.compare_api_version()
         self._client_version = VersionInfo.parse(version_dict["This client version"])
-        _LOGGER.debug(f"MCClientMetrics connected. Version: {self._client_version}")
+        _LOGGER.info(f"MCClientMetrics connected. Version: {self._client_version}")
 
     def start_timers(self) -> Iterable[Timer]:
+        # NOTE(RKM 2019-11-18) MCClientMetrics is passive for now - we don't have any
+        # stream data
         return []
 
-    def stop(self, shutdown_sim: bool = False) -> bool:
+    def shutdown(self, shutdown_sim: bool = False) -> bool:
 
-        stop_str = self.simulation.stop()
-        if stop_str:
-            _LOGGER.error(f"Error when stopping simulation: {stop_str}")
+        if not self.mc_client:
+            return True
+
+        props = self.simulation.properties
+        if isinstance(props, str):
+            _LOGGER.error(f"Could not pause sim while disconnecting:\n'{props}'")
+        elif props.state == bb_props.SimState.RUN:
+            stop_str = self.simulation.pause()
+            shutdown_ok = True
+            if stop_str:
+                _LOGGER.error(f"Error when stopping simulation: {stop_str}")
+                shutdown_ok = False
 
         self.mc_client.close_mq()
 
@@ -443,4 +474,6 @@ class SimClient(AbstractSimClient):
         if not self._client_version or not shutdown_sim:
             return True
 
+        # TODO
         raise NotImplementedError("No sim shutdown method implemented")
+        return shutdown_ok  # pylint:disable=unreachable

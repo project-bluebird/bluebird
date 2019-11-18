@@ -18,14 +18,13 @@ _PARSER.add_argument("close_ep", type=bool, location="args", required=False)
 
 class EpLog(Resource):
     """
-    Contains logic for the eplog endpoint
+    Contains logic for the EPLOG endpoint
     """
 
     @staticmethod
     def get():
         """
-        Logic for GET events.
-        :return: :class:`~flask.Response`
+        Logic for GET events. Returns the current episode ID and log content
         """
 
         req_args = parse_args(_PARSER)
@@ -37,7 +36,7 @@ class EpLog(Resource):
             return responses.bad_request_resp("No episode being recorded")
 
         if close_ep:
-            err = sim_proxy().reset_sim()
+            err = sim_proxy().simulation.reset()
             if err:
                 return responses.internal_err_resp(f"Could not reset simulation: {err}")
 

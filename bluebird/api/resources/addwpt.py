@@ -1,28 +1,22 @@
 """
 Provides logic for the ADDWPT (add waypoint to route) API endpoint
 
-TODO: Consider renaming this since it's meaning can be confusing
+TODO: Consider renaming this since its meaning can be confusing
 """
-
-import logging
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import checked_resp, bad_request_resp
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.types import LatLon, Callsign, Altitude
+import bluebird.api.resources.utils.responses as responses
+import bluebird.utils.types as types
 
-
-_LOGGER = logging.getLogger(__name__)
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(
-    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+    utils.CALLSIGN_LABEL, type=types.Callsign, location="json", required=True
 )
-_PARSER.add_argument("wpname", type=str, location="json", required=False)
-_PARSER.add_argument("lat", type=float, location="json", required=False)
-_PARSER.add_argument("lon", type=float, location="json", required=False)
-_PARSER.add_argument("alt", type=Altitude, location="json", required=False)
+_PARSER.add_argument("waypoint", type=str, location="json", required=True)
+_PARSER.add_argument("alt", type=types.Altitude, location="json", required=False)
 _PARSER.add_argument("spd", type=float, location="json", required=False)
 
 
@@ -40,28 +34,23 @@ class AddWpt(Resource):
         """
 
         req_args = utils.parse_args(_PARSER)
-        callsign: Callsign = req_args[utils.CALLSIGN_LABEL]
+        callsign: types.Callsign = req_args[utils.CALLSIGN_LABEL]
 
-        if not utils.sim_proxy().contains(callsign):
-            return bad_request_resp(f"Aircraft {callsign} was not found")
+        waypoint_str = req_args["waypoint"]
+        if not waypoint_str:
+            return responses.bad_request_resp("A waypoint name must be provided")
 
-        # We need either a waypoint or a LatLon to continue
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
 
-        if "wpname" in req_args:
-            # TODO Do we need extra validation here? What is the waypoint name format?
-            target = str(req_args["wpname"])
-            if not target:
-                return bad_request_resp("Invalid waypoint name")
-        elif all(k in req_args for k in ("lon", "lat")):
-            target = utils.try_parse_lat_lon(req_args)
-            if not isinstance(target, LatLon):
-                return target
-        else:
-            return bad_request_resp("Must provide either a waypoint, or a lat lon pair")
+        waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
+        if not waypoint:
+            return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
 
         # TODO Which speed is this? Ground speed?
-        err = utils.sim_proxy().add_waypoint_to_route(
-            callsign, target, alt=req_args["alt"], spd=req_args["spd"]
+        err = utils.sim_proxy().aircraft.add_waypoint_to_route(
+            callsign, waypoint, spd=req_args["spd"]
         )
 
-        return checked_resp(err)
+        return responses.checked_resp(err)

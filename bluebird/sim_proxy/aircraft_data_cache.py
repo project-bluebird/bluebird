@@ -2,14 +2,9 @@
 Contains the class for storing aircraft data which is streamed from the simulation
 """
 
-import datetime
-import json
 import logging
 from typing import Dict, List
 
-import bluebird.logging
-from bluebird.settings import Settings
-from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import log_rate
 from bluebird.utils.types import Altitude, Callsign
 from bluebird.utils.properties import AircraftProperties
@@ -32,62 +27,62 @@ LOG_PREFIX = "A"
 #     self.timer.disabled = True
 #     self.have_logged_aircraft = False
 
+# TODO(RKM 2019-11-17) Work this functionality into ProxyAircraftControls
+# class AircraftDataCache:
+#     """
+#     Holds the most recent aircraft data
+#     """
 
-class AircraftDataCache:
-    """
-    Holds the most recent aircraft data
-    """
+#     @property
+#     def store(self) -> Dict[Callsign, AircraftProperties]:
+#         """
+#         Returns the whole aircraft data cache
+#         """
+#         return self._store
 
-    @property
-    def store(self) -> Dict[Callsign, AircraftProperties]:
-        """
-        Returns the whole aircraft data cache
-        """
-        return self._store
+#     def __init__(self):
 
-    def __init__(self):
+#         self._logger = logging.getLogger(__name__)
 
-        self._logger = logging.getLogger(__name__)
+#         self._store: Dict[Callsign, AircraftProperties] = {}
 
-        self._store: Dict[Callsign, AircraftProperties] = {}
+#         # Periodically log the sim state to file. Starts disabled.
+#         self._target_sim_speed = 1
 
-        # Periodically log the sim state to file. Starts disabled.
-        self._target_sim_speed = 1
+#         # self._timer = Timer(self.log, Settings.SIM_LOG_RATE)
+#         # self._timer.disabled = True
 
-        # self._timer = Timer(self.log, Settings.SIM_LOG_RATE)
-        # self._timer.disabled = True
+#         self.have_logged_aircraft = False
+#         self.prev_log_sim_t = 0
 
-        self.have_logged_aircraft = False
-        self.prev_log_sim_t = 0
+#         self.cleared_fls = {}
 
-        self.cleared_fls = {}
+#     def clear(self):
+#         """
+#         Clears the cache
+#         """
+#         self._store.clear()
 
-    def clear(self):
-        """
-        Clears the cache
-        """
-        self._store.clear()
+#     def contains(self, callsign: Callsign) -> bool:
+#         """
+#         Check if the given callsign exists in the cache
+#         :return:
+#         """
+#         return callsign in self._store
 
-    def contains(self, callsign: Callsign) -> bool:
-        """
-        Check if the given callsign exists in the cache
-        :return:
-        """
-        return callsign in self._store
+#     def get_all_properties(self) -> List[AircraftProperties]:
+#         return list(self._store.values())
 
-    def get_all_properties(self) -> List[AircraftProperties]:
-        return list(self._store.values())
-
-    def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude) -> None:
-        """
-        Update the cleared flight level for an aircraft
-        :param callsign:
-        :param flight_level:
-        :return:
-        """
-        if not callsign in self._store:
-            raise KeyError("Aircraft {callsign} is not in the cache")
-        self._store[callsign].cleared_flight_level = flight_level
+#     def set_cleared_fl(self, callsign: Callsign, flight_level: Altitude) -> None:
+#         """
+#         Update the cleared flight level for an aircraft
+#         :param callsign:
+#         :param flight_level:
+#         :return:
+#         """
+#         if not callsign in self._store:
+#             raise KeyError("Aircraft {callsign} is not in the cache")
+#         self._store[callsign].cleared_flight_level = flight_level
 
 
 ### Old methods ###

@@ -492,7 +492,7 @@ Returns:
 
 ## Set Seed
 
-Sets the random seed of the simulator. Must be a positive integer:
+Sets the random seed of the simulator. Must be an unsigned 32-bit integer:
 
 ```javascript
 POST /api/v1/seed

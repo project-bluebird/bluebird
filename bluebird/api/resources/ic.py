@@ -4,15 +4,10 @@ Provides logic for the IC (initial condition) API endpoint
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    bad_request_resp,
-    checked_resp,
-    ok_resp,
-    internal_err_resp,
-)
-from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+import bluebird.api.resources.utils.responses as responses
 import bluebird.settings as bb_settings
-
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.utils.properties import SimProperties
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("filename", type=str, location="json", required=True)
@@ -24,20 +19,18 @@ class Ic(Resource):
     IC (initial condition) command
     """
 
-    # TODO Update API.md
     @staticmethod
     def get():
         """
         Gets the current scenario (file)name
         """
 
-        try:
-            scn_name = sim_proxy().sim_properties.scn_name
-        except AttributeError as exc:
-            return internal_err_resp(f"Error getting sim properties: {exc}")
+        props = sim_proxy().simulation.properties
+        if not isinstance(props, SimProperties):
+            return responses.internal_err_resp("Could not get sim properties")
 
-        data = {"scn_name": scn_name}
-        return ok_resp(data)
+        data = {"scn_name": props.scn_name}
+        return responses.ok_resp(data)
 
     @staticmethod
     def post():
@@ -50,16 +43,16 @@ class Ic(Resource):
         filename = req_args["filename"]
 
         if not filename:
-            return bad_request_resp("No filename specified")
+            return responses.bad_request_resp("No filename specified")
 
         multiplier = req_args["multiplier"]
         speed = multiplier if multiplier else 1.0
 
         if speed <= 0.0:
-            return bad_request_resp(f"Invalid speed {speed}")
+            return responses.bad_request_resp(f"Invalid speed {speed}")
 
-        err = sim_proxy().load_scenario(
+        err = sim_proxy().simulation.load_scenario(
             filename, speed=speed, start_paused=bb_settings.is_agent_mode()
         )
 
-        return checked_resp(err)
+        return responses.checked_resp(err)

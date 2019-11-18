@@ -45,6 +45,6 @@ class DefWpt(Resource):
         if not isinstance(position, LatLon):
             return position
 
-        err = sim_proxy().define_waypoint(wp_name, position, type=req_args["type"])
+        err = sim_proxy().waypoints.define(wp_name, position, type=req_args["type"])
 
         return bad_request_resp(err) if err else checked_resp(err, HTTPStatus.CREATED)

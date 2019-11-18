@@ -2,20 +2,14 @@
 Provides logic for the LISTROUTE (list route) API endpoint
 """
 
-import logging
-
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    internal_err_resp,
-    ok_resp,
-    bad_request_resp,
-)
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.utils import CALLSIGN_LABEL, parse_args, sim_proxy
+from bluebird.utils.properties import AircraftRoute
 from bluebird.utils.types import Callsign
 
-
-_LOGGER = logging.getLogger(__name__)
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument(CALLSIGN_LABEL, type=Callsign, location="args", required=True)
@@ -37,11 +31,13 @@ class ListRoute(Resource):
         req_args = parse_args(_PARSER)
         callsign = req_args[CALLSIGN_LABEL]
 
-        if not sim_proxy().contains(callsign):
-            return bad_request_resp(f"Aircraft {callsign} was not found")
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
 
-        route = sim_proxy().get_aircraft_route(callsign)
-        if isinstance(route, str):
-            return internal_err_resp(route)
+        route = sim_proxy().aircraft.get_route(callsign)
+        if not isinstance(route, AircraftRoute):
+            return responses.internal_err_resp(route)
 
-        return ok_resp({CALLSIGN_LABEL: str(callsign), "route": route})
+        data = utils.convert_aircraft_route(route)
+        return responses.ok_resp(data)

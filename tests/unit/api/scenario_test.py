@@ -1,5 +1,5 @@
 """
-Tests for the DTMULT endpoint
+Tests for the SCENARIO endpoint
 """
 
 from http import HTTPStatus
@@ -13,9 +13,8 @@ from tests.unit.api import MockBlueBird
 
 
 class MockSimulatorControls:
-    def set_speed(self, speed: float):
-        assert isinstance(speed, float)
-        return None if speed < 50 else "Requested speed too large"
+    # TODO(RKM 2019-11-18) Will need - supload_new_scenario, load_scenario
+    pass
 
 
 @pytest.fixture
@@ -25,32 +24,39 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_dtmult_post(test_flask_client, _set_bb_app):  # pylint:disable=unused-argument
+def test_scenario_post(
+    test_flask_client, _set_bb_app
+):  # pylint: disable=unused-argument
     """
     Tests the POST method
     """
 
-    endpoint = f"{API_PREFIX}/dtmult"
+    endpoint = f"{API_PREFIX}/scenario"
 
     # Test arg parsing
 
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert "scn_name" in resp.json["message"]
 
-    # Test multiplier check
-
-    data = {"multiplier": -1}
+    data = {"scn_name": ""}
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Multiplier must be greater than 0"
+    assert "content" in resp.json["message"]
 
-    # Test set_sim_speed
+    # Test scn_name check
 
-    data = {"multiplier": 100}
+    data["content"] = [""]
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Requested speed too large"
+    assert resp.data.decode() == "Scenario name must be provided"
 
-    data = {"multiplier": 10}
+    data["scn_name"] = "TEST"
     resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.OK
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+
+    # TODO: Update this once the GeoJSON upload is implemented
+    assert (
+        resp.data.decode()
+        == "Invalid scenario content: validate_scenario is depreciated"
+    )

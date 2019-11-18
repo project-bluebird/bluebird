@@ -20,6 +20,6 @@ class Reset(Resource):
         :return:
         """
 
-        err = sim_proxy().reset_sim()
+        err = sim_proxy().simulation.reset()
 
         return checked_resp(err)

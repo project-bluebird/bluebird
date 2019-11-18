@@ -2,6 +2,8 @@
 Provides logic for the Load Log API endpoint
 """
 
+# TODO(RKM 2019-11-18) Check how this interacts with the SimProxy layer
+
 # TODO Tidy this up
 # pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
 
@@ -119,12 +121,18 @@ class LoadLog(Resource):
         if target_time <= 0:
             return responses.bad_request_resp("Target time must be greater than 0")
 
-        prev_dt = sim_proxy().sim_properties.step_size
+        props = sim_proxy().simulation.properties
+        if isinstance(props, str):
+            return responses.internal_err_resp(
+                f"Could not get the sim properties: {props}"
+            )
+
+        prev_dt = props.step_size
 
         _LOGGER.debug("Starting log reload")
 
         # Reset now so the current episode log is closed
-        err = sim_proxy().reset_sim()
+        err = sim_proxy().simulation.reset()
 
         if err:
             return responses.internal_err_resp(f"Simulation not reset: {err}")
@@ -170,7 +178,7 @@ class LoadLog(Resource):
         # All good - do the reload
 
         _LOGGER.debug("Setting the simulator seed")
-        err = sim_proxy().set_seed(int(parsed_scn["seed"]))
+        err = sim_proxy().simulation.set_seed(int(parsed_scn["seed"]))
 
         if err:
             return responses.internal_err_resp(f"Could not set seed {err}")
@@ -179,30 +187,36 @@ class LoadLog(Resource):
 
         _LOGGER.debug("Uploading the new scenario")
         store_local_scn(scn_name, parsed_scn["lines"])
-        err = sim_proxy().upload_new_scenario(scn_name, parsed_scn["lines"])
+        err = sim_proxy().simulation.upload_new_scenario(scn_name, parsed_scn["lines"])
 
         if err:
             return responses.internal_err_resp(f"Error uploading scenario: {err}")
 
         _LOGGER.info("Starting the new scenario")
-        err = sim_proxy().load_scenario(scn_name, start_paused=True)
+        err = sim_proxy().simulation.load_scenario(scn_name, start_paused=True)
 
         if err:
             return responses.internal_err_resp(
                 f"Could not start scenario after upload {err}"
             )
 
-        diff = target_time - sim_proxy().sim_properties.time
+        props = sim_proxy().simulation.properties
+        if isinstance(props, str):
+            return responses.internal_err_resp(
+                f"Could not get the sim properties: {props}"
+            )
+
+        diff = target_time - props.scenario_time
 
         if diff:
             # Naive approach - set DTMULT to target, then STEP once...
             _LOGGER.debug(f"Time difference is {diff}. Stepping to {target_time}")
-            err = sim_proxy().set_sim_speed(diff)
+            err = sim_proxy().simulation.set_speed(diff)
             if err:
                 return responses.internal_err_resp(f"Could not change speed: {err}")
 
             _LOGGER.debug("Performing step")
-            err = sim_proxy().step_sim()
+            err = sim_proxy().simulation.step()
 
             if err:
                 return responses.internal_err_resp(f"Could not step simulations: {err}")
@@ -211,7 +225,7 @@ class LoadLog(Resource):
             _LOGGER.debug(f"Simulation already at required time")
 
         # Reset DTMULT to the previous value
-        err = sim_proxy().set_sim_speed(prev_dt)
+        err = sim_proxy().simulation.set_speed(prev_dt)
         if err:
             return responses.internal_err_resp(
                 "Episode reloaded, but could not reset DTMULT to previous value"

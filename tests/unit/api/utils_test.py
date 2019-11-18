@@ -5,17 +5,38 @@ Tests functionality of the bluebird.api.resources.utils package
 from http import HTTPStatus
 
 from flask import Response
+from flask_restful import Resource, reqparse
 
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.types as types
 from bluebird.utils.properties import AircraftProperties
 
+from tests.unit import API_PREFIX
+
+
+def test_parse_args_from_query_string(test_flask_client):
+    """Tests for parse_args for URL query strings"""
+
+    parser = reqparse.RequestParser()
+    parser.add_argument("a", type=str, location="args", required=True)
+    parser.add_argument("b", type=str, location="args", required=False)
+
+    class Test(Resource):
+        @staticmethod
+        def get():
+            utils.parse_args(parser)
+
+    api.FLASK_API.add_resource(Test, "/test")
+
+    endpoint = f"{API_PREFIX}/test"
+
+    resp = test_flask_client.get(endpoint)
+    assert resp.status_code == HTTPStatus.OK
+
 
 def test_try_parse_lat_lon():
-    """
-    Tests for try_parse_lat_lon
-    """
+    """Tests for try_parse_lat_lon"""
 
     test_data = [
         {},
@@ -42,9 +63,7 @@ def test_try_parse_lat_lon():
 
 
 def test_convert():
-    """
-    Tests for convert
-    """
+    """Tests for convert"""
 
     props = AircraftProperties(
         "A380",
@@ -58,7 +77,7 @@ def test_convert():
         types.VerticalSpeed(32),
     )
 
-    converted = utils.convert(props)
+    converted = utils.convert_aircraft_props(props)
     assert isinstance(converted, dict)
     assert len(converted) == 1
 
@@ -73,3 +92,13 @@ def test_convert():
     assert converted_props["lon"] == 123.4
     assert converted_props["requested_fl"] == 25_000
     assert converted_props["vs"] == 32.0
+
+
+def test_convert_aircraft_route():
+    """Tests for convert_aircraft_route"""
+    assert False, "NotImplemented"
+
+
+def test_check_exists():
+    """Tests for check_exists"""
+    assert False, "NotImplemented"

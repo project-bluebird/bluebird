@@ -27,11 +27,10 @@ class Seed(Resource):
         req_args = parse_args(_PARSER)
         seed: int = req_args["value"]
 
-        # TODO Will this depend on the sim implementation?
         if seed < 0 or seed >> 32:
             return bad_request_resp(
                 "Invalid seed specified. Must be a positive integer less than 2^32"
             )
 
-        err = sim_proxy().set_seed(seed)
+        err = sim_proxy().simulation.set_seed(seed)
         return checked_resp(err)

@@ -47,6 +47,8 @@ def before_req():
     LOGGER.info(f'REQ {request.method} {request.full_path} "{json if json else ""}"')
 
 
+# TODO(RKM 2019-11-18) We could modify the standard Flask "missing argument" response
+# here so that users can more clearly see the mistake
 @FLASK_APP.after_request
 def after_req(response):
     """

@@ -27,16 +27,20 @@ class Shutdown(Resource):
 
         req_args = parse_args(_PARSER)
 
-        shutdown_sim = req_args.get("stop_sim", False)
-        sim_quit = sim_proxy().stop_client(shutdown_sim=shutdown_sim)
-        sim_quit_msg = f". (Sim exited ok: {sim_quit})"
+        sim_quit = sim_proxy().shutdown(shutdown_sim=bool(req_args["stop_sim"]))
+        sim_quit_msg = f"(Sim shutdown ok = {sim_quit})"
 
+        # TODO Check we still get a response before this executes. If not, need to set
+        # this to fire on a timer
         try:
-            # TODO Check we still get a response before this executes. If not, need to
-            # set this to fire on a timer
-            request.environ.get("werkzeug.server.shutdown")()
+            shutdown_fn = request.environ.get("werkzeug.server.shutdown")
+            if not shutdown_fn:
+                return internal_err_resp(
+                    f"No shutdown function available. {sim_quit_msg}"
+                )
+            shutdown_fn()
         except Exception as exc:  # pylint: disable=broad-except
-            return internal_err_resp(f"Could not shutdown: {exc}{sim_quit_msg}")
+            return internal_err_resp(f"Could not shutdown: {exc}. {sim_quit_msg}")
 
-        data = {"msg": f"Shutting down{sim_quit_msg}"}
+        data = f"BlueBird shutting down! {sim_quit_msg}"
         return ok_resp(data)

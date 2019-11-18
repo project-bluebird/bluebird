@@ -31,6 +31,6 @@ class DtMult(Resource):
             return bad_request_resp("Multiplier must be greater than 0")
 
         # TODO Check if we still need to keep track of step_dt in the client
-        err = sim_proxy().set_sim_speed(multiplier)
+        err = sim_proxy().simulation.set_speed(multiplier)
 
         return bad_request_resp(err) if err else ok_resp()

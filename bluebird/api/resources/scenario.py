@@ -2,8 +2,6 @@
 Provides logic for the scenario (create scenario) API endpoint
 """
 
-import logging
-
 from http import HTTPStatus
 from flask_restful import Resource, reqparse
 
@@ -15,28 +13,21 @@ from bluebird.api.resources.utils.responses import (
 from bluebird.api.resources.utils.utils import sim_proxy, parse_args, validate_scenario
 
 
-_LOGGER = logging.getLogger(__name__)
-
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("scn_name", type=str, location="json", required=True)
 _PARSER.add_argument(
-    "content", type=str, location="json", required=True, action="append"
+    "content", type=str, action="append", location="json", required=True
 )
 _PARSER.add_argument("start_new", type=bool, location="json", required=False)
 _PARSER.add_argument("start_dtmult", type=float, location="json", required=False)
 
 
 class Scenario(Resource):
-    """
-    Contains logic for the scenario endpoint
-    """
+    """Contains logic for the scenario endpoint"""
 
     @staticmethod
     def post():
-        """
-        Logic for POST events.
-        :return:
-        """
+        """Logic for POST events"""
 
         req_args = parse_args(_PARSER)
 
@@ -54,14 +45,14 @@ class Scenario(Resource):
         if err:
             return bad_request_resp(f"Invalid scenario content: {err}")
 
-        err = sim_proxy().upload_new_scenario(scn_name, content)
+        err = sim_proxy().simulation.upload_new_scenario(scn_name, content)
         if err:
             return internal_err_resp(f"Error uploading scenario: {err}")
 
         if req_args.get("start_new", False):
 
             multiplier = req_args["start_dtmult"] if req_args["start_dtmult"] else 1.0
-            err = sim_proxy().load_scenario(scn_name, speed=multiplier)
+            err = sim_proxy().simulation.load_scenario(scn_name, speed=multiplier)
 
             if err:
                 return internal_err_resp(

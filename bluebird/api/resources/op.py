@@ -29,6 +29,6 @@ class Op(Resource):
                 f"Can't resume sim from mode {Settings.SIM_MODE.name}"
             )
 
-        err = sim_proxy().start_or_resume_sim()
+        err = sim_proxy().simulation.resume()
 
         return checked_resp(err)

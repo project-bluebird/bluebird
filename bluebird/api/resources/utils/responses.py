@@ -4,7 +4,7 @@ Contains utility methods to create Flask responses
 
 
 from http import HTTPStatus
-from typing import Optional
+from typing import Optional, Union
 
 from flask import jsonify, make_response
 
@@ -25,7 +25,7 @@ def not_found_resp(err: str):
     return make_response(err, HTTPStatus.NOT_FOUND)
 
 
-def ok_resp(data: dict = None):
+def ok_resp(data: Union[str, dict] = None):
     """
     Generates a standard response
     """
