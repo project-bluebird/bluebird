@@ -21,8 +21,6 @@ from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
 
 
-_LOGGER = logging.getLogger(__name__)
-
 _BS_MIN_VERSION = os.getenv("BS_MIN_VERSION")
 if not _BS_MIN_VERSION:
     raise ValueError("The BS_MIN_VERSION environment variable must be set")
@@ -131,7 +129,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
 
     def get_all_properties(
         self,
-    ) -> Union[Dict[types.Callsign, AircraftProperties], str]:
+    ) -> Union[Dict[types.Callsign, bb_props.AircraftProperties], str]:
         cmd_str = f"LISTAC"
         callsigns = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
         raise NotImplementedError(f"(Unhandled) LISTAC returned: {callsigns}")
