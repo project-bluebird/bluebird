@@ -1,8 +1,9 @@
 
 # In addition to requirements.txt, the following are required for development and testing
 
-pytest == 4.*
+pytest
 pytest-docker-compose
+mock
 
 pre-commit
 pylint
