@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 import time
+from pathlib import Path
 
 import msgpack
 import zmq
@@ -20,15 +21,17 @@ from bluebird.utils.timeutils import timeit
 
 # Import BlueSky from the specified path. Should default to the included submodule
 _BS_PATH = os.getenv("BS_PATH", None)
-assert _BS_PATH, "Expected BS_PATH to be set. Check the .env file"
-assert os.path.isdir(_BS_PATH) and "bluesky" in os.listdir(
+assert _BS_PATH, "Expected BS_PATH to be set. Check your .env file"
+_BS_PATH = Path(_BS_PATH)
+assert _BS_PATH.is_dir() and "bluesky" in os.listdir(
     _BS_PATH
 ), "Expected BS_PATH to point to the root BlueSky directory"
-
+sys.path.append(str(_BS_PATH.resolve()))
 # pylint: disable=wrong-import-position
-sys.path.append(_BS_PATH)
 from bluesky.network.client import Client  # type: ignore
 from bluesky.network.npcodec import decode_ndarray  # type: ignore
+
+# pylint: enable=wrong-import-position
 
 
 CMD_LOG_PREFIX = "C"
