@@ -21,7 +21,7 @@ from semver import VersionInfo
 
 import bluebird.utils.properties as bb_props
 import bluebird.utils.types as types
-from bluebird.settings import is_agent_mode, Settings
+from bluebird.settings import Settings
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
@@ -334,7 +334,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def get_speed(self) -> float:
         resp = (
             self._mc_client().get_step()
-            if is_agent_mode()
+            if Settings.SIM_MODE == bb_props.SimMode.Agent
             else self._mc_client().get_speed()
         )
         _raise_for_no_data(resp)
@@ -344,7 +344,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def set_speed(self, speed: float) -> Optional[str]:
         resp = (
             self._mc_client().set_step(speed)
-            if is_agent_mode()
+            if Settings.SIM_MODE == bb_props.SimMode.Agent
             else self._mc_client().set_speed(speed)
         )
         _raise_for_no_data(resp)
