@@ -50,6 +50,10 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def stream_data(self) -> List[bb_props.AircraftProperties]:
         return self._client.aircraft_stream_data
 
+    @property
+    def callsigns(self) -> Union[List[types.Callsign], str]:
+        raise NotImplementedError
+
     # @property
     # def routes(self) -> Dict[types.Callsign, List]:
     #     raise NotImplementedError

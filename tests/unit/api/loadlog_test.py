@@ -2,50 +2,52 @@
 Tests for the LOADLOG endpoint
 """
 
+# NOTE(RKM 2019-11-18) Tests here which rely on the "validate_scenario" utility function
+# will fail until we upgrade to the GeoJSON format
+
+import datetime
 import os
 from pathlib import Path
 
 import pytest
 
 from bluebird.api.resources.loadlog import parse_lines
-import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.properties import SimProperties, SimState
+import bluebird.api.resources.utils.utils as api_utils
+from bluebird.utils.properties import SimProperties, SimMode, SimState
+from bluebird.settings import Settings
 
 from tests.unit import API_PREFIX
+from tests.unit.api import MockBlueBird, MockSimProxy
+
 
 _TEST_FILE = "tests/unit/api/testEpisode.log"
 _TEST_FILE_PATH = Path(os.getcwd(), _TEST_FILE)
 
-# pylint: disable=redefined-outer-name, unused-argument, no-member
 
-
-class MockSimProxy:
-    """
-    Simple tset mock of the SimProxy class for this test
-    """
-
-    # pylint: disable=no-self-use, missing-docstring
-
+class MockSimulatorControls:
+    # pylint: disable=missing-docstring, no-self-use
     @property
-    def sim_properties(self) -> SimProperties:
-        return SimProperties(SimState.RUN, 1.0, 1.0, 0.0, "test_scn")
+    def properties(self):
+        return SimProperties(
+            SimState.RUN, 1.0, 1.0, 0.0, datetime.datetime.now(), "test_scn"
+        )
 
     @property
     def seed(self):
         return self._seed
 
     def __init__(self):
-        self._seed = self.last_scenario = None
-        self.reset_flag = self.scn_uploaded = self.was_stepped = False
+        self._seed = None
+        self.last_scenario = None
+        self.reset_flag = False
+        self.scn_uploaded = False
+        self.was_stepped = False
+        self.speed_set = False
 
-    def pause_sim(self):
+    def pause(self):
         return None
 
-    def set_seed(self, seed: int):
-        assert isinstance(seed, int)
-        self._seed = seed
-
-    def reset_sim(self):
+    def reset(self):
         self.reset_flag = True
 
     def upload_new_scenario(self, scn_name: str, content):
@@ -56,31 +58,30 @@ class MockSimProxy:
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
     ):
+        assert isinstance(scenario_name, str)
+        assert isinstance(speed, float)
+        assert isinstance(start_paused, bool)
         self.last_scenario = scenario_name
 
-    def set_sim_speed(self, speed: float):
-        return None
+    def set_seed(self, seed: int):
+        assert isinstance(seed, int)
+        self._seed = seed
 
-    def step_sim(self):
+    def step(self):
         self.was_stepped = True
 
-
-class MockBlueBird:
-    def __init__(self):
-        self.sim_proxy = MockSimProxy()
+    def set_speed(self, speed: float):
+        assert isinstance(speed, float)
+        self.speed_set = True
 
 
 @pytest.fixture
-def patch_bb_app_loadlog(monkeypatch):
-    """
-    Patches the _bb_app function in the api utils module
-    """
-    mock_bluebird = MockBlueBird()
-
-    def yield_mock():
-        return mock_bluebird
-
-    monkeypatch.setattr(utils, "_bb_app", yield_mock)
+def _set_bb_app(monkeypatch):
+    setattr(MockSimProxy, "set_mode", lambda x, y: None)
+    mock = MockBlueBird()
+    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
+    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
+    Settings.SIM_MODE = SimMode.Agent
 
 
 def test_parse_lines():
@@ -171,7 +172,7 @@ def test_parse_lines_time():
     assert "ALT KL204 9144" in data["lines"][-1], ""
 
 
-def test_log_reload_from_lines(test_flask_client, patch_bb_app_loadlog):
+def test_log_reload_from_lines(test_flask_client, _set_bb_app):
     """
     Tests the episode reloading given a full logfile in the request
     :param test_flask_client
@@ -192,7 +193,7 @@ def test_log_reload_from_lines(test_flask_client, patch_bb_app_loadlog):
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_from_file(test_flask_client, patch_bb_app_loadlog):
+def test_log_reload_from_file(test_flask_client, _set_bb_app):
     """
     Tests that the episode reloading works when given a logfile
     :param test_flask_client
@@ -210,7 +211,7 @@ def test_log_reload_from_file(test_flask_client, patch_bb_app_loadlog):
     assert resp.status_code == 200, "Expected a 200"
 
 
-def test_log_reload_full(test_flask_client, patch_bb_app_loadlog):
+def test_log_reload_full(test_flask_client, _set_bb_app):
     """
     Tests the full functionality of the log reloading
     :param test_flask_client
@@ -231,14 +232,27 @@ def test_log_reload_full(test_flask_client, patch_bb_app_loadlog):
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
     assert resp.status_code == 200, "Expected a 200"
 
-    assert utils.sim_proxy().reset_flag, "Expected that the simulator was reset"
-    assert utils.sim_proxy().seed == 5678, "Expected that the seed was set"
-    assert utils.sim_proxy().scn_uploaded, "Expected that the scenario was uploaded"
-    assert utils.sim_proxy().last_scenario, "Expected that the scenario was started"
-    assert utils.sim_proxy().was_stepped, "Expected that the simulation was stepped"
+    assert (
+        api_utils.sim_proxy().simulation.reset_flag
+    ), "Expected that the simulator was reset"
+    assert (
+        api_utils.sim_proxy().simulation.seed == 5678
+    ), "Expected that the seed was set"
+    assert (
+        api_utils.sim_proxy().simulation.scn_uploaded
+    ), "Expected that the scenario was uploaded"
+    assert (
+        api_utils.sim_proxy().simulation.last_scenario
+    ), "Expected that the scenario was started"
+    assert (
+        api_utils.sim_proxy().simulation.was_stepped
+    ), "Expected that the simulation was stepped"
+    assert (
+        api_utils.sim_proxy().simulation.speed_set
+    ), "Expected that the simulation had its speed reset"
 
 
-def test_log_reload_invalid_time(test_flask_client, patch_bb_app_loadlog):
+def test_log_reload_invalid_time(test_flask_client, _set_bb_app):
     """
     Tests that an error is returned if a reload time was requested which is after the
     last time in the log file

@@ -8,8 +8,10 @@ from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import parse_args, sim_proxy
-from bluebird.settings import is_agent_mode, Settings
-from bluebird.utils.properties import SimMode as SimMode_prop
+from bluebird.settings import Settings
+
+# NOTE: Module name clashes with the API class name below
+from bluebird.utils.properties import SimMode as _SimMode
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,46 +21,28 @@ _PARSER.add_argument("mode", type=str, location="json", required=True)
 
 
 class SimMode(Resource):
-    """
-    Logic for the SimMode endpoint
-    """
+    """Logic for the SimMode endpoint"""
 
     @staticmethod
     def post():
-        """
-        Logic for POST events. Changes the simulation mode
-        :return:
-        """
+        """Logic for POST events. Changes the simulation mode"""
 
         req_args = parse_args(_PARSER)
-        new_mode = req_args["mode"]
+        new_mode_str = req_args["mode"]
 
         try:
-            Settings.set_sim_mode(new_mode)
+            new_mode = _SimMode(new_mode_str)
         except ValueError:
             return responses.bad_request_resp(
-                f'Mode "{new_mode}"" not supported. Must be one of: '
-                f'{", ".join([x.name for x in SimMode_prop])}'
+                f'Mode "{new_mode_str}" not supported. Must be one of: '
+                f'{", ".join([x.name for x in _SimMode])}'
             )
 
-        _LOGGER.debug(f"Mode set to {new_mode}")
+        if Settings.SIM_MODE == new_mode:
+            return responses.ok_resp(f"Already in {new_mode.name} mode!")
 
-        if is_agent_mode():
-            err = sim_proxy().pause_sim()
-            if err:
-                return responses.internal_err_resp(
-                    f"Could not pause sim when changing mode: {err}"
-                )
+        _LOGGER.info(f"Setting mode to {new_mode.name}")
 
-        elif Settings.SIM_MODE == SimMode_prop.Sandbox:
-            err = sim_proxy().start_or_resume_sim()
-            if err:
-                return responses.internal_err_resp(
-                    f"Could not resume sim when changing mode: {err}"
-                )
-        else:
-            # Only reach here if we add a new mode to settings but don't add a case to
-            # handle it here
-            raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
+        err = sim_proxy().set_mode(new_mode)
 
-        return responses.ok_resp()
+        return responses.checked_resp(err)

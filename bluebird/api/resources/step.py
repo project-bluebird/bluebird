@@ -4,13 +4,10 @@ Provides logic for the STEP API endpoint
 
 from flask_restful import Resource
 
-from bluebird.api.resources.utils.responses import (
-    checked_resp,
-    bad_request_resp,
-    internal_err_resp,
-)
+import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import sim_proxy
-from bluebird.settings import is_agent_mode
+from bluebird.utils.properties import SimMode
+from bluebird.settings import Settings
 
 
 # TODO SimClient's should assert (internally) that the simulator time is advanced
@@ -26,12 +23,9 @@ class Step(Resource):
         :return:
         """
 
-        if not is_agent_mode():
-            return bad_request_resp("Must be in agent mode to use step")
+        if Settings.SIM_MODE != SimMode.Agent:
+            return responses.bad_request_resp("Must be in agent mode to use step")
 
-        try:
-            err = sim_proxy().step_sim()
-        except AssertionError as exc:
-            return internal_err_resp(f"Error reading data from sim: {exc}")
+        err = sim_proxy().simulation.step()
 
-        return checked_resp(err)
+        return responses.checked_resp(err)

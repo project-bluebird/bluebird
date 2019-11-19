@@ -9,7 +9,7 @@ Contains the SimProxy class
 # the same simulation
 
 import logging
-from typing import Iterable
+from typing import Iterable, Optional
 
 from semver import VersionInfo
 
@@ -21,6 +21,7 @@ from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
+from bluebird.utils.properties import SimMode
 from bluebird.utils.timer import Timer
 
 
@@ -52,16 +53,6 @@ class SimProxy(AbstractSimClient):
     def waypoints(self) -> AbstractWaypointControls:
         return self._proxy_waypoint_controls
 
-    def connect(self, timeout: int = 1) -> None:
-        self._sim_client.connect(timeout)
-
-    def start_timers(self) -> Iterable[Timer]:
-        # TODO(RKM 2019-11-18) Start own timers
-        return self._sim_client.start_timers()
-
-    def stop(self, shutdown_sim: bool = False) -> bool:
-        raise NotImplementedError
-
     def __init__(self, sim_client: AbstractSimClient):
 
         self._logger = logging.getLogger(__name__)
@@ -77,6 +68,16 @@ class SimProxy(AbstractSimClient):
         self._proxy_waypoint_controls = ProxyWaypointControls(
             self._sim_client.waypoints
         )
+
+    def connect(self, timeout: int = 1) -> None:
+        self._sim_client.connect(timeout)
+
+    def start_timers(self) -> Iterable[Timer]:
+        # TODO(RKM 2019-11-18) Start own timers
+        return self._sim_client.start_timers()
+
+    def stop(self, shutdown_sim: bool = False) -> bool:
+        raise NotImplementedError
 
     def start_timer(self):
         """
@@ -103,6 +104,28 @@ class SimProxy(AbstractSimClient):
         was not requested
         """
         return self._sim_client.shutdown(shutdown_sim)
+
+    def set_mode(self, mode: SimMode) -> Optional[str]:
+        raise NotImplementedError
+        if is_agent_mode():
+            err = sim_proxy().simulation.pause()
+            if err:
+                return responses.internal_err_resp(
+                    f"Could not pause sim when changing mode: {err}"
+                )
+
+        elif Settings.SIM_MODE == _SimMode.Sandbox:
+            err = sim_proxy().start_or_resume_sim()
+            if err:
+                return responses.internal_err_resp(
+                    f"Could not resume sim when changing mode: {err}"
+                )
+        else:
+            # Only reach here if we add a new mode to settings but don't add a case to
+            # handle it here
+            raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
+
+        return responses.ok_resp()
 
     def _log_ac_data(self):
         pass

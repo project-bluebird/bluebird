@@ -23,6 +23,14 @@ class AbstractAircraftControls(ABC):
         :return:
         """
 
+    @property
+    @abstractmethod
+    def callsigns(self) -> Union[List[types.Callsign], str]:
+        """
+        Returns a list of all aircraft Callsigns currently in the simulation, or a
+        string to indicate an error
+        """
+
     # @property
     # @abstractmethod
     # def routes(self) -> Dict[types.Callsign, List]:

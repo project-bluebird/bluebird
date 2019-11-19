@@ -1,7 +1,8 @@
 """
-Tests for the HOLD endpoint
+Tests for the STEP endpoint
 """
 
+import datetime
 from http import HTTPStatus
 
 import pytest
@@ -16,12 +17,12 @@ from tests.unit.api import MockBlueBird
 
 class MockSimulatorControls:
     def __init__(self):
-        self._pause_flag = False
+        self._was_stepped = False
 
-    def pause(self):
-        if not self._pause_flag:
-            self._pause_flag = True
-            return "Error: Couldn't pause sim"
+    def step(self):
+        if not self._was_stepped:
+            self._was_stepped = True
+            return "Error: Couldn't step"
         return None
 
 
@@ -32,26 +33,26 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_hold_post(test_flask_client, _set_bb_app):  # pylint: disable=unused-argument
+def test_step_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
     """
 
-    endpoint = f"{API_PREFIX}/hold"
+    endpoint = f"{API_PREFIX}/step"
 
-    # Test mode check
-
-    Settings.SIM_MODE = SimMode.Agent
-
-    resp = test_flask_client.post(endpoint)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Can't pause while in agent mode"
+    # Test agent mode check
 
     Settings.SIM_MODE = SimMode.Sandbox
+    resp = test_flask_client.post(endpoint)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode() == "Must be in agent mode to use step"
 
+    # Test step
+
+    Settings.SIM_MODE = SimMode.Agent
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't pause sim"
+    assert resp.data.decode() == "Error: Couldn't step"
 
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.OK

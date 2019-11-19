@@ -60,3 +60,49 @@ def test_scenario_post(
         resp.data.decode()
         == "Invalid scenario content: validate_scenario is depreciated"
     )
+
+
+# def test_scenario_endpoint(test_flask_client):
+#     """
+#     Tests the create scenario endpoint
+#     :param test_flask_client
+#     :return:
+#     """
+
+#     resp = test_flask_client.post(API_PREFIX + "/scenario")
+#     assert resp.status == "400 BAD REQUEST"
+
+#     data = {"scn_name": "new-scenario", "content": []}
+
+#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
+#     assert resp.status == "400 BAD REQUEST"
+
+#     data["content"] = ["invalid", "invalid"]
+
+#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
+#     assert resp.status == "400 BAD REQUEST"
+
+#     data["content"] = [
+#         "00:00:00>CRE TEST A320 0 0 0 0",
+#         "00:00:00 > CRE TEST A320 0 0 0 0",
+#     ]
+
+#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
+#     assert resp.status == "201 CREATED"
+
+#     data["start_new"] = True
+#     data["start_dtmult"] = 1.23
+
+#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
+#     assert resp.status == "200 OK"
+
+#     assert (
+#         bb_app().sim_client.last_scenario == "new-scenario.scn"
+#     ), "Expected the filename to be loaded"
+#     assert bb_app().sim_client.last_dtmult == 1.23, "Expected the dtmult to be set"
+
+#     # Remove the test file from the BlueSky submodule
+#     try:
+#         os.remove("bluesky/scenario/new-scenario.scn")
+#     except OSError:
+#         pass

@@ -34,6 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 # Attempt to import the MCClientMetrics class from the machine_college module
 # TODO(RKM 2019-11-18) Refactor this so that the import from MC_PATH is tested first.
 # This is to allow faster development and debugging
+
 try:
     from nats.machine_college.bluebird_if.mc_client_metrics import MCClientMetrics
 except ModuleNotFoundError:
@@ -69,6 +70,10 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     @property
     def stream_data(self) -> List[bb_props.AircraftProperties]:
+        raise NotImplementedError
+
+    @property
+    def callsigns(self) -> Union[List[types.Callsign], str]:
         raise NotImplementedError
 
     # @property

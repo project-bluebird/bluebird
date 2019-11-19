@@ -18,6 +18,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
     def stream_data(self) -> List[AircraftProperties]:
         raise NotImplementedError
 
+    @property
+    def callsigns(self) -> Union[List[types.Callsign], str]:
+        raise NotImplementedError
+
     # @property
     # def routes(self) -> Dict[types.Callsign, List]:
     #     raise NotImplementedError

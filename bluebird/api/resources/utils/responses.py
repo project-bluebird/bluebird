@@ -2,11 +2,10 @@
 Contains utility methods to create Flask responses
 """
 
-
 from http import HTTPStatus
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 
-from flask import jsonify, make_response
+from flask import make_response, jsonify
 
 from bluebird.settings import Settings
 
@@ -25,12 +24,15 @@ def not_found_resp(err: str):
     return make_response(err, HTTPStatus.NOT_FOUND)
 
 
-def ok_resp(data: Union[str, dict] = None):
+def ok_resp(data: Optional[Union[str, Dict]] = None):
     """
     Generates a standard response
     """
-    body = jsonify(data) if data else ""
-    return make_response(body, HTTPStatus.OK)
+    if isinstance(data, dict):
+        data = jsonify(data)
+    elif not data:
+        data = ""
+    return make_response(data, HTTPStatus.OK)
 
 
 def bad_request_resp(msg: str):

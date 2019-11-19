@@ -2,15 +2,11 @@
 Provides logic for the TIME (get simulator time) API endpoint
 """
 
-import logging
-
 from flask_restful import Resource
 
 from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
 from bluebird.api.resources.utils.utils import sim_proxy
-
-
-_LOGGER = logging.getLogger(__name__)
+from bluebird.utils.properties import SimProperties
 
 
 class Time(Resource):
@@ -25,10 +21,12 @@ class Time(Resource):
         :return:
         """
 
-        sim_utc = sim_proxy().sim_properties.sim_utc
+        props = sim_proxy().simulation.properties
+        if not isinstance(props, SimProperties):
+            return internal_err_resp(f"Error: {props}")
 
-        if not sim_utc:
-            return internal_err_resp("Could not get sim time")
-
-        data = {"sim_utc": sim_utc}
+        data = {
+            "sim_utc": str(props.utc_time)[:-7],
+            "scenario_time": props.scenario_time,
+        }
         return ok_resp(data)

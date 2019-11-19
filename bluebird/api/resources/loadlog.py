@@ -21,8 +21,8 @@ import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import validate_scenario, parse_args, sim_proxy
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
-from bluebird.settings import is_agent_mode, Settings
-from bluebird.utils.properties import SimType
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimType, SimMode
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class LoadLog(Resource):
         :return:
         """
 
-        if not is_agent_mode():
+        if Settings.SIM_MODE != SimMode.Agent:
             return responses.bad_request_resp("Can only be used in agent mode")
 
         if Settings.SIM_TYPE != SimType.BlueSky:

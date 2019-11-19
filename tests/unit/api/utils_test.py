@@ -32,6 +32,12 @@ def test_parse_args_from_query_string(test_flask_client):
     endpoint = f"{API_PREFIX}/test"
 
     resp = test_flask_client.get(endpoint)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+
+    resp = test_flask_client.get(f"{endpoint}?a=")
+    assert resp.status_code == HTTPStatus.OK
+
+    resp = test_flask_client.get(f"{endpoint}?a=&b=")
     assert resp.status_code == HTTPStatus.OK
 
 
