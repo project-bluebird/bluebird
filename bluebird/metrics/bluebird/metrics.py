@@ -104,6 +104,7 @@ def _horizontal_separation(ac_data, acid1, acid2):
     return 0
 
 
+# TODO Refactor the state out of this
 def aircraft_separation(ac_data, acid1, acid2):
     """
     Combined score based on horizontal and vertical separation.

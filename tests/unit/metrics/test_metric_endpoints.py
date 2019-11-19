@@ -13,17 +13,6 @@ from bluebird.settings import Settings
 from tests.unit import API_PREFIX, TEST_ACIDS
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_metrics():
-    """
-    Calls metrics setup once before this module is tested
-    :return:
-    """
-
-    ac_data = AcDataCache(SimState())
-    bb_metrics.setup_metrics(ac_data)
-
-
 def test_metric_providers(client):
     """
     Tests we can get the available metric providers
@@ -34,7 +23,7 @@ def test_metric_providers(client):
     resp = client.get(f"{API_PREFIX}/metricproviders")
     assert resp.status == "200 OK"
 
-    expected = {"BlueBirdProvider": str(bb_settings.VERSION)}
+    expected = {"BlueBirdProvider": str(Settings.VERSION)}
     resp_json = resp.get_json()
 
     assert (

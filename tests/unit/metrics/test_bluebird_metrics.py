@@ -13,18 +13,6 @@ from tests.unit import TEST_ACIDS, TEST_DATA
 
 
 @pytest.fixture
-def test_ac_data():
-    """
-	Yields a new AcDataCache instance for each test
-	:return:
-	"""
-
-    sim_state = SimState()
-    ac_data = AcDataCache(sim_state)
-    yield ac_data
-
-
-@pytest.fixture
 def test_bb_provider(test_ac_data):
     """
     Yields a new Provider instance for each test
@@ -32,7 +20,7 @@ def test_bb_provider(test_ac_data):
     :return:
     """
 
-    yield Provider(test_ac_data)
+    yield Provider(None)
 
 
 def _other_cfg():
