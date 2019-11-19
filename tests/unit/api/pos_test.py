@@ -96,7 +96,7 @@ def test_pos_get_single(test_flask_client, _set_bb_app):
 
     resp = test_flask_client.get(f"{arg_str}={callsign}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Aircraft FAKE does not exist"
+    assert resp.data.decode() == 'Aircraft "FAKE" does not exist'
 
     callsign = "TEST"
     resp = test_flask_client.get(f"{arg_str}={callsign}")

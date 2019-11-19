@@ -65,7 +65,7 @@ def test_vs_post(test_flask_client, _set_bb_app):
     data["vspd"] = 123
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Aircraft AAA does not exist"
+    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
 
     # Test set_vertical_speed
 

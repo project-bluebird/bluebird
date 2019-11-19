@@ -134,7 +134,7 @@ def test_alt_get(test_flask_client, _set_bb_app):
     callsign = "AAA"
     resp = test_flask_client.get(f"{_ENDPOINT}?{api_utils.CALLSIGN_LABEL}={callsign}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Aircraft AAA does not exist"
+    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
 
     # Test response units
 

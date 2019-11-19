@@ -76,7 +76,7 @@ def check_exists(callsign: types.Callsign) -> Optional[Response]:
         )
 
     if not exists:
-        return responses.bad_request_resp(f"Aircraft {callsign} does not exist")
+        return responses.bad_request_resp(f'Aircraft "{callsign}" does not exist')
 
     return None
 
@@ -148,14 +148,24 @@ def convert_aircraft_props(props: AircraftProperties) -> Dict[str, Any]:
     return data
 
 
+# NOTE(RKM 2019-11-19) Only the waypoint names are currently returned. Do we want to
+# (optionally) also return their full lat/lon?
 def convert_aircraft_route(route: AircraftRoute) -> Dict[str, Any]:
     """
     Parses an AircraftRoute object into a dict suitable for returning via Flask
     """
+
     callsign_str = str(route.callsign)
-    data = {callsign_str: [], "current_segment_index": route.current_segment_index}
+
+    data = {
+        callsign_str: {
+            "route": [],
+            "current_segment_index": route.current_segment_index,
+        }
+    }
+
     for segment in route.segments:
-        data[callsign_str].append(
+        data[callsign_str]["route"].append(
             {
                 "wpt_name": segment.waypoint.name,
                 "req_alt": (

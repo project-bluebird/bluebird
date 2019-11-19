@@ -10,7 +10,7 @@ from flask_restful import Resource, reqparse
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties
+import bluebird.utils.properties as properties
 
 from tests.unit import API_PREFIX
 
@@ -68,10 +68,65 @@ def test_try_parse_lat_lon():
     assert res.lon_degrees == args["lon"]
 
 
-def test_convert():
-    """Tests for convert"""
+def test_check_exists(monkeypatch):
+    """Tests for check_exists"""
 
-    props = AircraftProperties(
+    class MockAircraftControls:
+        def __init__(self):
+            self._exists_called = False
+
+        def exists(self, callsign: types.Callsign):
+            assert isinstance(callsign, types.Callsign)
+            if not self._exists_called:
+                self._exists_called = True
+                return "Invalid callsign"
+            # "TEST*" aircraft exist, all others do not
+            return str(callsign).upper().startswith("TEST")
+
+    class MockSimProxy:
+        @property
+        def aircraft(self):
+            return self._aircraft_controls
+
+        def __init__(self):
+            self._aircraft_controls = MockAircraftControls()
+
+    mock = MockSimProxy()
+    monkeypatch.setattr(utils, "sim_proxy", lambda: mock)
+
+    callsign = types.Callsign("FAKE")
+
+    # Test error handling
+
+    with api.FLASK_APP.test_request_context():
+        resp = utils.check_exists(callsign)
+    assert isinstance(resp, Response)
+    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert (
+        resp.data.decode() == "Could not check if the aircraft exists: Invalid callsign"
+    )
+
+    # Test missing callsign
+
+    with api.FLASK_APP.test_request_context():
+        resp = utils.check_exists(callsign)
+    assert isinstance(resp, Response)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode() == 'Aircraft "FAKE" does not exist'
+
+    callsign = types.Callsign("TEST")
+
+    # Test valid callsign
+
+    with api.FLASK_APP.test_request_context():
+        resp = utils.check_exists(callsign)
+    assert not resp
+
+
+def test_convert_aircraft_props():
+    """Tests for convert_aircraft_props"""
+
+    props = properties.AircraftProperties(
         "A380",
         types.Altitude(18_500),
         types.Callsign("TEST"),
@@ -102,9 +157,33 @@ def test_convert():
 
 def test_convert_aircraft_route():
     """Tests for convert_aircraft_route"""
-    assert False, "NotImplemented"
 
+    callsign_str = "TEST"
 
-def test_check_exists():
-    """Tests for check_exists"""
-    assert False, "NotImplemented"
+    segments = [
+        properties.RouteItem(
+            types.Waypoint("WPT1", types.LatLon(0, 0), types.Altitude("FL350")),
+            types.GroundSpeed(150),
+        ),
+        properties.RouteItem(
+            types.Waypoint("WPT2", types.LatLon(0, 0), None), types.GroundSpeed(200),
+        ),
+        properties.RouteItem(
+            types.Waypoint("WPT3", types.LatLon(0, 0), types.Altitude("FL370")), None
+        ),
+    ]
+    route = properties.AircraftRoute(types.Callsign(callsign_str), segments, 1)
+
+    converted = utils.convert_aircraft_route(route)
+    assert isinstance(converted, dict)
+    assert len(converted) == 1
+    assert len(converted[callsign_str]) == 2
+
+    assert converted[callsign_str]["current_segment_index"] == 1
+
+    converted_route = converted[callsign_str]["route"]
+    assert converted_route == [
+        {"req_alt": 35000, "req_gspd": 492, "wpt_name": "WPT1"},
+        {"req_alt": None, "req_gspd": 656, "wpt_name": "WPT2"},
+        {"req_alt": 37000, "req_gspd": None, "wpt_name": "WPT3"},
+    ]

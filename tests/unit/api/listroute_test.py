@@ -71,7 +71,7 @@ def test_listroute_get(
     callsign_str = "AAA"
     resp = test_flask_client.get(f"{endpoint}?{callsign_label}={callsign_str}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == f"Aircraft {callsign_str} does not exist"
+    assert resp.data.decode() == f'Aircraft "{callsign_str}" does not exist'
 
     # Test get_route
 
@@ -84,9 +84,11 @@ def test_listroute_get(
     assert resp.status_code == HTTPStatus.OK
 
     assert resp.json == {
-        "TEST": [
-            {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
-            {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
-        ],
-        "current_segment_index": 1,
+        "TEST": {
+            "route": [
+                {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
+                {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
+            ],
+            "current_segment_index": 1,
+        }
     }

@@ -95,6 +95,12 @@ class AircraftRoute:
 
     def __post_init__(self):
         assert self.current_segment_index < len(self.segments)
+        # TODO(RKM 2019-11-19) Do we want to enforce that all waypoints have a specified
+        # target altitude when being included in an aircraft's route?
+        # for segment in self.segments:
+        #     assert (
+        #         segment.waypoint.altitude
+        #     ), "Waypoint altitude must be set to be included in a route"
 
 
 class SimState(IntEnum):

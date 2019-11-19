@@ -90,7 +90,7 @@ def test_addwpt_post(test_flask_client, _set_bb_app):  # pylint:disable=unused-a
     data["waypoint"] = "FAKE"
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Aircraft AAA does not exist"
+    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
 
     # Test find waypoint by name
 
