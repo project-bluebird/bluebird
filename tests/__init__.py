@@ -1,3 +1,7 @@
 """
 BlueBird test package
 """
+
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True, override=True)

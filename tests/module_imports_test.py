@@ -6,17 +6,14 @@ import importlib
 
 import pytest
 
-_MODULES = ["bluebird", "bluesky"]
 
-
-@pytest.mark.parametrize("module", _MODULES)
-def test_module_import(module):
+def test_module_import():
     """
     Tests that the given module can be imported without errors
     :return:
     """
 
-    importlib.import_module(module)
+    importlib.import_module("bluebird")
 
 
 def test_run_script_import():

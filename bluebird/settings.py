@@ -17,13 +17,6 @@ with open("VERSION") as version_file:
     _VERSION_STR = version_file.read().strip()
 
 
-def is_agent_mode() -> bool:
-    """
-    Checks if we are currently in Agent mode
-    """
-    return Settings.SIM_MODE == SimMode.Agent
-
-
 class Settings:
     """
     BlueBird's settings. Should be treated as a static singleton object.
@@ -53,7 +46,7 @@ class Settings:
 
     SIM_LOG_RATE: float = 0.2
     LOGS_ROOT: str = os.getenv("BB_LOGS_ROOT", "logs")
-    CONSOLE_LOG_LEVEL: int = logging.INFO
+    CONSOLE_LOG_LEVEL: int = logging.DEBUG
 
     STREAM_ENABLE: bool = True
 
@@ -63,20 +56,6 @@ class Settings:
     # SIM_PORT = 123 - MachColl?
     SIM_MODE: SimMode = SimMode.Sandbox
     SIM_TYPE: SimType = SimType.BlueSky
-
-    @staticmethod
-    def set_sim_mode(new_val: str):
-        """
-        Update the current sim mode setting
-        :raises ValueError: If the given string is not a valid mode
-        """
-        try:
-            Settings.SIM_MODE = SimMode(new_val)
-        except KeyError as exc:
-            raise ValueError(
-                f'Mode "{new_val}" not supported. Must be one of: '
-                f'{", ".join([x.name for x in SimMode])}'
-            ) from exc
 
     @staticmethod
     def set_sim_type(new_val: str):
