@@ -4,6 +4,7 @@ branches:
   - master
   - /^release\/.*$/
   - /^hotfix\/.*$/
+  - feature/mach-coll-integration-2
 
 dist: bionic
 
