@@ -223,7 +223,7 @@ class BlueSkyWaypointControls(AbstractWaypointControls):
     """
 
     @property
-    def waypoints(self) -> Union[str, dict]:
+    def all_waypoints(self) -> Union[str, list]:
         raise NotImplementedError
 
     def __init__(self, sim_client):

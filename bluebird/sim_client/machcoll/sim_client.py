@@ -394,7 +394,7 @@ class MachCollWaypointControls(AbstractWaypointControls):
         self._sim_client = sim_client
 
     @property
-    def waypoints(self) -> Union[str, dict]:
+    def all_waypoints(self) -> Union[str, list]:
         fixes = self._mc_client().get_all_fixes()
         if not isinstance(fixes, dict):
             raise NotImplementedError(f"get_all_fixes returned: {fixes}")

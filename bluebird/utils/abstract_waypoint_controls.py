@@ -18,7 +18,7 @@ class AbstractWaypointControls(ABC):
     # updating any waypoints
     @property
     @abstractmethod
-    def waypoints(self) -> Union[str, dict]:
+    def all_waypoints(self) -> Union[str, list]:
         """
         Get all the waypoints (fixes) defined in the simulation, or a string to indicate
         any error
