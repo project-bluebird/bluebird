@@ -179,7 +179,7 @@ def test_log_reload_from_lines(test_flask_client, _set_bb_app):
     :return:
     """
 
-    pytest.skip("Skipped until handling for GeoJSON scenarios is implemented")
+    pytest.xfail("Will fail until handling for GeoJSON scenarios is implemented")
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
@@ -202,7 +202,7 @@ def test_log_reload_from_file(test_flask_client, _set_bb_app):
     :return:
     """
 
-    pytest.skip("Skipped until handling for GeoJSON scenarios is implemented")
+    pytest.xfail("Will fail until handling for GeoJSON scenarios is implemented")
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
@@ -222,7 +222,7 @@ def test_log_reload_full(test_flask_client, _set_bb_app):
     :return:
     """
 
-    pytest.skip("Skipped until handling for GeoJSON scenarios is implemented")
+    pytest.xfail("Will fail until handling for GeoJSON scenarios is implemented")
 
     resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be agent"
