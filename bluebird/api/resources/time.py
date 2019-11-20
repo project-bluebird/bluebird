@@ -26,7 +26,7 @@ class Time(Resource):
             return internal_err_resp(f"Error: {props}")
 
         data = {
-            "sim_utc": str(props.utc_time)[:-7],
+            "utc_time": str(props.utc_time)[:-7],
             "scenario_time": props.scenario_time,
         }
         return ok_resp(data)

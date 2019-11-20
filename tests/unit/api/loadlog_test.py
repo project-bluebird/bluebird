@@ -29,7 +29,13 @@ class MockSimulatorControls:
     @property
     def properties(self):
         return SimProperties(
-            SimState.RUN, 1.0, 1.0, 0.0, datetime.datetime.now(), "test_scn"
+            scenario_name="TEST",
+            scenario_time=0,
+            seed=0,
+            speed=1.0,
+            state=SimState.INIT,
+            step_size=1.0,
+            utc_time=datetime.datetime.now(),
         )
 
     @property

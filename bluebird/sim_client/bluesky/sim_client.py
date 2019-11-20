@@ -46,9 +46,9 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     AbstractAircraftControls implementation for BlueSky
     """
 
-    @property
-    def stream_data(self) -> List[bb_props.AircraftProperties]:
-        return self._client.aircraft_stream_data
+    # @property
+    # def stream_data(self) -> Optional[List[bb_props.AircraftProperties]]:
+    #     return self._client.aircraft_stream_data
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
@@ -156,9 +156,9 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     AbstractSimulatorControls implementation for BlueSky
     """
 
-    @property
-    def stream_data(self) -> bb_props.SimProperties:
-        raise NotImplementedError
+    # @property
+    # def stream_data(self) -> Optional[bb_props.SimProperties]:
+    #     raise NotImplementedError
 
     @property
     def properties(self) -> Union[bb_props.SimProperties, str]:
@@ -192,15 +192,15 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def stop(self) -> Optional[str]:
         raise NotImplementedError
 
-    @staticmethod
-    def parse_sim_state(val: str) -> Union[bb_props.SimState, str]:
-        raise NotImplementedError
+    # @staticmethod
+    # def parse_sim_state(val: str) -> Union[bb_props.SimState, str]:
+    #     raise NotImplementedError
 
     def step(self) -> Optional[str]:
         raise NotImplementedError
 
-    def get_speed(self) -> float:
-        raise NotImplementedError
+    # def get_speed(self) -> float:
+    #     raise NotImplementedError
 
     def set_speed(self, speed: float) -> Optional[str]:
         raise NotImplementedError
@@ -210,8 +210,8 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     ) -> Optional[str]:
         raise NotImplementedError
 
-    def get_seed(self) -> int:
-        raise NotImplementedError
+    # def get_seed(self) -> int:
+    #     raise NotImplementedError
 
     def set_seed(self, seed: int) -> Optional[str]:
         raise NotImplementedError

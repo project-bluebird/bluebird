@@ -62,11 +62,13 @@ class SimProxy(AbstractSimClient):
         self._sim_client: AbstractSimClient = sim_client  # The actual sim_client
 
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
-        self._proxy_simulator_controls = ProxySimulatorControls(
-            self._sim_client.simulation
-        )
         self._proxy_waypoint_controls = ProxyWaypointControls(
             self._sim_client.waypoints
+        )
+        self._proxy_simulator_controls = ProxySimulatorControls(
+            self._sim_client.simulation,
+            self._proxy_aircraft_controls,
+            self._proxy_simulator_controls,
         )
 
     def connect(self, timeout: int = 1) -> None:
@@ -90,9 +92,6 @@ class SimProxy(AbstractSimClient):
             f"Logging started. Initial SIM_LOG_RATE={Settings.SIM_LOG_RATE}"
         )
         return self._timer
-
-    def start_or_resume_sim(self):
-        raise NotImplementedError
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
         """

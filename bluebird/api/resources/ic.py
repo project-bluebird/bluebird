@@ -30,7 +30,7 @@ class Ic(Resource):
         if not isinstance(props, SimProperties):
             return responses.internal_err_resp("Could not get sim properties")
 
-        data = {"scn_name": props.scn_name}
+        data = {"scenario_name": props.scenario_name}
         return responses.ok_resp(data)
 
     @staticmethod

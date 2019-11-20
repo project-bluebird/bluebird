@@ -65,7 +65,13 @@ class MockSimulatorControls:
             self._props_called = True
             return "Error: Couldn't get the sim properties"
         return SimProperties(
-            SimState.RUN, 1.0, 1.0, 123.45, datetime.datetime.now(), "test_scn"
+            scenario_name="TEST",
+            scenario_time=123.45,
+            seed=0,
+            speed=0,
+            state=SimState.INIT,
+            step_size=1.0,
+            utc_time=datetime.datetime.now(),
         )
 
     def __init__(self):
@@ -119,7 +125,7 @@ def test_pos_get_single(test_flask_client, _set_bb_app):
             "requested_fl": 25300,
             "vs": 73,
         },
-        "sim_t": 123.45,
+        "scenario_time": 123.45,
     }
 
 
@@ -159,5 +165,5 @@ def test_pos_get_all(test_flask_client, _set_bb_app):
             "requested_fl": 25300,
             "vs": 73,
         },
-        "sim_t": 123.45,
+        "scenario_time": 123.45,
     }

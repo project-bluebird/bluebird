@@ -14,9 +14,9 @@ from bluebird.utils.properties import AircraftProperties, AircraftRoute
 class ProxyAircraftControls(AbstractAircraftControls):
     """Proxy implementation of AbstractAircraftControls"""
 
-    @property
-    def stream_data(self) -> List[AircraftProperties]:
-        raise NotImplementedError
+    # @property
+    # def stream_data(self) -> Optional[List[AircraftProperties]]:
+    #     raise NotImplementedError
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
@@ -27,12 +27,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
     #     raise NotImplementedError
 
     def __init__(self, aircraft_controls: AbstractAircraftControls):
-
-        self._logger = logging.getLogger(__name__)
-
         self._aircraft_controls = aircraft_controls
-
-        self._store: Dict[types.Callsign, AircraftProperties] = {}
+        self._logger = logging.getLogger(__name__)
+        self.ac_props: Dict[types.Callsign, AircraftProperties] = {}
+        self.routes = None  # TODO(RKM 2019-11-19) Maybe work into ac_props
 
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs

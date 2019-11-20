@@ -68,9 +68,9 @@ class MachCollAircraftControls(AbstractAircraftControls):
     AbstractAircraftControls implementation for MachColl
     """
 
-    @property
-    def stream_data(self) -> List[bb_props.AircraftProperties]:
-        raise NotImplementedError
+    # @property
+    # def stream_data(self) -> Optional[List[bb_props.AircraftProperties]]:
+    #     raise NotImplementedError
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
@@ -195,9 +195,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     AbstractSimulatorControls implementation for MachColl
     """
 
-    @property
-    def stream_data(self) -> bb_props.SimProperties:
-        raise NotImplementedError
+    # @property
+    # def stream_data(self) -> Optional[bb_props.SimProperties]:
+    #     raise NotImplementedError
 
     @property
     def properties(self) -> Union[bb_props.SimProperties, str]:
@@ -213,7 +213,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
                 return f"Could not get property from sim ({req.__name__})"
 
         try:
-            responses[0] = self.parse_sim_state(responses[0])
+            responses[0] = self._parse_sim_state(responses[0])
         except ValueError:
             return traceback.format_exc()
 
@@ -311,19 +311,6 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         _raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
-    @staticmethod
-    def parse_sim_state(val: str) -> bb_props.SimState:
-        # TODO There is also a possible "stepping" mode (?)
-        if val.upper() == "INIT":
-            return bb_props.SimState.INIT
-        if val.upper() == "RUNNING":
-            return bb_props.SimState.RUN
-        if val.upper() == "STOPPED":
-            return bb_props.SimState.END
-        if val.upper() == "PAUSED":
-            return bb_props.SimState.HOLD
-        raise ValueError(f'Unknown state: "{val}"')
-
     def step(self) -> Optional[str]:
         # TODO: Work-in the other metrics. Do we want to get every metric at every step?
         self._mc_client().queue_metrics_query("metrics.score")
@@ -331,15 +318,15 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         _raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
-    def get_speed(self) -> float:
-        resp = (
-            self._mc_client().get_step()
-            if Settings.SIM_MODE == bb_props.SimMode.Agent
-            else self._mc_client().get_speed()
-        )
-        _raise_for_no_data(resp)
-        _LOGGER.warning(f"Unhandled data: {resp}")
-        return -1
+    # def get_speed(self) -> float:
+    #     resp = (
+    #         self._mc_client().get_step()
+    #         if Settings.SIM_MODE == bb_props.SimMode.Agent
+    #         else self._mc_client().get_speed()
+    #     )
+    #     _raise_for_no_data(resp)
+    #     _LOGGER.warning(f"Unhandled data: {resp}")
+    #     return -1
 
     def set_speed(self, speed: float) -> Optional[str]:
         resp = (
@@ -356,13 +343,26 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     ) -> Optional[str]:
         raise NotImplementedError
 
-    def get_seed(self) -> int:
-        raise NotImplementedError
+    # def get_seed(self) -> int:
+    #     raise NotImplementedError
 
     def set_seed(self, seed: int) -> Optional[str]:
         # NOTE: There is a function in McClient for this, but it isn't implemented there
         # yet
         raise NotImplementedError
+
+    @staticmethod
+    def _parse_sim_state(val: str) -> bb_props.SimState:
+        # TODO There is also a possible "stepping" mode (?)
+        if val.upper() == "INIT":
+            return bb_props.SimState.INIT
+        if val.upper() == "RUNNING":
+            return bb_props.SimState.RUN
+        if val.upper() == "STOPPED":
+            return bb_props.SimState.END
+        if val.upper() == "PAUSED":
+            return bb_props.SimState.HOLD
+        raise ValueError(f'Unknown state: "{val}"')
 
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
@@ -372,7 +372,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if not state:
             return f"Could not get the sim state"
         try:
-            return self.parse_sim_state(state)
+            return self._parse_sim_state(state)
         except ValueError as exc:
             return str(exc)
 

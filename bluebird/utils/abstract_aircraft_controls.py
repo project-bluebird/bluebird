@@ -14,14 +14,14 @@ class AbstractAircraftControls(ABC):
     Abstract class defining aircraft control functions
     """
 
-    @property
-    @abstractmethod
-    def stream_data(self) -> List[AircraftProperties]:
-        """
-        The current stream data of AircraftProperties. May be an empty list if streaming
-        is not enabled
-        :return:
-        """
+    # @property
+    # @abstractmethod
+    # def stream_data(self) -> Optional[List[AircraftProperties]]:
+    #     """
+    #     The current stream data of AircraftProperties. May be an empty list if streaming
+    #     is not enabled
+    #     :return:
+    #     """
 
     @property
     @abstractmethod

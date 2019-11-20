@@ -13,6 +13,12 @@ _FL_REGEX = re.compile(r"^FL[1-9]\d*$")
 _CALLSIGN_REGEX = re.compile(r"^[A-Z0-9]{3,}")
 
 
+def is_valid_seed(seed: int) -> bool:
+    """Checks if the given int is a valid seed"""
+    # NOTE(RKM 2019-11-19) This is based on numpy's random seed range
+    return not (seed < 0 or seed >> 32)
+
+
 @dataclass(eq=True)
 class Altitude:
     """

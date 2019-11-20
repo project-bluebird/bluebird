@@ -2,6 +2,7 @@
 Provides logic for the SEED (set seed) API endpoint
 """
 
+from bluebird.utils.types import is_valid_seed
 from flask_restful import Resource, reqparse
 
 from bluebird.api.resources.utils.responses import checked_resp, bad_request_resp
@@ -27,7 +28,7 @@ class Seed(Resource):
         req_args = parse_args(_PARSER)
         seed: int = req_args["value"]
 
-        if seed < 0 or seed >> 32:
+        if not is_valid_seed(seed):
             return bad_request_resp(
                 "Invalid seed specified. Must be a positive integer less than 2^32"
             )

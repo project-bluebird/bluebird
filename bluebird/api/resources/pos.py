@@ -51,7 +51,7 @@ class Pos(Resource):
 
             data = {
                 **utils.convert_aircraft_props(props),
-                "sim_t": sim_props.scenario_time,
+                "scenario_time": sim_props.scenario_time,
             }
 
             return responses.ok_resp(data)
@@ -69,6 +69,6 @@ class Pos(Resource):
         data = {}
         for prop in props.values():
             data.update(utils.convert_aircraft_props(prop))
-        data["sim_t"] = sim_props.scenario_time
+        data["scenario_time"] = sim_props.scenario_time
 
         return responses.ok_resp(data)

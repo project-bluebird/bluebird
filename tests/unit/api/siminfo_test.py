@@ -14,6 +14,8 @@ from bluebird.utils.types import Callsign
 from tests.unit import API_PREFIX
 from tests.unit.api import MockBlueBird
 
+_DATETIME = datetime.datetime.now()
+
 
 class MockAircraftControls:
     @property
@@ -35,7 +37,13 @@ class MockSimulatorControls:
             self._props_called = True
             return "Error"
         return SimProperties(
-            SimState.RUN, 1.0, 1.0, 0.0, datetime.datetime.now(), "test_scn"
+            scenario_name="TEST",
+            scenario_time=0,
+            seed=0,
+            speed=1.0,
+            state=SimState.INIT,
+            step_size=1.0,
+            utc_time=_DATETIME,
         )
 
     def __init__(self):
@@ -70,12 +78,14 @@ def test_siminfo_get(test_flask_client, _set_bb_app):  # pylint: disable=unused-
     expected = {
         "callsigns": [],
         "mode": "Sandbox",
-        "scn_name": "test_scn",
-        "sim_speed": 1.0,
-        "sim_state": "RUN",
-        "sim_time": 0.0,
+        "scenario_name": "TEST",
+        "scenario_time": 0,
+        "seed": 0,
         "sim_type": "BlueSky",
+        "speed": 1.0,
+        "state": "INIT",
         "step_size": 1.0,
+        "utc_time": str(_DATETIME)[:-7],
     }
     assert resp.json == expected
 

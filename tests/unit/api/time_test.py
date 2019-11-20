@@ -22,7 +22,15 @@ class MockSimulatorControls:
         if not self._props_called:
             self._props_called = True
             return "Couldn't get the sim properties"
-        return SimProperties(SimState.RUN, 1.0, 1.0, 0.0, _DATETIME, "test_scn")
+        return SimProperties(
+            scenario_name="TEST",
+            scenario_time=0,
+            seed=0,
+            speed=1.0,
+            state=SimState.INIT,
+            step_size=1.0,
+            utc_time=_DATETIME,
+        )
 
     def __init__(self):
         self._props_called = False
@@ -48,4 +56,4 @@ def test_time_get(test_flask_client, _set_bb_app):
 
     resp = test_flask_client.get(endpoint)
     assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {"scenario_time": 0.0, "sim_utc": str(_DATETIME)[:-7]}
+    assert resp.json == {"scenario_time": 0.0, "utc_time": str(_DATETIME)[:-7]}

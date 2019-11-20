@@ -25,7 +25,13 @@ class MockSimulatorControls:
             self._props_called = True
             return "Error: Couldn't get the sim properties"
         return SimProperties(
-            SimState.RUN, 1.0, 1.0, 0.0, datetime.datetime.now(), "test_scn"
+            scenario_name="test_scn",
+            scenario_time=0,
+            seed=0,
+            speed=1.0,
+            state=SimState.INIT,
+            step_size=1.0,
+            utc_time=datetime.datetime.now(),
         )
 
     def __init__(self):
@@ -70,7 +76,7 @@ def test_ic_get(test_flask_client, _set_bb_app):
 
     resp = test_flask_client.get(_ENDPOINT)
     assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {"scn_name": "test_scn"}
+    assert resp.json == {"scenario_name": "test_scn"}
 
 
 def test_ic_post(test_flask_client, _set_bb_app):

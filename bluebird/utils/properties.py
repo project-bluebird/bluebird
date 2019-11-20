@@ -118,9 +118,16 @@ class SimState(IntEnum):
 class SimProperties:
     """Encapsulates the properties of the current simulation state"""
 
-    state: SimState
-    speed: float
-    step_size: float
+    scenario_name: str
     scenario_time: float  # The number of seconds since the start of the scenario
+    seed: int
+    speed: float
+    state: SimState
+    step_size: float
     utc_time: datetime
-    scn_name: str
+
+    def __post_init__(self):
+        assert self.scenario_time >= 0, "Scanrio time must be positive"
+        assert types.is_valid_seed(self.seed), "Invalid seed"
+        assert self.speed >= 0, "Speed must be positive"
+        assert self.step_size >= 0, "Step size must be positive"
