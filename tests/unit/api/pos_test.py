@@ -21,6 +21,17 @@ _ENDPOINT = f"{API_PREFIX}/pos"
 class MockAircraftControls:
     # pylint: disable=missing-docstring
 
+    @property
+    def all_properties(self):
+        if not self._get_properties_called:
+            self._get_properties_called = True
+            return "Error"
+        all_props = {}
+        for i in range(2):
+            props = self.properties(types.Callsign(f"TEST{i}"))
+            all_props[str(props.callsign)] = props
+        return all_props
+
     def __init__(self):
         self._get_properties_called = False
 
@@ -29,17 +40,7 @@ class MockAircraftControls:
         # "TEST*" aircraft exist, all others do not
         return str(callsign).upper().startswith("TEST")
 
-    def get_all_properties(self):
-        if not self._get_properties_called:
-            self._get_properties_called = True
-            return "Error"
-        all_props = {}
-        for i in range(2):
-            props = self.get_properties(types.Callsign(f"TEST{i}"))
-            all_props[str(props.callsign)] = props
-        return all_props
-
-    def get_properties(self, callsign: types.Callsign):
+    def properties(self, callsign: types.Callsign):
         assert isinstance(callsign, types.Callsign)
         if not self._get_properties_called:
             self._get_properties_called = True

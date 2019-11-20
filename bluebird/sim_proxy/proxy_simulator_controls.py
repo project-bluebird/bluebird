@@ -2,7 +2,6 @@
 Contains the ProxySimulatorControls class
 """
 
-from bluebird.utils.types import is_valid_seed
 import logging
 
 from typing import Optional, Union, Iterable
@@ -11,8 +10,9 @@ from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
-from bluebird.utils.properties import SimProperties, SimState
+from bluebird.utils.properties import SimProperties
 from bluebird.utils.timer import Timer
+from bluebird.utils.types import is_valid_seed
 
 
 class ProxySimulatorControls(AbstractSimulatorControls):
@@ -139,5 +139,5 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     def _clear_caches(self):
         self.sim_props = None
-        self._proxy_aircraft_controls.ac_props = {}
+        self._proxy_aircraft_controls.clear_caches()
         self._proxy_waypoint_controls.waypoints = []

@@ -43,7 +43,7 @@ class Pos(Resource):
             if resp:
                 return resp
 
-            props = utils.sim_proxy().aircraft.get_properties(callsign)
+            props = utils.sim_proxy().aircraft.properties(callsign)
             if not isinstance(props, AircraftProperties):
                 return internal_err_resp(
                     f"Couldn't get the aircraft properties: {props}"
@@ -58,7 +58,7 @@ class Pos(Resource):
 
         # else: get_all_properties
 
-        props = utils.sim_proxy().aircraft.get_all_properties()
+        props = utils.sim_proxy().aircraft.all_properties
         if isinstance(props, str):
             return responses.internal_err_resp(
                 f"Couldn't get all the aircraft properties: {props}"

@@ -9,7 +9,7 @@ from typing import Optional, Union
 
 _METERS_PER_FOOT = 0.3048
 
-_FL_REGEX = re.compile(r"^FL[1-9]\d*$")
+_FL_REGEX = re.compile(r"^FL[0-9]\d*$")
 _CALLSIGN_REGEX = re.compile(r"^[A-Z0-9]{3,}")
 
 

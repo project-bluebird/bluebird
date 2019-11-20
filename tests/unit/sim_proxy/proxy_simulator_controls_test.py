@@ -9,6 +9,7 @@ import mock
 import pytest
 
 import bluebird.utils.properties as props
+from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
@@ -50,6 +51,7 @@ def test_properties():
     type(mock_simulator_controls).properties = mock_properties
     properties = proxy_simulator_controls.properties
     assert properties == "Error"
+    assert not proxy_simulator_controls.sim_props
     mock_properties.assert_called_once()
 
     # Test initial population of the properties cache
@@ -57,6 +59,7 @@ def test_properties():
     type(mock_simulator_controls).properties = mock_properties
     properties = proxy_simulator_controls.properties
     assert properties == _TEST_SIM_PROPERTIES
+    assert proxy_simulator_controls.sim_props == _TEST_SIM_PROPERTIES
     mock_properties.assert_called_once()
 
     # Test use of the cache
@@ -91,7 +94,10 @@ def test_load_scenario():
 
     # Test load_scenario
     mock_simulator_controls.properties = _TEST_SIM_PROPERTIES
-    _MOCK_AIRCRAFT_CONTROLS.ac_props = True
+    mock_clear_caches = mock.Mock(
+        sepc=ProxyAircraftControls.clear_caches, return_value=None
+    )
+    _MOCK_AIRCRAFT_CONTROLS.clear_caches = mock_clear_caches
     _MOCK_WAYPOINT_CONTROLS.waypoints = True
     mock_simulator_controls.load_scenario = mock.Mock(
         sepc=AbstractSimulatorControls.load_scenario, return_value=None
@@ -101,8 +107,8 @@ def test_load_scenario():
     mock_simulator_controls.load_scenario.assert_called_once_with("TEST", 1.0, False)
 
     # Check that caches are empty after a new scenario is loaded
+    mock_clear_caches.assert_called_once()
     assert not proxy_simulator_controls.sim_props
-    assert not _MOCK_AIRCRAFT_CONTROLS.ac_props
     assert not _MOCK_WAYPOINT_CONTROLS.waypoints
 
 
@@ -146,7 +152,10 @@ def test_reset():
 
     # Test valid response
     mock_simulator_controls.properties = _TEST_SIM_PROPERTIES
-    _MOCK_AIRCRAFT_CONTROLS.ac_props = True
+    mock_clear_caches = mock.Mock(
+        sepc=ProxyAircraftControls.clear_caches, return_value=None
+    )
+    _MOCK_AIRCRAFT_CONTROLS.clear_caches = mock_clear_caches
     _MOCK_WAYPOINT_CONTROLS.waypoints = True
     mock_simulator_controls.reset = mock.Mock(
         sepc=AbstractSimulatorControls.reset, return_value=None
@@ -156,7 +165,7 @@ def test_reset():
 
     # Check that caches are empty after a new scenario is loaded
     assert not proxy_simulator_controls.sim_props
-    assert not _MOCK_AIRCRAFT_CONTROLS.ac_props
+    mock_clear_caches.assert_called_once()
     assert not _MOCK_WAYPOINT_CONTROLS.waypoints
 
 
@@ -246,7 +255,10 @@ def test_step():
 
     # Test valid response
     mock_simulator_controls.properties = _TEST_SIM_PROPERTIES
-    _MOCK_AIRCRAFT_CONTROLS.ac_props = True
+    mock_clear_caches = mock.Mock(
+        sepc=ProxyAircraftControls.clear_caches, return_value=None
+    )
+    _MOCK_AIRCRAFT_CONTROLS.clear_caches = mock_clear_caches
     _MOCK_WAYPOINT_CONTROLS.waypoints = True
     mock_simulator_controls.step = mock.Mock(
         sepc=AbstractSimulatorControls.step, return_value=None
@@ -258,7 +270,7 @@ def test_step():
 
     # Check that caches are empty after a new scenario is loaded
     assert proxy_simulator_controls.sim_props == _TEST_SIM_PROPERTIES
-    assert not _MOCK_AIRCRAFT_CONTROLS.ac_props
+    mock_clear_caches.assert_called_once()
     assert not _MOCK_WAYPOINT_CONTROLS.waypoints
 
     # Checks that the properties are logged

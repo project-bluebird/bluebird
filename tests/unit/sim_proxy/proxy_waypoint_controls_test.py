@@ -34,6 +34,7 @@ def test_all_waypoints():
     type(mock_waypoint_controls).all_waypoints = mock_all_waypoints
     waypoints = proxy_waypoint_controls.all_waypoints
     assert waypoints == "Error"
+    assert not proxy_waypoint_controls.waypoints
     mock_all_waypoints.assert_called_once()
 
     # Test initial population of the waypoints cache
@@ -41,6 +42,7 @@ def test_all_waypoints():
     type(mock_waypoint_controls).all_waypoints = mock_all_waypoints
     waypoints = proxy_waypoint_controls.all_waypoints
     assert waypoints == _TEST_WAYPOINTS
+    assert proxy_waypoint_controls.waypoints == _TEST_WAYPOINTS
     mock_all_waypoints.assert_called_once()
 
     # Test use of the cache

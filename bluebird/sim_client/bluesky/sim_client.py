@@ -10,7 +10,7 @@ from typing import Optional, Iterable, List, Union, Dict
 
 from semver import VersionInfo
 
-import bluebird.utils.properties as bb_props
+import bluebird.utils.properties as props
 import bluebird.utils.types as types
 from bluebird.settings import Settings
 from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
@@ -49,6 +49,14 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     # @property
     # def stream_data(self) -> Optional[List[bb_props.AircraftProperties]]:
     #     return self._client.aircraft_stream_data
+
+    @property
+    def all_properties(
+        self,
+    ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
+        cmd_str = f"LISTAC"
+        callsigns = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
+        raise NotImplementedError(f"(Unhandled) LISTAC returned: {callsigns}")
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
@@ -120,23 +128,17 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         cmd_str = f"CRE {callsign} {ac_type} {position} {heading} {altitude} {speed}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
-    def get_properties(
+    def properties(
         self, callsign: types.Callsign
-    ) -> Union[bb_props.AircraftProperties, str]:
-        cmd_str = f"POS {callsign}"
-        props = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
-        # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541
-        raise NotImplementedError(f"(Unhandled) POS returned: {props}")
-
-    def get_route(self, callsign: types.Callsign) -> Union[bb_props.AircraftRoute, str]:
+    ) -> Optional[Union[props.AircraftProperties, str]]:
         raise NotImplementedError
+        cmd_str = f"POS {callsign}"
+        ac_props = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
+        # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541
+        raise NotImplementedError(f"(Unhandled) POS returned: {ac_props}")
 
-    def get_all_properties(
-        self,
-    ) -> Union[Dict[types.Callsign, bb_props.AircraftProperties], str]:
-        cmd_str = f"LISTAC"
-        callsigns = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
-        raise NotImplementedError(f"(Unhandled) LISTAC returned: {callsigns}")
+    def route(self, callsign: types.Callsign) -> Union[props.AircraftRoute, str]:
+        raise NotImplementedError
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         raise NotImplementedError
@@ -161,7 +163,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     #     raise NotImplementedError
 
     @property
-    def properties(self) -> Union[bb_props.SimProperties, str]:
+    def properties(self) -> Union[props.SimProperties, str]:
         # TODO This may be difficult to get from the stack command
         raise NotImplementedError
 

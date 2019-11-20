@@ -18,10 +18,18 @@ class AbstractAircraftControls(ABC):
     # @abstractmethod
     # def stream_data(self) -> Optional[List[AircraftProperties]]:
     #     """
-    #     The current stream data of AircraftProperties. May be an empty list if streaming
-    #     is not enabled
+    #     The current stream data of AircraftProperties. May be an empty list if
+    #     streaming is not enabled
     #     :return:
     #     """
+
+    @property
+    @abstractmethod
+    def all_properties(self) -> Union[Dict[types.Callsign, AircraftProperties], str]:
+        """
+        Get properties for all aircraft in the scenario
+        :return: A dict of all aircraft properties in the simulation
+        """
 
     @property
     @abstractmethod
@@ -127,30 +135,19 @@ class AbstractAircraftControls(ABC):
         """
 
     @abstractmethod
-    def get_properties(
+    def properties(
         self, callsign: types.Callsign
-    ) -> Union[AircraftProperties, str]:
+    ) -> Optional[Union[AircraftProperties, str]]:
         """
-        Get all the properties for the specified aircraft
-        :param callsign: The aircraft callsign
-        :return: String on error
+        Get all the properties for the specified aircraft. Returns None if the aircraft
+        was not found, or a string if there were any errors
         """
 
     @abstractmethod
-    def get_route(self, callsign: types.Callsign) -> Union[AircraftRoute, str]:
+    def route(self, callsign: types.Callsign) -> Union[AircraftRoute, str]:
         """
         Returns the route for the specified aircraft, or a string to indicate an error
         :param callsign:
-        """
-
-    # TODO(RKM 2019-11-17) Make into a @property
-    @abstractmethod
-    def get_all_properties(
-        self,
-    ) -> Union[Dict[types.Callsign, AircraftProperties], str]:
-        """
-        Get properties for all aircraft in the scenario
-        :return: A dict of all aircraft properties in the simulation
         """
 
     @abstractmethod

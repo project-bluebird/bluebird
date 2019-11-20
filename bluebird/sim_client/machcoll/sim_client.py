@@ -19,7 +19,7 @@ from typing import Iterable, Optional, List, Union, Dict
 
 from semver import VersionInfo
 
-import bluebird.utils.properties as bb_props
+import bluebird.utils.properties as props
 import bluebird.utils.types as types
 from bluebird.settings import Settings
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
@@ -71,6 +71,19 @@ class MachCollAircraftControls(AbstractAircraftControls):
     # @property
     # def stream_data(self) -> Optional[List[bb_props.AircraftProperties]]:
     #     raise NotImplementedError
+
+    @property
+    def all_properties(
+        self,
+    ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
+        resp = self._mc_client().get_active_callsigns()
+        _raise_for_no_data(resp)
+        all_props = {}
+        for callsign_str in resp:
+            callsign = types.Callsign(callsign_str)
+            props = self.properties(callsign)
+            all_props[callsign] = props
+        return all_props
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
@@ -137,27 +150,16 @@ class MachCollAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         raise NotImplementedError
 
-    def get_properties(
+    def properties(
         self, callsign: types.Callsign
-    ) -> Union[bb_props.AircraftProperties, str]:
+    ) -> Optional[Union[props.AircraftProperties, str]]:
+        raise NotImplementedError
         resp = self._mc_client().get_active_flight_by_callsign(str(callsign))
         _raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
 
-    def get_route(self, callsign: types.Callsign) -> Union[bb_props.AircraftRoute, str]:
+    def route(self, callsign: types.Callsign) -> Union[props.AircraftRoute, str]:
         raise NotImplementedError
-
-    def get_all_properties(
-        self,
-    ) -> Union[Dict[types.Callsign, bb_props.AircraftProperties], str]:
-        resp = self._mc_client().get_active_callsigns()
-        _raise_for_no_data(resp)
-        all_props = {}
-        for callsign_str in resp:
-            callsign = types.Callsign(callsign_str)
-            props = self.get_properties(callsign)
-            all_props[callsign] = props
-        return all_props
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         raise NotImplementedError
@@ -168,14 +170,14 @@ class MachCollAircraftControls(AbstractAircraftControls):
     @staticmethod
     def _parse_aircraft_properties(
         ac_props: dict,
-    ) -> Union[bb_props.AircraftProperties, str]:
+    ) -> Union[props.AircraftProperties, str]:
         try:
             alt = types.Altitude("FL" + str(ac_props["pos"]["afl"]))
             # TODO Check this is appropriate
             rfl_val = ac_props["flight-plan"]["rfl"]
             rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
             # TODO Not currently available: gs, hdg, pos, vs
-            return bb_props.AircraftProperties(
+            return props.AircraftProperties(
                 ac_props["flight-data"]["type"],
                 alt,
                 types.Callsign(ac_props["flight-data"]["callsign"]),
@@ -200,7 +202,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     #     raise NotImplementedError
 
     @property
-    def properties(self) -> Union[bb_props.SimProperties, str]:
+    def properties(self) -> Union[props.SimProperties, str]:
         responses = []
         for req in [
             self._mc_client().get_state,
@@ -224,9 +226,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
         try:
             assert len(responses) == len(
-                bb_props.SimProperties.__annotations__  # pylint: disable=no-member
+                props.SimProperties.__annotations__  # pylint: disable=no-member
             ), "Expected the number of arguments to match"
-            return bb_props.SimProperties(*responses)  # Splat!
+            return props.SimProperties(*responses)  # Splat!
         except AssertionError:  # pylint: disable=broad-except
             return traceback.format_exc()
 
@@ -259,7 +261,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == bb_props.SimState.RUN:
+        if state == props.SimState.RUN:
             return
         resp = self._mc_client().sim_start()
         _raise_for_no_data(resp)
@@ -269,7 +271,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == bb_props.SimState.INIT:
+        if state == props.SimState.INIT:
             return
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
@@ -280,9 +282,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if isinstance(state, str):
             return state
         if state in [
-            bb_props.SimState.INIT,
-            bb_props.SimState.HOLD,
-            bb_props.SimState.END,
+            props.SimState.INIT,
+            props.SimState.HOLD,
+            props.SimState.END,
         ]:
             return None
         resp = self._mc_client().sim_pause()
@@ -293,9 +295,9 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == bb_props.SimState.RUN:
+        if state == props.SimState.RUN:
             return None
-        if state == bb_props.SimState.END:
+        if state == props.SimState.END:
             return 'Can\'t resume sim from "END" state'
         resp = self._mc_client().sim_resume()
         _raise_for_no_data(resp)
@@ -305,7 +307,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         state = self._get_state()
         if isinstance(state, str):
             return state
-        if state == bb_props.SimState.END:
+        if state == props.SimState.END:
             return
         resp = self._mc_client().sim_stop()
         _raise_for_no_data(resp)
@@ -331,7 +333,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def set_speed(self, speed: float) -> Optional[str]:
         resp = (
             self._mc_client().set_step(speed)
-            if Settings.SIM_MODE == bb_props.SimMode.Agent
+            if Settings.SIM_MODE == props.SimMode.Agent
             else self._mc_client().set_speed(speed)
         )
         _raise_for_no_data(resp)
@@ -352,22 +354,22 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         raise NotImplementedError
 
     @staticmethod
-    def _parse_sim_state(val: str) -> bb_props.SimState:
+    def _parse_sim_state(val: str) -> props.SimState:
         # TODO There is also a possible "stepping" mode (?)
         if val.upper() == "INIT":
-            return bb_props.SimState.INIT
+            return props.SimState.INIT
         if val.upper() == "RUNNING":
-            return bb_props.SimState.RUN
+            return props.SimState.RUN
         if val.upper() == "STOPPED":
-            return bb_props.SimState.END
+            return props.SimState.END
         if val.upper() == "PAUSED":
-            return bb_props.SimState.HOLD
+            return props.SimState.HOLD
         raise ValueError(f'Unknown state: "{val}"')
 
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
 
-    def _get_state(self) -> Union[bb_props.SimState, str]:
+    def _get_state(self) -> Union[props.SimState, str]:
         state = self._mc_client().get_state()
         if not state:
             return f"Could not get the sim state"
@@ -400,7 +402,7 @@ class MachCollWaypointControls(AbstractWaypointControls):
             raise NotImplementedError(f"get_all_fixes returned: {fixes}")
         # TODO Need to create a mapping
         _LOGGER.warning(f"Unhandled data: {fixes}")
-        return {}
+        return []
 
     def find(self, waypoint_name: str) -> Optional[types.Waypoint]:
         raise NotImplementedError
@@ -463,10 +465,10 @@ class SimClient(AbstractSimClient):
         if not self.mc_client:
             return True
 
-        props = self.simulation.properties
-        if isinstance(props, str):
-            _LOGGER.error(f"Could not pause sim while disconnecting:\n'{props}'")
-        elif props.state == bb_props.SimState.RUN:
+        sim_props = self.simulation.properties
+        if isinstance(sim_props, str):
+            _LOGGER.error(f"Could not pause sim while disconnecting:\n'{sim_props}'")
+        elif sim_props.state == props.SimState.RUN:
             stop_str = self.simulation.pause()
             shutdown_ok = True
             if stop_str:
