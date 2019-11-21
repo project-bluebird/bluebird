@@ -18,7 +18,6 @@ _ENDPOINT = f"{API_PREFIX}/alt"
 
 
 class MockAircraftControls:
-    # pylint: disable=missing-docstring
     def __init__(self):
         self.last_cfl = None
 

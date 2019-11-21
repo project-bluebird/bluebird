@@ -59,9 +59,6 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-# pylint: disable=unused-argument
-
-
 def test_ic_get(test_flask_client, _set_bb_app):
     """
     Tests the GET method

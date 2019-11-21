@@ -30,7 +30,7 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_reset_post(test_flask_client, _set_bb_app):  # pylint: disable=unused-argument
+def test_reset_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
     """

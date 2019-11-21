@@ -194,7 +194,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
                 rfl,
                 types.VerticalSpeed(0),
             )
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:
             return f"Error parsing AircraftProperties: {exc}"
 
 
@@ -232,10 +232,10 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
 
         try:
             assert len(responses) == len(
-                props.SimProperties.__annotations__  # pylint: disable=no-member
+                props.SimProperties.__annotations__
             ), "Expected the number of arguments to match"
             return props.SimProperties(*responses)  # Splat!
-        except AssertionError:  # pylint: disable=broad-except
+        except AssertionError:
             return traceback.format_exc()
 
     # @property
@@ -443,7 +443,7 @@ class SimClient(AbstractSimClient):
     def waypoints(self) -> AbstractWaypointControls:
         return self._waypoint_controls
 
-    def __init__(self, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, **kwargs):
         self.mc_client = None
         self._client_version: VersionInfo = None
         self._sim_controls = MachCollSimulatorControls(self)

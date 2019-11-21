@@ -14,7 +14,7 @@ from tests.unit.api import MockBlueBird, MockSimProxy
 
 def _mock_shutdown(self, shutdown_sim: bool = False) -> bool:
     assert isinstance(shutdown_sim, bool)
-    # pylint: disable=protected-access
+
     if not hasattr(_mock_shutdown, "_called_flag"):
         _mock_shutdown._called_flag = True
         return False
@@ -31,9 +31,7 @@ def _set_bb_app(monkeypatch):
 
 # TODO(RKM 2019-11-18) Find some way of patching the request.environ
 # "werkzeug.server.shutdown" function
-def test_shutdown_post(
-    test_flask_client, _set_bb_app
-):  # pylint: disable=unused-argument
+def test_shutdown_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
     """

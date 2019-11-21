@@ -124,7 +124,7 @@ def _start_episode_log(sim_seed):
     :return:
     """
 
-    global EP_ID, EP_FILE  # pylint: disable=global-statement
+    global EP_ID, EP_FILE
 
     if EP_LOGGER.hasHandlers():
         raise Exception(

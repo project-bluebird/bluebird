@@ -14,7 +14,6 @@ from tests.unit.api import MockBlueBird
 
 
 class MockAircraftControls:
-    # pylint: disable=missing-docstring
     def __init__(self):
         self._set_heading_called = 0
 

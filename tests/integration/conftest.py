@@ -16,7 +16,7 @@ MAX_WAIT_SECONDS = 15
 
 
 @pytest.fixture(scope="function", autouse=True)
-def fixture_wait_for_containers(docker_network_info):  # pylint: disable=unused-argument
+def fixture_wait_for_containers(docker_network_info):
     """
     Wait for the test containers to be available before continuing. Depends on the
     docker_network_info fixture, to ensure that the containers are started first

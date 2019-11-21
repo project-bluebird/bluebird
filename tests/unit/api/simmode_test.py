@@ -16,7 +16,7 @@ from tests.unit.api import MockBlueBird, MockSimProxy
 
 def _mock_set_mode(self, mode: SimMode):
     assert isinstance(mode, SimMode)
-    # pylint: disable=protected-access
+
     if not hasattr(_mock_set_mode, "_called_flag"):
         _mock_set_mode._called_flag = True
         return "Error: Could not set mode"
@@ -31,9 +31,7 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_simmode_post(
-    test_flask_client, _set_bb_app
-):  # pylint: disable=unused-argument
+def test_simmode_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
     """

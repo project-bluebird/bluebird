@@ -39,7 +39,7 @@ class Shutdown(Resource):
                     f"No shutdown function available. {sim_quit_msg}"
                 )
             shutdown_fn()
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:
             return internal_err_resp(f"Could not shutdown: {exc}. {sim_quit_msg}")
 
         data = f"BlueBird shutting down! {sim_quit_msg}"

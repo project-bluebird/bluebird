@@ -2,13 +2,6 @@
 Contains the class for storing aircraft data which is streamed from the simulation
 """
 
-import logging
-from typing import Dict, List
-
-from bluebird.utils.timeutils import log_rate
-from bluebird.utils.types import Altitude, Callsign
-from bluebird.utils.properties import AircraftProperties
-
 LOG_PREFIX = "A"
 
 # Note on unit precision:
@@ -85,7 +78,7 @@ LOG_PREFIX = "A"
 #         self._store[callsign].cleared_flight_level = flight_level
 
 
-### Old methods ###
+# Old methods #
 
 # def start_timer(self):
 #     """
@@ -186,7 +179,7 @@ LOG_PREFIX = "A"
 
 #     # TODO Tidy this up
 #     data = dict(self.store)
-#     for aircraft in data.keys():  # pylint: disable=consider-iterating-dictionary
+#     for aircraft in data.keys():
 #         for prop in list(data[aircraft].keys()):
 #             if prop.startswith("_"):
 #                 del data[aircraft][prop]

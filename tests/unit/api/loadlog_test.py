@@ -25,7 +25,6 @@ _TEST_FILE_PATH = Path(os.getcwd(), _TEST_FILE)
 
 
 class MockSimulatorControls:
-    # pylint: disable=missing-docstring, no-self-use
     @property
     def properties(self):
         return SimProperties(

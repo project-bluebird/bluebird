@@ -5,7 +5,6 @@ Provides logic for the Load Log API endpoint
 # TODO(RKM 2019-11-18) Check how this interacts with the SimProxy layer
 
 # TODO Tidy this up
-# pylint: disable=too-many-return-statements, too-many-branches, too-many-statements
 
 import logging
 import os
@@ -57,7 +56,7 @@ def parse_lines(lines: list, target_time: int = 0) -> Union[str, dict]:
     if not lines:
         return "No more lines after parsing seed"
 
-    while not "Scenario file loaded" in lines[0]:
+    while "Scenario file loaded" not in lines[0]:
         lines.pop(0)
         if not lines:
             return "Couldn't find scenario content"
@@ -79,7 +78,7 @@ def parse_lines(lines: list, target_time: int = 0) -> Union[str, dict]:
         if "Episode finished" in line:
             return scn_data
         match = re.match(r".*C \[(\d+)\] (.*)$", line)
-        if match and not "STEP" in line:
+        if match and "STEP" not in line:
             time_s = int(match.group(1))
             if not target_time or time_s <= target_time:
                 cmd_time = time.strftime("%H:%M:%S", time.gmtime(time_s))

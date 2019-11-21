@@ -15,7 +15,6 @@ from tests.unit.api import MockBlueBird
 
 
 class MockAircraftControls:
-    # pylint: disable=missing-docstring
     def __init__(self):
         self._get_route_called = False
 
@@ -46,9 +45,7 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_listroute_get(
-    test_flask_client, _set_bb_app
-):  # pylint: disable=unused-argument
+def test_listroute_get(test_flask_client, _set_bb_app):
     """
     Tests the GET method
     """

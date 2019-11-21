@@ -23,6 +23,6 @@ def test_run_script_import():
     """
 
     try:
-        import run  # pylint: disable=unused-import
+        import run  # noqa: F401
     except ImportError as exc:
         pytest.fail(str(exc))

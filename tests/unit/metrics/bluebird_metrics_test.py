@@ -2,7 +2,6 @@
 Tests for BlueBird's built-in metrics
 """
 
-# pylint: disable=redefined-outer-name
 
 import pytest
 

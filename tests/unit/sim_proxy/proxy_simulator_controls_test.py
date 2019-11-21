@@ -264,7 +264,7 @@ def test_step():
         sepc=AbstractSimulatorControls.step, return_value=None
     )
     _mock_logger = mock.Mock(spec=logging.Logger)
-    proxy_simulator_controls._logger = _mock_logger  # pylint: disable=protected-access
+    proxy_simulator_controls._logger = _mock_logger
     res = proxy_simulator_controls.step()
     assert not res
 

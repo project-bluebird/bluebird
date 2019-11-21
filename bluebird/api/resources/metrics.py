@@ -23,6 +23,7 @@ _PARSER.add_argument("provider", type=str, location="args", required=False)
 
 _LOGGER = logging.getLogger(__name__)
 
+
 # -> Union[RespTuple, AbstractMetricProvider]:
 def _get_provider_by_name(provider_name: str):
     if not provider_name:
@@ -76,7 +77,7 @@ class Metric(Resource):
                 f"metric named '{metric_name}'"
             )
         # Catch all other cases
-        except Exception as exc:  # pylint:disable=broad-except
+        except Exception as exc:
             return bad_request_resp(f"Metric function returned an error: {str(exc)}")
 
         data = {metric_name: result}

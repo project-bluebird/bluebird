@@ -19,8 +19,6 @@ _ENDPOINT = f"{API_PREFIX}/pos"
 
 
 class MockAircraftControls:
-    # pylint: disable=missing-docstring
-
     @property
     def all_properties(self):
         if not self._get_properties_called:
@@ -59,7 +57,6 @@ class MockAircraftControls:
 
 
 class MockSimulatorControls:
-    # pylint: disable=missing-docstring
     @property
     def properties(self):
         if not self._props_called:

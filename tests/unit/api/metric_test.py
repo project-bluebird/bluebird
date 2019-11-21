@@ -47,9 +47,6 @@ def _set_bb_app_with_provider(monkeypatch):
     _set_bb_app(monkeypatch, True)
 
 
-# pylint: disable=unused-argument,redefined-outer-name
-
-
 def test_metric_get_no_providers(test_flask_client, _set_bb_app_no_provider):
     """Tests the GET method when there are no metrics providers available"""
 

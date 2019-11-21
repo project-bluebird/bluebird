@@ -27,9 +27,8 @@ assert _BS_PATH.is_dir() and "bluesky" in os.listdir(
     _BS_PATH
 ), "Expected BS_PATH to point to the root BlueSky directory"
 sys.path.append(str(_BS_PATH.resolve()))
-# pylint: disable=wrong-import-position
-from bluesky.network.client import Client  # type: ignore
-from bluesky.network.npcodec import decode_ndarray  # type: ignore
+from bluesky.network.client import Client  # noqa: E402
+from bluesky.network.npcodec import decode_ndarray  # noqa: E402
 
 # pylint: enable=wrong-import-position
 
@@ -49,8 +48,8 @@ IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
 # Note - BlueSky SIMINFO returns:
-# [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)), bs.traf.ntraf,
-# bs.sim.state, stack.get_scenname()]
+# [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)),
+# bs.traf.ntraf, bs.sim.state, stack.get_scenname()]
 # [1.0015915889597933, 0.05, 3550.1500000041497, '2019-03-06 00:59:10', 2, 2, '']
 
 # TODO
@@ -60,8 +59,8 @@ IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 #     :param data:
 #     :return:
 #     """
-
-#     self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count, self.sim_state, self.scn_name = (
+#     self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count,
+#     self.sim_state, self.scn_name = (
 #         data
 #     )
 #     self.sim_speed = round(self.sim_speed, 1)

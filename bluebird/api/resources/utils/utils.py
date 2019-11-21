@@ -48,7 +48,6 @@ def try_parse_lat_lon(args: dict) -> Union[types.LatLon, Response]:
 
 def _bb_app():
     """Gets the BlueBird app instance"""
-    # pylint: disable=protected-access
     if not hasattr(_bb_app, "_instance"):
         _bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
     return _bb_app._instance
@@ -111,8 +110,8 @@ def parse_route_data(route_data):
         match = _ROUTE_RE.match(line)
         if not match:
             return line
-        req_alt = match.group(3) if not "-" in match.group(3) else None
-        req_spd = int(match.group(4)) if not "-" in match.group(4) else None
+        req_alt = match.group(3) if "-" not in match.group(3) else None
+        req_spd = int(match.group(4)) if "-" not in match.group(4) else None
         parsed.append(
             {
                 "is_current": bool(match.group(1)),
