@@ -273,9 +273,6 @@ def test_log_reload_invalid_time(test_flask_client, _set_bb_app):
     :return:
     """
 
-    resp = test_flask_client.post(API_PREFIX + "/simmode", json={"mode": "agent"})
-    assert resp.status_code == 200, "Expected the mode to be agent"
-
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 

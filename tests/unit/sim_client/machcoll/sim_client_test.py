@@ -2,7 +2,7 @@
 Tests for the MachColl sim client module
 """
 
-from tests.unit.sim_client.common.imports import (
+from tests.unit.sim_client.common.imports_test import (
     sim_client_module_import,
     abstract_class_implementation,
     sim_client_instantiation,

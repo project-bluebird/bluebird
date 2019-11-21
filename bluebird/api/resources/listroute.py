@@ -35,7 +35,8 @@ class ListRoute(Resource):
         if resp:
             return resp
 
-        route = sim_proxy().aircraft.get_route(callsign)
+        route = sim_proxy().aircraft.route(callsign)
+        assert route, "No route returned even though the aircraft exists"
         if not isinstance(route, AircraftRoute):
             return responses.internal_err_resp(route)
 

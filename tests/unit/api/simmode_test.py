@@ -38,6 +38,8 @@ def test_simmode_post(
     Tests the POST method
     """
 
+    pytest.xfail("Endpoint disabled")
+
     endpoint = f"{API_PREFIX}/simmode"
 
     # Test arg parsing

@@ -100,12 +100,12 @@ def test_cre_post(test_flask_client, _set_bb_app):
     data["alt"] = "FL100"
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert "spd" in resp.json["message"]
+    assert "gspd" in resp.json["message"]
 
-    data["spd"] = "..."
+    data["gspd"] = "..."
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.json["message"]["spd"] == "Ground speed must be an int"
+    assert resp.json["message"]["gspd"] == "Ground speed must be an int"
 
     # Test aircraft exists
 
@@ -116,7 +116,7 @@ def test_cre_post(test_flask_client, _set_bb_app):
         "lon": TEST_LON,
         "hdg": 123,
         "alt": 18_500,
-        "spd": 50,
+        "gspd": 50,
     }
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
@@ -143,4 +143,4 @@ def test_cre_post(test_flask_client, _set_bb_app):
     assert created_aircraft[2] == types.LatLon(data["lat"], data["lon"])
     assert created_aircraft[3] == types.Heading(data["hdg"])
     assert created_aircraft[4] == types.Altitude(data["alt"])
-    assert created_aircraft[5] == types.GroundSpeed(data["spd"])
+    assert created_aircraft[5] == types.GroundSpeed(data["gspd"])

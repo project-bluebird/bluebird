@@ -5,8 +5,8 @@ Contains the AbstractAircraftControls class
 from abc import ABC, abstractmethod
 from typing import Optional, Union, List, Dict
 
+import bluebird.utils.properties as props
 import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties, AircraftRoute
 
 
 class AbstractAircraftControls(ABC):
@@ -25,27 +25,28 @@ class AbstractAircraftControls(ABC):
 
     @property
     @abstractmethod
-    def all_properties(self) -> Union[Dict[types.Callsign, AircraftProperties], str]:
+    def all_properties(
+        self,
+    ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
         """
-        Get properties for all aircraft in the scenario
-        :return: A dict of all aircraft properties in the simulation
+        Properties of all aircraft in the scenario, or a string to indicate an error
         """
 
     @property
     @abstractmethod
     def callsigns(self) -> Union[List[types.Callsign], str]:
         """
-        Returns a list of all aircraft Callsigns currently in the simulation, or a
-        string to indicate an error
+        A list of all aircraft Callsigns currently in the simulation, or a string to
+        indicate an error
         """
 
-    # @property
-    # @abstractmethod
-    # def routes(self) -> Dict[types.Callsign, List]:
-    #     """
-    #     A dict of the current aircraft routes in the scenario, keyed by callsign
-    #     :return:
-    #     """
+    @property
+    @abstractmethod
+    def all_routes(self) -> Union[Dict[types.Callsign, props.AircraftRoute], str]:
+        """
+        The routes of every aircraft in the current scenario, or a string to indicate an
+        error
+        """
 
     @abstractmethod
     def set_cleared_fl(
@@ -106,7 +107,10 @@ class AbstractAircraftControls(ABC):
 
     @abstractmethod
     def add_waypoint_to_route(
-        self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
+        self,
+        callsign: types.Callsign,
+        waypoint: types.Waypoint,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
         """
         Append a waypoint to an aircraft's route. The waypoint must already be defined
@@ -121,32 +125,29 @@ class AbstractAircraftControls(ABC):
         position: types.LatLon,
         heading: types.Heading,
         altitude: types.Altitude,
-        speed: int,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
         """
-        Create an aircraft
-        :param callsign:
-        :param ac_type:
-        :param position:
-        :param heading:
-        :param altitude:
-        :param speed:
-        :return:
+        Create an aircraft. Returns None if the aircraft was created, or a string to
+        indicate an error
         """
 
     @abstractmethod
     def properties(
         self, callsign: types.Callsign
-    ) -> Optional[Union[AircraftProperties, str]]:
+    ) -> Optional[Union[props.AircraftProperties, str]]:
         """
         Get all the properties for the specified aircraft. Returns None if the aircraft
         was not found, or a string if there were any errors
         """
 
     @abstractmethod
-    def route(self, callsign: types.Callsign) -> Union[AircraftRoute, str]:
+    def route(
+        self, callsign: types.Callsign
+    ) -> Optional[Union[props.AircraftRoute, str]]:
         """
-        Returns the route for the specified aircraft, or a string to indicate an error
+        Returns the route for the specified aircraft. Returns None if the aircraft was
+        not found, or a string to indicate an error
         :param callsign:
         """
 

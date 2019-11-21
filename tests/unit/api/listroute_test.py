@@ -24,7 +24,7 @@ class MockAircraftControls:
         # "TEST*" aircraft exist, all others do not
         return str(callsign).upper().startswith("TEST")
 
-    def get_route(self, callsign: types.Callsign):  # -> Union[AircraftRoute, str]:
+    def route(self, callsign: types.Callsign):  # -> Union[AircraftRoute, str]:
         assert isinstance(callsign, types.Callsign)
         if not self._get_route_called:
             self._get_route_called = True

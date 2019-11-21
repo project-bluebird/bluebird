@@ -20,7 +20,7 @@ _PARSER.add_argument("lat", type=float, location="json", required=True)
 _PARSER.add_argument("lon", type=float, location="json", required=True)
 _PARSER.add_argument("hdg", type=Heading, location="json", required=True)
 _PARSER.add_argument("alt", type=Altitude, location="json", required=True)
-_PARSER.add_argument("spd", type=GroundSpeed, location="json", required=True)
+_PARSER.add_argument("gspd", type=GroundSpeed, location="json", required=True)
 
 
 class Cre(Resource):
@@ -33,14 +33,11 @@ class Cre(Resource):
         """
         Logic for POST events. If the request contains valid aircraft information, then
         a request is sent to the simulator to create it
-        :return:
         """
 
         req_args = utils.parse_args(_PARSER)
         callsign = req_args[utils.CALLSIGN_LABEL]
 
-        # TODO Replace ac_data keys with callsigns (also need to parse callsigns coming
-        # from the simulators)
         if utils.sim_proxy().aircraft.exists(callsign):
             return bad_request_resp(f"Aircraft {callsign} already exists")
 
@@ -48,7 +45,7 @@ class Cre(Resource):
         if not isinstance(position_or_resp, LatLon):
             return position_or_resp
 
-        if req_args["spd"].meters_per_sec <= 0:
+        if req_args["gspd"].meters_per_sec <= 0:
             return bad_request_resp("Speed must be positive")
 
         if not req_args["type"]:
@@ -60,7 +57,7 @@ class Cre(Resource):
             position_or_resp,
             req_args["hdg"],
             req_args["alt"],
-            req_args["spd"],
+            req_args["gspd"],
         )
 
         return checked_resp(err, HTTPStatus.CREATED)

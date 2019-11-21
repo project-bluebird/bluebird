@@ -27,6 +27,8 @@ class SimMode(Resource):
     def post():
         """Logic for POST events. Changes the simulation mode"""
 
+        raise DeprecationWarning("Disabled")
+
         req_args = parse_args(_PARSER)
         new_mode_str = req_args["mode"]
 

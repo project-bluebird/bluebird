@@ -86,15 +86,18 @@ class RouteItem:
     required_gspd: Optional[types.GroundSpeed]
 
 
+# NOTE(RKM 2019-11-20) Every aircraft should have an AircraftRoute property, even if it
+# has no actual segments (i.e. len(route.segments) == 0)
 @dataclass
 class AircraftRoute:
 
     callsign: types.Callsign
     segments: List[RouteItem]
-    current_segment_index: int
+    current_segment_index: Optional[int]
 
     def __post_init__(self):
-        assert self.current_segment_index < len(self.segments)
+        if self.current_segment_index:
+            assert 0 < self.current_segment_index < len(self.segments)
         # TODO(RKM 2019-11-19) Do we want to enforce that all waypoints have a specified
         # target altitude when being included in an aircraft's route?
         # for segment in self.segments:

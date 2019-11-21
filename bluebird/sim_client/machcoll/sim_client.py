@@ -89,18 +89,19 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def callsigns(self) -> Union[List[types.Callsign], str]:
         raise NotImplementedError
 
-    # @property
-    # def routes(self) -> Dict[types.Callsign, List]:
-    #     resp = self._mc_client().get_active_callsigns()
-    #     _raise_for_no_data(resp)
-    #     routes = {}
-    #     for callsign_str in resp:
-    #         callsign = types.Callsign(callsign_str)
-    #         # TODO: Check that a None response *only* implies a connection error
-    #         route = self._mc_client().get_flight_plan_for_callsign(str(callsign))
-    #         # TODO: Check the type of route
-    #         routes[callsign] = route
-    #     return routes
+    @property
+    def all_routes(self) -> Dict[types.Callsign, props.AircraftRoute]:
+        raise NotImplementedError
+        resp = self._mc_client().get_active_callsigns()
+        _raise_for_no_data(resp)
+        routes = {}
+        for callsign_str in resp:
+            callsign = types.Callsign(callsign_str)
+            # TODO: Check that a None response *only* implies a connection error
+            route = self._mc_client().get_flight_plan_for_callsign(str(callsign))
+            # TODO: Check the type of route
+            routes[callsign] = route
+        return routes
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
@@ -135,7 +136,10 @@ class MachCollAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
 
     def add_waypoint_to_route(
-        self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
+        self,
+        callsign: types.Callsign,
+        waypoint: types.Waypoint,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
         raise NotImplementedError
 
@@ -146,7 +150,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
         position: types.LatLon,
         heading: types.Heading,
         altitude: types.Altitude,
-        speed: int,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
         raise NotImplementedError
 
@@ -158,7 +162,9 @@ class MachCollAircraftControls(AbstractAircraftControls):
         _raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
 
-    def route(self, callsign: types.Callsign) -> Union[props.AircraftRoute, str]:
+    def route(
+        self, callsign: types.Callsign
+    ) -> Optional[Union[props.AircraftRoute, str]]:
         raise NotImplementedError
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
@@ -382,7 +388,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def _is_success(data) -> bool:
         try:
             return data["code"]["Short Description"] == "Success"
-        except:  # pylint:disable=bare-except
+        except KeyError:
             pass
         return False
 

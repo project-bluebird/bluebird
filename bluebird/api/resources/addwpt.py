@@ -17,7 +17,7 @@ _PARSER.add_argument(
 )
 _PARSER.add_argument("waypoint", type=str, location="json", required=True)
 _PARSER.add_argument("alt", type=types.Altitude, location="json", required=False)
-_PARSER.add_argument("spd", type=float, location="json", required=False)
+_PARSER.add_argument("gspd", type=types.GroundSpeed, location="json", required=False)
 
 
 class AddWpt(Resource):
@@ -48,9 +48,8 @@ class AddWpt(Resource):
         if not waypoint:
             return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
 
-        # TODO Which speed is this? Ground speed?
         err = utils.sim_proxy().aircraft.add_waypoint_to_route(
-            callsign, waypoint, spd=req_args["spd"]
+            callsign, waypoint, spd=req_args["gspd"]
         )
 
         return responses.checked_resp(err)

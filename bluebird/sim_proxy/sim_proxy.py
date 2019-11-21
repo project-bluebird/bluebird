@@ -61,6 +61,7 @@ class SimProxy(AbstractSimClient):
 
         self._sim_client: AbstractSimClient = sim_client  # The actual sim_client
 
+        # TODO(RKM 2019-11-20) In sandbox mode, we shouldn't use the proxy classes
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
         self._proxy_waypoint_controls = ProxyWaypointControls(
             self._sim_client.waypoints
@@ -106,25 +107,25 @@ class SimProxy(AbstractSimClient):
 
     def set_mode(self, mode: SimMode) -> Optional[str]:
         raise NotImplementedError
-        if is_agent_mode():
-            err = sim_proxy().simulation.pause()
-            if err:
-                return responses.internal_err_resp(
-                    f"Could not pause sim when changing mode: {err}"
-                )
+        # if is_agent_mode():
+        #     err = sim_proxy().simulation.pause()
+        #     if err:
+        #         return responses.internal_err_resp(
+        #             f"Could not pause sim when changing mode: {err}"
+        #         )
 
-        elif Settings.SIM_MODE == _SimMode.Sandbox:
-            err = sim_proxy().start_or_resume_sim()
-            if err:
-                return responses.internal_err_resp(
-                    f"Could not resume sim when changing mode: {err}"
-                )
-        else:
-            # Only reach here if we add a new mode to settings but don't add a case to
-            # handle it here
-            raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
+        # elif Settings.SIM_MODE == _SimMode.Sandbox:
+        #     err = sim_proxy().start_or_resume_sim()
+        #     if err:
+        #         return responses.internal_err_resp(
+        #             f"Could not resume sim when changing mode: {err}"
+        #         )
+        # else:
+        #     # Only reach here if we add a new mode to settings but don't add a case to
+        #     # handle it here
+        #     raise ValueError(f"Unsupported mode {Settings.SIM_MODE}")
 
-        return responses.ok_resp()
+        # return responses.ok_resp()
 
     def _log_ac_data(self):
         pass

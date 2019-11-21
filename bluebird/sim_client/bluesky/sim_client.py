@@ -4,7 +4,6 @@ BlueSky simulation client class
 
 # TODO: Need to re-add the tests for string parsing/units from the old API tests
 
-import logging
 import os
 from typing import Optional, Iterable, List, Union, Dict
 
@@ -62,9 +61,9 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def callsigns(self) -> Union[List[types.Callsign], str]:
         raise NotImplementedError
 
-    # @property
-    # def routes(self) -> Dict[types.Callsign, List]:
-    #     raise NotImplementedError
+    @property
+    def all_routes(self) -> Dict[types.Callsign, props.AircraftRoute]:
+        raise NotImplementedError
 
     def __init__(self, client):
         self._client = client
@@ -107,14 +106,17 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
 
     # TODO Check how BlueSky handles the variable length arguments here with LAT LON
     def add_waypoint_to_route(
-        self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
+        self,
+        callsign: types.Callsign,
+        waypoint: types.Waypoint,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
         raise NotImplementedError
-        cmd_str = f"ADDWPT {callsign} {waypoint}"
-        cmd_str += " " + kwargs.get("alt", "")
-        cmd_str += " " + kwargs.get("spd", "")
-        cmd_str.strip()
-        return self._tmp_stack_cmd_handle_list(cmd_str)
+        # cmd_str = f"ADDWPT {callsign} {waypoint}"
+        # cmd_str += " " + kwargs.get("alt", "")
+        # cmd_str += " " + kwargs.get("spd", "")
+        # cmd_str.strip()
+        # return self._tmp_stack_cmd_handle_list(cmd_str)
 
     def create(
         self,
@@ -123,10 +125,11 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         position: types.LatLon,
         heading: types.Heading,
         altitude: types.Altitude,
-        speed: int,
+        gspd: types.GroundSpeed,
     ) -> Optional[str]:
-        cmd_str = f"CRE {callsign} {ac_type} {position} {heading} {altitude} {speed}"
-        return self._tmp_stack_cmd_handle_list(cmd_str)
+        raise NotImplementedError("Check gspd and UNITS for all")
+        # cmd_str = f"CRE {callsign} {ac_type} {position} {heading} {altitude} {gspeed}"
+        # return self._tmp_stack_cmd_handle_list(cmd_str)
 
     def properties(
         self, callsign: types.Callsign
@@ -134,10 +137,12 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
         cmd_str = f"POS {callsign}"
         ac_props = self._tmp_stack_cmd_handle_list(cmd_str, resp_expected=True)
-        # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541
+        # TODO https://github.com/alan-turing-institute/bluesky/blob/master/bluesky/traffic/traffic.py#L541 # noqa
         raise NotImplementedError(f"(Unhandled) POS returned: {ac_props}")
 
-    def route(self, callsign: types.Callsign) -> Union[props.AircraftRoute, str]:
+    def route(
+        self, callsign: types.Callsign
+    ) -> Optional[Union[props.AircraftRoute, str]]:
         raise NotImplementedError
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:

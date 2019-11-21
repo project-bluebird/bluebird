@@ -103,7 +103,7 @@ FLASK_API.add_resource(res.Time, "/time")
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
 FLASK_API.add_resource(res.EpLog, "/eplog")
 FLASK_API.add_resource(res.SimInfo, "/siminfo")
-FLASK_API.add_resource(res.SimMode, "/simmode")
+# FLASK_API.add_resource(res.SimMode, "/simmode")
 FLASK_API.add_resource(res.Shutdown, "/shutdown")
 
 # Metrics
