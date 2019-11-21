@@ -16,7 +16,7 @@ python:
 before_install:
   - pip install -r requirements-dev.txt
   - pre-commit install
-  - pre-commit run --all-files
+  - pre-commit run
 
 install:
   - pip install -r requirements.txt

@@ -16,7 +16,7 @@ from tests.unit import TEST_ACIDS, TEST_DATA
 def test_bb_provider(test_ac_data):
     """
     Yields a new Provider instance for each test
-	:param test_ac_data:
+    :param test_ac_data:
     :return:
     """
 
@@ -37,7 +37,7 @@ def _other_cfg():
 def test_metrics_setup(test_ac_data):
     """
     Tests that each provider can be imported and implements the MetricsProvider ABC
-	:param test_ac_data:
+    :param test_ac_data:
     :return:
     """
 
@@ -64,9 +64,9 @@ def test_invalid_inputs(test_bb_provider):
 def test_aircraft_separation_values(test_ac_data, test_bb_provider, config_fn):
     """
     Test the basic aircraft separation endpoint
-	:param test_ac_data:
-	:param test_bb_provider:
-	:param config_fn:
+    :param test_ac_data:
+    :param test_bb_provider:
+    :param config_fn:
     :return:
     """
 

@@ -13,11 +13,11 @@ API_URL_BASE = f"http://localhost:5001/api/v1"
 
 def measure_step(max_steps, multiplier):
     """
-	Measure the performance of STEP
-	:param max_steps:
-	:param multiplier:
-	:return:
-	"""
+    Measure the performance of STEP
+    :param max_steps:
+    :param multiplier:
+    :return:
+    """
 
     resp = requests.post(f"{API_URL_BASE}/ic", json={"filename": "TEST.scn"})
     assert resp.status_code == 200, "Expected the scenario to be loaded"
@@ -57,9 +57,9 @@ def measure_step(max_steps, multiplier):
 
 def main():
     """
-	Main
-	:return:
-	"""
+    Main
+    :return:
+    """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--max_steps", type=int, default=5)
