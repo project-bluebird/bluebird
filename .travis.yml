@@ -14,12 +14,12 @@ python:
   - "3.7"
 
 before_install:
-  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
   - pre-commit install
   - pre-commit run --all-files
 
 install:
-  - pip install -r requirements-dev.txt
+  - pip install -r requirements.txt
 
 script:
   - pytest -rs --ignore=./tests/integration ./tests
