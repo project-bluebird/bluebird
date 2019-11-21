@@ -6,6 +6,3 @@ pytest-docker-compose
 mock
 
 pre-commit
-pylint
-pylint-exit
-black

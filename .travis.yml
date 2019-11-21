@@ -1,10 +1,11 @@
+# TODO(RKM 2019-11-20) Make the docker push only happen for tagged builds on master
 
 branches:
   only:
-  - master
-  - /^release\/.*$/
-  - /^hotfix\/.*$/
-  - feature/mach-coll-integration-2
+    - master
+    - /^release\/.*$/
+    - /^hotfix\/.*$/
+    - feature/mach-coll-integration-2
 
 dist: bionic
 
@@ -12,24 +13,16 @@ language: python
 python:
   - "3.7"
 
-env:
-  global:
-    - 'SRC_FILES="bluebird/ tests/ run.py"'
-
 before_install:
-  - "git pull --all"
-  - "echo $PWD"
-  - "export BLUEBIRD_HOME=$PWD"
-  - "pip install -r requirements-dev.txt"
-  - "black --check $SRC_FILES"
-  - "pylint --rcfile=.pylintrc $SRC_FILES"
+  - pre-commit install
+  - pre-commit run --all-files
 
 install:
-  - "pip install -r requirements.txt"
+  - pip install -r requirements-dev.txt -r requirements.txt
 
 script:
-  - "pytest -rs --ignore=./tests/integration ./tests"
-  - "pytest -rs ./tests/integration"
+  - pytest -rs --ignore=./tests/integration ./tests
+  - pytest -rs ./tests/integration
 
 after_success:
-  - "bash $BLUEBIRD_HOME/.travis-build.sh"
+  - bash $BLUEBIRD_HOME/.travis-build.sh
