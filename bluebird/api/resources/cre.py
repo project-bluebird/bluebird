@@ -38,8 +38,9 @@ class Cre(Resource):
         req_args = utils.parse_args(_PARSER)
         callsign = req_args[utils.CALLSIGN_LABEL]
 
-        if utils.sim_proxy().aircraft.exists(callsign):
-            return bad_request_resp(f"Aircraft {callsign} already exists")
+        resp = utils.check_exists(callsign, negate=True)
+        if resp:
+            return resp
 
         position_or_resp = utils.try_parse_lat_lon(req_args)
         if not isinstance(position_or_resp, LatLon):

@@ -2,12 +2,12 @@
 Contains utility functions for dates and times
 """
 
-import logging
-
 import datetime
+import logging
 import time
 
 from bluebird.settings import Settings
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +39,8 @@ def wait_until(condition, *args, interval=0.1, timeout=1):
     :param condition: The method to check the condition on
     :param args: Any arguments to pass to the method
     :param interval: The rate in seconds at which the condition is checked
-    :param timeout: The maximum amount of time in seconds to wait for the condition to be met
+    :param timeout: The maximum amount of time in seconds to wait for the condition to
+    be met
     """
 
     start = time.time()
@@ -59,7 +60,7 @@ def log_rate(sim_speed):
 
 def timeit(prefix):
     """
-    Logs the execution time of the given method
+    Decorator which logs the execution time of the wrapped method
     :param prefix:
     :return:
     """
@@ -69,7 +70,8 @@ def timeit(prefix):
             start = time.time()
             res = func(*args, **kwargs)
             _LOGGER.debug(
-                f"Method {prefix}.{func.__name__} took {time.time()-start:.2f}s to execute"
+                f"Method {prefix}.{func.__name__} took {time.time()-start:.2f}s to "
+                "execute"
             )
             return res
 

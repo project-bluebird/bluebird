@@ -15,6 +15,12 @@ from bluebird.utils.properties import SimMode, SimType
 
 with open("VERSION") as version_file:
     _VERSION_STR = version_file.read().strip()
+_VERSION = VersionInfo.parse(_VERSION_STR)
+
+
+def in_agent_mode():
+    """Checks if we are in Agent mode"""
+    return Settings.SIM_MODE == SimMode.Agent
 
 
 class Settings:
@@ -30,7 +36,6 @@ class Settings:
                             the episode file
         LOGS_ROOT:          Root directory for log files
         CONSOLE_LOG_LEVEL:  The min. log level for console messages
-        STREAM_ENABLE:      Enable the streaming of simulation data to BlueBird
         METRICS_PROVIDERS:  List of package names containing metrics providers
         SIM_HOST:           Hostname of the simulation server
         SIM_MODE:           Mode for interacting with the simulator
@@ -39,8 +44,8 @@ class Settings:
         BS_STREAM_PORT:     BlueSky stream port
     """
 
-    VERSION: VersionInfo = VersionInfo.parse(_VERSION_STR)
-    API_VERSION: int = 1
+    VERSION: VersionInfo = _VERSION
+    API_VERSION: int = _VERSION.major
     FLASK_DEBUG: bool = True
     PORT: int = 5001
 
@@ -48,28 +53,12 @@ class Settings:
     LOGS_ROOT: str = os.getenv("BB_LOGS_ROOT", "logs")
     CONSOLE_LOG_LEVEL: int = logging.DEBUG
 
-    STREAM_ENABLE: bool = True
-
+    # TODO(RKM 2019-11-20) Move to metrics module
     METRICS_PROVIDERS: List[str] = ["bluebird"]
 
     SIM_HOST: str = "localhost"
-    # SIM_PORT = 123 - MachColl?
-    SIM_MODE: SimMode = SimMode.Sandbox
+    SIM_MODE: SimMode = SimMode.Agent
     SIM_TYPE: SimType = SimType.BlueSky
-
-    @staticmethod
-    def set_sim_type(new_val: str):
-        """
-        Update the current sim type setting
-        :raises ValueError: If the given string is not a valid type
-        """
-        try:
-            Settings.SIM_TYPE = SimType(new_val)
-        except KeyError as exc:
-            raise ValueError(
-                f'Type "{new_val}" not supported. Must be one of: '
-                f'{", ".join([x.name for x in SimType])}'
-            ) from exc
 
     # TODO Move to subclass
     BS_EVENT_PORT: int = 9000

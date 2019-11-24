@@ -47,9 +47,7 @@ def test_op_post_agent_mode(test_flask_client, _set_bb_app):
     assert resp.data.decode() == "Can't resume sim from mode Agent"
 
 
-def test_op_post_sandbox_mode(
-    test_flask_client, _set_bb_app
-):  # pylint:disable=unused-argument
+def test_op_post_sandbox_mode(test_flask_client, _set_bb_app):
     """
     Tests the POST method when in sandbox mode
     """

@@ -38,9 +38,6 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-# pylint:disable=unused-argument, redefined-outer-name
-
-
 def test_cre_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
@@ -105,7 +102,7 @@ def test_cre_post(test_flask_client, _set_bb_app):
     data["gspd"] = "..."
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.json["message"]["gspd"] == "Ground speed must be an int"
+    assert resp.json["message"]["gspd"] == "Ground speed must be numeric"
 
     # Test aircraft exists
 
@@ -120,7 +117,7 @@ def test_cre_post(test_flask_client, _set_bb_app):
     }
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Aircraft TEST1 already exists"
+    assert resp.data.decode() == 'Aircraft "TEST1" already exists'
 
     # Test LatLon parse
 

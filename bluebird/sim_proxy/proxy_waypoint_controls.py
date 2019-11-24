@@ -56,4 +56,4 @@ class ProxyWaypointControls(AbstractWaypointControls):
         return res
 
     def _find_by_name(self, name: str):
-        return [x for x in self.waypoints if str(x) == name]
+        return [x for x in self.waypoints if x.name == name]

@@ -3,7 +3,6 @@ Tests for the ADDWPT endpoint
 """
 
 from http import HTTPStatus
-from typing import Union
 
 import pytest
 
@@ -60,7 +59,7 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_addwpt_post(test_flask_client, _set_bb_app):  # pylint:disable=unused-argument
+def test_addwpt_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
     """

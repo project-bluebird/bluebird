@@ -13,7 +13,7 @@ services:
     depends_on:
       - bluesky
     build:
-      context: ../../
+      context: ../../../
     volumes:
       - /usr/src/app/logs/ # Prevents any local logs being copied to the container
     ports:

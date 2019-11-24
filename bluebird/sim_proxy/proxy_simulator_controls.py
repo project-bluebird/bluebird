@@ -12,6 +12,7 @@ from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import SimProperties
 from bluebird.utils.timer import Timer
+from bluebird.utils.timeutils import timeit
 from bluebird.utils.types import is_valid_seed
 
 
@@ -89,6 +90,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     # def parse_sim_state(val: str) -> Union[SimState, str]:
     #     raise NotImplementedError
 
+    @timeit("step")
     def step(self) -> Optional[str]:
         err = self._sim_controls.step()
         if err:
@@ -132,8 +134,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             self._logger.error(f"Could not get sim properties: {props}")
             return
         data = (
-            f"{str(props.utc_time)[:-7]} [{props.scenario_time:4}] "
-            f"{props.speed} {props.state.name}"
+            f"{props.utc_time} [{props.scenario_time:4}] "
+            f"{props.speed:4}x {props.state.name}"
         )
         self._logger.info(data)
 

@@ -66,17 +66,17 @@ def metrics_providers() -> List[AbstractMetricProvider]:
     return _bb_app().metrics_providers
 
 
-def check_exists(callsign: types.Callsign) -> Optional[Response]:
+def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Response]:
     """Checks if an aircraft exists, and returns an appropriate response if not"""
     exists = sim_proxy().aircraft.exists(callsign)
     if not isinstance(exists, bool):
         return responses.internal_err_resp(
             f"Could not check if the aircraft exists: {exists}"
         )
-
-    if not exists:
+    if not exists and not negate:
         return responses.bad_request_resp(f'Aircraft "{callsign}" does not exist')
-
+    if exists and negate:
+        return responses.bad_request_resp(f'Aircraft "{callsign}" already exists')
     return None
 
 
@@ -128,18 +128,21 @@ def convert_aircraft_props(props: AircraftProperties) -> Dict[str, Any]:
     Parses an AircraftProperties object into a dict suitable for returning via Flask
     """
 
-    # TODO Check units
-    # vs - feet per min OR feet per sec?
+    # TODO(RKM 2019-11-23) BlueSky doesn't give us this info, so have to add it
+    # ourselves in bluesky_aircraft controls
+    cfl = props.cleared_flight_level.feet if props.cleared_flight_level else None
+    rfl = props.requested_flight_level.feet if props.requested_flight_level else None
+
     data = {
         str(props.callsign): {
             "actype": props.aircraft_type,
-            "cleared_fl": props.cleared_flight_level.feet,
+            "cleared_fl": cfl,
             "current_fl": props.altitude.feet,
             "gs": props.ground_speed.meters_per_sec,
             "hdg": props.heading.degrees,
             "lat": props.position.lat_degrees,
             "lon": props.position.lon_degrees,
-            "requested_fl": props.requested_flight_level.feet,
+            "requested_fl": rfl,
             "vs": props.vertical_speed.feet_per_min,
         }
     }

@@ -2,8 +2,6 @@
 Main test configuration
 """
 
-PYTEST_PLUGINS = ["docker_compose"]
-
 
 def pytest_addoption(parser):
     """

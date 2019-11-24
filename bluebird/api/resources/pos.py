@@ -34,9 +34,7 @@ class Pos(Resource):
 
         sim_props = utils.sim_proxy().simulation.properties
         if not isinstance(sim_props, SimProperties):
-            return responses.internal_err_resp(
-                "Couldn't get the current sim properties"
-            )
+            return responses.internal_err_resp(sim_props)
 
         if callsign:
             resp = utils.check_exists(callsign)
@@ -45,9 +43,7 @@ class Pos(Resource):
 
             props = utils.sim_proxy().aircraft.properties(callsign)
             if not isinstance(props, AircraftProperties):
-                return internal_err_resp(
-                    f"Couldn't get the aircraft properties: {props}"
-                )
+                return internal_err_resp(props)
 
             data = {
                 **utils.convert_aircraft_props(props),

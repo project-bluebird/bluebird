@@ -131,6 +131,7 @@ class SimProperties:
 
     def __post_init__(self):
         assert self.scenario_time >= 0, "Scanrio time must be positive"
-        assert types.is_valid_seed(self.seed), "Invalid seed"
+        if self.seed is not None:
+            assert types.is_valid_seed(self.seed), "Invalid seed"
         assert self.speed >= 0, "Speed must be positive"
         assert self.step_size >= 0, "Step size must be positive"

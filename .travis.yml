@@ -26,8 +26,10 @@ install:
 
 script:
   - pytest -rs --ignore=./tests/integration ./tests
-  # TODO(RKM 2019-11-21) Re-enable after integration tests are refactored
-  # - pytest -rs ./tests/integration
+  # Pre-build the BlueBird docker image
+  - docker build .
+  - pytest -rs ./tests/integration
 
-after_success:
-  - bash $BLUEBIRD_HOME/.travis-build.sh
+# TODO(RKM 2019-11-23) Re-enable after integration tests passing
+# after_success:
+#   - bash $BLUEBIRD_HOME/.travis-build.sh

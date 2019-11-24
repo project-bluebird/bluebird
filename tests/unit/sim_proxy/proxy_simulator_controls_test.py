@@ -275,7 +275,7 @@ def test_step():
 
     # Checks that the properties are logged
     _mock_logger.info.assert_called_once_with(
-        f"{str(_TEST_SIM_PROPERTIES.utc_time)[:-7]} [   0] 1.0 INIT"
+        f"{str(_TEST_SIM_PROPERTIES.utc_time)} [   0]  1.0x INIT"
     )
 
 

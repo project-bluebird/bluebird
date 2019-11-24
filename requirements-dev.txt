@@ -1,6 +1,9 @@
 
 # In addition to requirements.txt, the following are required for development and testing
 
+black
+flake8
+
 pytest
 pytest-docker-compose
 mock

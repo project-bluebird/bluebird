@@ -96,7 +96,7 @@ def test_pos_get_single(test_flask_client, _set_bb_app):
     callsign = "FAKE"
     resp = test_flask_client.get(f"{arg_str}={callsign}")
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Couldn't get the current sim properties"
+    assert resp.data.decode() == "Error: Couldn't get the sim properties"
 
     resp = test_flask_client.get(f"{arg_str}={callsign}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
@@ -105,9 +105,7 @@ def test_pos_get_single(test_flask_client, _set_bb_app):
     callsign = "TEST"
     resp = test_flask_client.get(f"{arg_str}={callsign}")
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert (
-        resp.data.decode() == "Couldn't get the aircraft properties: Invalid callsign"
-    )
+    assert resp.data.decode() == "Invalid callsign"
 
     resp = test_flask_client.get(f"{arg_str}={callsign}")
     assert resp.status_code == HTTPStatus.OK
@@ -132,7 +130,7 @@ def test_pos_get_all(test_flask_client, _set_bb_app):
 
     resp = test_flask_client.get(_ENDPOINT)
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Couldn't get the current sim properties"
+    assert resp.data.decode() == "Error: Couldn't get the sim properties"
 
     resp = test_flask_client.get(_ENDPOINT)
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

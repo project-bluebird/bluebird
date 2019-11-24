@@ -58,9 +58,6 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-# pylint:disable=unused-argument, redefined-outer-name
-
-
 def test_alt_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method

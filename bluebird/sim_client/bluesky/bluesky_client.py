@@ -2,19 +2,20 @@
 Contains the BlueSky client class
 """
 
-# TODO See what needs to be moved from here
+# TODO(RKM 2019-11-21) Check all the proxy layer comments
 
 import json
 import logging
 import os
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
+from typing import Optional
 
 import msgpack
 import zmq
 
-import bluebird.logging
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 
@@ -27,16 +28,15 @@ assert _BS_PATH.is_dir() and "bluesky" in os.listdir(
     _BS_PATH
 ), "Expected BS_PATH to point to the root BlueSky directory"
 sys.path.append(str(_BS_PATH.resolve()))
+
 from bluesky.network.client import Client  # noqa: E402
 from bluesky.network.npcodec import decode_ndarray  # noqa: E402
-
-# pylint: enable=wrong-import-position
 
 
 CMD_LOG_PREFIX = "C"
 
 # The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
-ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO"]
+ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO", b"ROUTEDATA"]
 
 # Same rate as GuiClient polls for its data
 POLL_RATE = 50  # Hz
@@ -47,44 +47,36 @@ IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 # Tuple of strings which should not be considered error responses from BlueSky
 IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
-# Note - BlueSky SIMINFO returns:
-# [speed, bs.sim.simdt, bs.sim.simt, str(bs.sim.utc.replace(microsecond=0)),
-# bs.traf.ntraf, bs.sim.state, stack.get_scenname()]
-# [1.0015915889597933, 0.05, 3550.1500000041497, '2019-03-06 00:59:10', 2, 2, '']
-
-# TODO
-# def update(self, data):
-#     """
-#     Update the stored simulation state
-#     :param data:
-#     :return:
-#     """
-#     self.sim_speed, self.sim_dt, self.sim_t, self.sim_utc, self.ac_count,
-#     self.sim_state, self.scn_name = (
-#         data
-#     )
-#     self.sim_speed = round(self.sim_speed, 1)
-#     if self.sim_state == 1:
-#         self.sim_speed = 0.0
-#     self.sim_t = round(self.sim_t)
-#     self.sim_utc = self.sim_utc.split()[1]
-
 
 class BlueSkyClient(Client):
     """
     Client class for the BlueSky simulator
     """
 
+    @property
+    def aircraft_stream_data(self):
+        return deepcopy(self._aircraft_stream_data)
+
+    @property
+    def sim_info_stream_data(self):
+        return deepcopy(self._sim_info_data)
+
+    # @property
+    # def route_stream_data(self):
+    #     return deepcopy(self._route_data)
+
     def __init__(self):
         super().__init__(ACTIVE_NODE_TOPICS)
-
         self._logger = logging.getLogger(__name__)
+        self._aircraft_stream_data = {}
+        self._sim_info_data = {}
+        self._route_data = {}
 
         # Continually poll for the sim state
         self.timer = Timer(self.receive, POLL_RATE)
 
-        self.seed = None
-        self.step_dt = 1
+        # self.seed = None
+        # self.step_dt = 1
 
         self._reset_flag = False
         self._step_flag = False
@@ -97,52 +89,38 @@ class BlueSkyClient(Client):
         Start the client timer
         :return:
         """
-
         self.timer.start()
         return self.timer
 
     def stop(self):
-        """
-        Stop the client and disconnect
-        """
-
+        """Stop polling for the stream data"""
         self.timer.stop()
-        bluebird.logging.close_episode_log("client was stopped")
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # bluebird.logging.close_episode_log("client was stopped")
 
     def stream(self, name, data, sender_id):
-        """
-        Method called to process data received on a stream
-        :param name:
-        :param data:
-        :param sender_id:
-        """
-
-        # TODO Refactor these into two "update_x" methods of a Simulation proxy class
-
-        # Fill the cache with the aircraft data
+        """Method called to process data received on a stream"""
         if name == b"ACDATA":
-            # TODO Ensure correct units (..., vs)
-            self._logger.warning("ACDATA unhandled")
-
+            self._aircraft_stream_data = data
         elif name == b"SIMINFO":
-            self._logger.warning("SIMINFO unhandled")
-
-        # TODO Warn on unconsumed stream
-        self.stream_received.emit(name, data, sender_id)
+            self._sim_info_data = data
+        # TODO(RKM 2019-11-22) BlueSky is not currently set-up to send route data for
+        # all flights - only the ones that are "enabled" from the GUI...
+        elif name == b"ROUTEDATA":
+            self._route_data = data
+        else:
+            self._logger.warning(f'Unhandled data from stream "{name}"')
 
     def send_stack_cmd(self, data=None, response_expected=False, target=b"*"):
-        """
-        Send a command to the BlueSky simulation command stack
-        :param data:
-        :param response_expected:
-        :param target:
-        """
+        """Send a command to the BlueSky simulation command stack"""
 
-        bluebird.logging.EP_LOGGER.debug(
-            f"[{self._sim_state.sim_t}] {data}", extra={"PREFIX": CMD_LOG_PREFIX}
-        )
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # bluebird.logging.EP_LOGGER.debug(
+        #     f"[{self._sim_state.sim_t}] {data}", extra={"PREFIX": CMD_LOG_PREFIX}
+        # )
 
         self._echo_data = []
+        self._logger.debug(f"STACKCMD: {data}")
         self.send_event(b"STACKCMD", data, target)
 
         time.sleep(25 / POLL_RATE)
@@ -151,10 +129,8 @@ class BlueSkyClient(Client):
             return list(self._echo_data)
 
         if self._echo_data:
-
             if self._echo_data[0].startswith(IGNORED_RESPONSES):
                 return None
-
             self._logger.error(f"Command '{data}' resulted in error: {self._echo_data}")
             errs = "\n".join(str(x) for x in self._echo_data)
             return str(f"Error(s): {errs}")
@@ -215,7 +191,6 @@ class BlueSkyClient(Client):
 
                 elif eventname == b"RESET":
                     self._reset_flag = True
-                    self._logger.info("Received BlueSky simulation reset message")
 
                 elif eventname == b"QUIT":
                     if self._awaiting_exit_resp:
@@ -253,12 +228,7 @@ class BlueSkyClient(Client):
 
     @timeit("Client")
     def upload_new_scenario(self, name, lines):
-        """
-        Uploads a new scenario file to the BlueSky simulation
-        :param name:
-        :param lines:
-        :return:
-        """
+        """Uploads a new scenario file to the BlueSky simulation"""
 
         self._scn_response = None
 
@@ -272,7 +242,7 @@ class BlueSkyClient(Client):
             return resp if resp else "No response received"
         return None
 
-    def load_scenario(self, filename, speed=1.0, start_paused=False):
+    def load_scenario(self, filename, speed=1.0, start_paused=False) -> Optional[str]:
         """
         Load a scenario from a file
         :param speed:
@@ -281,10 +251,10 @@ class BlueSkyClient(Client):
         :return:
         """
 
-        self._ac_data.reset()
-        episode_id = bluebird.logging.restart_episode_log(self.seed)
-        self._logger.info(f"Episode {episode_id} started. Speed {speed}")
-        self._ac_data.set_log_rate(speed, new_log=True)
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # episode_id = bluebird.logging.restart_episode_log(self.seed)
+        # self._logger.info(f"Episode {episode_id} started. Speed {speed}")
+        # self._ac_data.set_log_rate(speed, new_log=True)
 
         self._reset_flag = False
 
@@ -301,7 +271,8 @@ class BlueSkyClient(Client):
             if err:
                 return err
 
-        bluebird.logging.bodge_file_content(filename)
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # bluebird.logging.bodge_file_content(filename)
 
         if speed != 1.0:
             cmd = f"DTMULT {speed}"
@@ -312,15 +283,16 @@ class BlueSkyClient(Client):
         return None
 
     def step(self):
-        """
-        Steps the simulation forward
-        :return:
-        """
+        """Steps the simulation forward by one unit of DTMULT"""
 
-        init_t = int(self._sim_state.sim_t)
-        bluebird.logging.EP_LOGGER.debug(
-            f"[{init_t}] STEP", extra={"PREFIX": CMD_LOG_PREFIX}
-        )
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # init_t = int(self._sim_state.sim_t)
+        # bluebird.logging.EP_LOGGER.debug(
+        #     f"[{init_t}] STEP", extra={"PREFIX": CMD_LOG_PREFIX}
+        # )
+        # TODO(RKM 2019-11-21) Validate this
+
+        init_t = self._sim_info_data[2]
 
         self._step_flag = False
         self.send_event(b"STEP")
@@ -328,43 +300,40 @@ class BlueSkyClient(Client):
         # Wait for the STEP response, and for the sim_t to have advanced
         wait_t = 1 / POLL_RATE
         total_t = 0
-        while not self._step_flag and (self._sim_state.sim_t == init_t):
+        while not self._step_flag:
+            new_t = self._sim_info_data[2]
+            if new_t > init_t:
+                return None
             time.sleep(wait_t)
             total_t += wait_t
             if total_t >= 5:
                 return (
-                    f"Error: Could not step. step_flag={self._step_flag} "
-                    f"sim_t={self._sim_state.sim_t}"
+                    f"Error: Step command failed (step_flag={self._step_flag} "
+                    f"init_t={init_t} new_t={new_t})"
                 )
 
-        return None
-
-    def reset_sim(self):
+    def reset_sim(self) -> Optional[str]:
         """
         Resets the BlueSky sim and handles the response
         :return:
         """
 
-        self._ac_data.timer.disabled = True
-        bluebird.logging.close_episode_log("sim reset")
+        # TODO(RKM 2019-11-21) Proxy layer should handle this
+        # self._ac_data.timer.disabled = True
+        # bluebird.logging.close_episode_log("sim reset")
 
         self._reset_flag = False
         err = self.send_stack_cmd("RESET")
-
         return err if err else self._await_reset_confirmation()
 
     def _await_reset_confirmation(self):
-        """
-        Waits for reset_flag to be set, then clears ac_data.
-        :return: True if the simulation was reset
-        """
-
-        time.sleep(25 / POLL_RATE)
-        if not self._reset_flag:
-            return "Did not receive reset confirmation in time!"
-
-        self._ac_data.clear()
-        return None
+        """Checks if a reset confirmation is received before the timeout"""
+        time.sleep(1)
+        return (
+            "Did not receive reset confirmation in time"
+            if not self._reset_flag
+            else None
+        )
 
     def quit(self):
         """
@@ -374,5 +343,5 @@ class BlueSkyClient(Client):
 
         self._awaiting_exit_resp = True
         self.send_event(b"QUIT", target=b"*")
-        time.sleep(25 / POLL_RATE)
+        time.sleep(1)
         return not bool(self._awaiting_exit_resp)

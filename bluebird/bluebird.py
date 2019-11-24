@@ -24,14 +24,14 @@ class BlueBird:
         self._logger = logging.getLogger(__name__)
         self._logger.info(
             f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
-            f"mode: {Settings.SIM_MODE.name}, streaming: {Settings.STREAM_ENABLE}"
+            f"mode: {Settings.SIM_MODE.name}"
         )
 
         self._cli_args = args
         self._min_sim_version = None
         self._timers = []
 
-        self.sim_proxy = None
+        self.sim_proxy: Optional[SimProxy] = None
         self.sim_client: Optional[AbstractSimClient] = None
 
         self.metrics_providers = None
@@ -96,14 +96,12 @@ class BlueBird:
             )
             return False
 
-        # TODO: We may want to pre-fetch the list of available aircraft types here
+        self._timers.extend(self.sim_proxy.start_timers())
 
         if self._cli_args["reset_sim"]:
             err = self.sim_proxy.simulation.reset()
             if err:
                 raise RuntimeError(f"Could not reset sim on startup: {err}")
-
-        self._timers.extend(self.sim_proxy.start_timers())
 
         return True
 
@@ -113,9 +111,13 @@ class BlueBird:
         exists
         """
 
-        self._logger.debug("Starting Flask app")
+        self._logger.debug(
+            f"Starting BlueBird API v{Settings.API_VERSION} on "
+            f"0.0.0.0:{Settings.PORT}"
+        )
 
         FLASK_APP.config[FLASK_CONFIG_LABEL] = self
+
         FLASK_APP.run(
             host="0.0.0.0",
             port=Settings.PORT,

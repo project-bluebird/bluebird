@@ -6,8 +6,8 @@ from dataclasses import dataclass
 import re
 from typing import Optional, Union
 
+from bluebird.utils.units import METERS_PER_FOOT
 
-_METERS_PER_FOOT = 0.3048
 
 _FL_REGEX = re.compile(r"^FL[0-9]\d*$")
 _CALLSIGN_REGEX = re.compile(r"^[A-Z0-9]{3,}")
@@ -48,7 +48,7 @@ class Altitude:
         """
         The (rounded) altitude in meters
         """
-        return int(self.feet * _METERS_PER_FOOT)
+        return int(self.feet * METERS_PER_FOOT)
 
     @property
     def flight_levels(self) -> str:
@@ -70,10 +70,9 @@ class Callsign:
 
     value: str
 
-    def __init__(self, callsign: str):
-        callsign = callsign.upper()
-        assert _CALLSIGN_REGEX.match(callsign), f"Invalid callsign {callsign}"
-        self.value = callsign
+    def __post_init__(self):
+        self.value = self.value.upper()
+        assert _CALLSIGN_REGEX.match(self.value), f"Invalid callsign {self.value}"
 
     def __hash__(self):
         return hash(self.value)
@@ -82,25 +81,27 @@ class Callsign:
         return self.value
 
 
+# TODO(RKM 2019-11-23) Add support for parsing Mach numbers
 @dataclass(eq=True)
 class GroundSpeed:
     """
     Dataclass representing an aircraft's ground speed [meters/sec]
     """
 
-    meters_per_sec: int
+    meters_per_sec: float
 
-    def __init__(self, ground_speed: int):
-        assert isinstance(ground_speed, int), "Ground speed must be an int"
-        assert ground_speed >= 0, "Ground speed must be positive"
-        self.meters_per_sec = ground_speed
+    def __post_init__(self):
+        assert isinstance(
+            self.meters_per_sec, (float, int)
+        ), "Ground speed must be numeric"
+        assert self.meters_per_sec >= 0, "Ground speed must be positive"
 
     @property
     def feet_per_sec(self) -> int:
         """
         The (rounded) speed in feet per second
         """
-        return int(self.meters_per_sec / _METERS_PER_FOOT)
+        return int(self.meters_per_sec / METERS_PER_FOOT)
 
     def __repr__(self):
         return str(self.meters_per_sec)
@@ -114,10 +115,10 @@ class Heading:
 
     degrees: int
 
-    def __init__(self, heading: int):
-        assert isinstance(heading, int), "Heading must be an int"
-        assert 0 <= heading < 360, "Heading must satisfy 0 <= x < 360"
-        self.degrees = heading
+    def __post_init__(self):
+        assert isinstance(self.degrees, int), "Heading must be an int"
+        self.degrees = self.degrees % 360
+        assert 0 <= self.degrees < 360, "Heading must satisfy 0 <= x < 360"
 
     def __repr__(self):
         return str(self.degrees)
@@ -132,11 +133,12 @@ class LatLon:
     lat_degrees: float
     lon_degrees: float
 
-    def __init__(self, lat: float, lon: float):
-        assert isinstance(lat, (int, float)) and isinstance(lon, (int, float))
-        assert abs(lat) <= 90, "Latitude must satisfy abs(x) <= 90"
-        assert abs(lon) <= 180, "Longitude must satisfy abs(x) <= 180"
-        self.lat_degrees, self.lon_degrees = (lat, lon)
+    def __post_init__(self):
+        assert isinstance(self.lat_degrees, (int, float)) and isinstance(
+            self.lon_degrees, (int, float)
+        )
+        assert abs(self.lat_degrees) <= 90, "Latitude must satisfy abs(x) <= 90"
+        assert abs(self.lon_degrees) <= 180, "Longitude must satisfy abs(x) <= 180"
 
     def __repr__(self):
         return f"{self.lat_degrees:f} {self.lon_degrees:f}"
@@ -150,9 +152,8 @@ class VerticalSpeed:
 
     feet_per_min: int
 
-    def __init__(self, vertical_speed: int):
-        assert isinstance(vertical_speed, int), "Vertical speed must be an integer"
-        self.feet_per_min = vertical_speed
+    def __post_init__(self):
+        assert isinstance(self.feet_per_min, int), "Vertical speed must be an integer"
 
     def __repr__(self):
         return str(self.feet_per_min)
@@ -164,14 +165,13 @@ class VerticalSpeed:
         :param vertical_speed:
         :return:
         """
-        return VerticalSpeed(vertical_speed * 60 / _METERS_PER_FOOT)
+        return VerticalSpeed(vertical_speed * 60 / METERS_PER_FOOT)
 
 
 @dataclass(eq=True)
 class Waypoint:
     """
-    Dataclass representing a named waypoint and optional altitude. __repr__ returns the
-    waypoint name only
+    Dataclass representing a named waypoint and optional altitude
     """
 
     name: str
@@ -180,6 +180,3 @@ class Waypoint:
 
     def __post_init__(self):
         assert self.name, "Name must not be empty or None"
-
-    def __repr__(self):
-        return self.name

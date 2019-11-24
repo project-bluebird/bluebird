@@ -38,9 +38,11 @@ def setup_sim_client():
     :return:
     """
 
-    _LOGGER.info(f'Loading the "{Settings.SIM_TYPE.name}" simulator client')
+    mod_name = Settings.SIM_TYPE.name
+    mod_path = f"{__package__}.{mod_name.lower()}"
 
-    mod_path = f"{__package__}.{Settings.SIM_TYPE.name.lower()}"
+    _LOGGER.info(f'Loading the "{mod_name}" simulator client')
+
     try:
         spec = importlib.util.find_spec(mod_path)
         if spec is None:
@@ -55,13 +57,15 @@ def setup_sim_client():
     if not hasattr(module, "SimClient") or not issubclass(
         module.SimClient, AbstractSimClient
     ):
-        raise AttributeError("Loaded module does not contain a valid SimClient class")
+        raise AttributeError(
+            f"Module for {mod_name} does not contain a valid SimClient class"
+        )
 
     try:
         sim_client = module.SimClient()
     except TypeError as exc:
         raise TypeError(
-            f"Client class for {Settings.SIM_TYPE.name} does not properly implement the"
+            f"Client class for {mod_name} does not properly implement the"
             " required AbstractSimClient methods"
         ) from exc
 

@@ -72,13 +72,13 @@ def test_find():
     proxy_waypoint_controls.waypoints = _TEST_WAYPOINTS
     res = proxy_waypoint_controls.find("FAKE")
     assert not res
-    res = proxy_waypoint_controls.find(str(_TEST_WAYPOINTS[0]))
+    res = proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
     assert res == _TEST_WAYPOINTS[0]
 
     # Test that we get a sensible error when we have multiple waypoints of the same name
     proxy_waypoint_controls.waypoints = [_TEST_WAYPOINTS[0], _TEST_WAYPOINTS[0]]
     with pytest.raises(AssertionError, match='Duplicate waypoints with name "FIX1"'):
-        proxy_waypoint_controls.find(str(_TEST_WAYPOINTS[0]))
+        proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
 
 
 def test_define():
@@ -98,7 +98,7 @@ def test_define():
 
     # Test define with existing name
     res = proxy_waypoint_controls.define(
-        str(_TEST_WAYPOINTS[0]), _TEST_WAYPOINTS[0].position
+        _TEST_WAYPOINTS[0].name, _TEST_WAYPOINTS[0].position
     )
     assert res == 'A waypoint named "FIX1" already exists'
 

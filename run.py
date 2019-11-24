@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from bluebird import BlueBird
 from bluebird.settings import Settings
-from bluebird.utils.properties import SimType, SimMode
+from bluebird.utils.properties import SimType
 
 _ARG_BOOL_ACTION = "store_true"
 
@@ -23,7 +23,7 @@ def _parse_args() -> Dict[str, Any]:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--sim-type",
-        type=str,
+        type=SimType,
         help=f"The type of simulator to connect to. Supported values are: "
         f'{", ".join([x.name for x in SimType])}',
     )
@@ -36,21 +36,15 @@ def _parse_args() -> Dict[str, Any]:
         help="Resets the simulation on connection",
     )
     parser.add_argument("--log-rate", type=float, help="Log rate in sim-seconds")
-    parser.add_argument(
-        "--sim-mode",
-        type=str,
-        help="Set the initial mode. Supported values are: "
-        f'{", ".join([x.name for x in SimMode])}',
-    )
-    parser.add_argument(
-        "--disable-stream",
-        action=_ARG_BOOL_ACTION,
-        help="Disables automatic streaming of the simulator state to BlueBird",
-    )
-    args = parser.parse_args()
+    # NOTE(RKM 2019-11-21) Disabled until we re-implement the free-run mode
+    # parser.add_argument(
+    #     "--sim-mode",
+    #     type=SimMode,
+    #     help="Set the initial mode. Supported values are: "
+    #     f'{", ".join([x.name for x in SimMode])}',
+    # )
 
-    if args.sim_type:
-        Settings.set_sim_type(args.sim_type)
+    args = parser.parse_args()
 
     if args.sim_host:
         Settings.SIM_HOST = args.sim_host
@@ -60,13 +54,11 @@ def _parse_args() -> Dict[str, Any]:
             raise ValueError("Rate must be positive")
         Settings.SIM_LOG_RATE = args.log_rate
 
-    if args.sim_mode:
-        Settings.set_sim_mode(args.sim_mode)
+    # if args.sim_mode:
+    #     Settings.SIM_MODE = args.sim_mode
 
-    if args.disable_stream:
-        if Settings.SIM_TYPE == SimType.BlueSky:
-            raise ValueError("Streaming mode cannot be disabled for BlueSky")
-        Settings.STREAM_ENABLE = False
+    if args.sim_type:
+        Settings.SIM_TYPE = args.sim_type
 
     return vars(args)
 

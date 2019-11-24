@@ -2,7 +2,11 @@
 Logic for metric endpoints
 """
 
+# TODO(RKM 2019-11-23) Should add a flag to assert that the sim has advanced (has been
+# stepped) since the previous call to the metric endpoint
+
 import logging
+import traceback
 
 from flask_restful import Resource, reqparse
 
@@ -77,8 +81,10 @@ class Metric(Resource):
                 f"metric named '{metric_name}'"
             )
         # Catch all other cases
-        except Exception as exc:
-            return bad_request_resp(f"Metric function returned an error: {str(exc)}")
+        except Exception:
+            return bad_request_resp(
+                f"Metric function returned an error: {traceback.fromat_exc()}"
+            )
 
         data = {metric_name: result}
         return ok_resp(data)
