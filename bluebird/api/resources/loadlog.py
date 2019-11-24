@@ -2,9 +2,9 @@
 Provides logic for the Load Log API endpoint
 """
 
-# TODO(RKM 2019-11-18) Check how this interacts with the SimProxy layer
+# TODO(RKM 2019-11-24) This needs completely refactored to reconstruct a GeoJSON
+# scenario from the log files
 
-# TODO Tidy this up
 
 import logging
 import os
@@ -17,7 +17,7 @@ from typing import Union
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import validate_scenario, parse_args, sim_proxy
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 from bluebird.settings import Settings
@@ -167,7 +167,7 @@ class LoadLog(Resource):
                 f"Error: Target time was greater than the latest time in the log"
             )
 
-        err = validate_scenario(parsed_scn["lines"])
+        # err = validate_scenario(parsed_scn["lines"])
 
         if err:
             return responses.bad_request_resp(

@@ -80,49 +80,6 @@ def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Res
     return None
 
 
-# TODO This is specific to BlueSky and will be replaced by the GeoJSON version
-def validate_scenario(scn_lines: List[str]) -> Optional[str]:
-    """
-    Checks that each line in the given list matches the requirements
-    :param scn_lines:
-    :return:
-    """
-
-    return "validate_scenario is depreciated"
-
-    for line in scn_lines:
-        if not _SCN_RE.match(line):
-            return f"Line '{line}' does not match the required format"
-
-    return None
-
-
-# TODO Move to the BlueSky client utils
-def parse_route_data(route_data):
-    """
-    Parse a list of strings containing route data into a keyed dictionary
-    :param route_data:
-    :return:
-    """
-
-    parsed = []
-    for line in map(lambda s: s.replace(" ", ""), route_data):
-        match = _ROUTE_RE.match(line)
-        if not match:
-            return line
-        req_alt = match.group(3) if "-" not in match.group(3) else None
-        req_spd = int(match.group(4)) if "-" not in match.group(4) else None
-        parsed.append(
-            {
-                "is_current": bool(match.group(1)),
-                "wpt_name": match.group(2),
-                "req_alt": req_alt,
-                "req_spd": req_spd,
-            }
-        )
-    return parsed
-
-
 def convert_aircraft_props(props: AircraftProperties) -> Dict[str, Any]:
     """
     Parses an AircraftProperties object into a dict suitable for returning via Flask
