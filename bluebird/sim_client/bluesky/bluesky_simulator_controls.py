@@ -45,33 +45,33 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return self._bluesky_client.load_scenario(scenario_name, speed, start_paused)
 
     def start(self) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd("OP")
 
     def reset(self) -> Optional[str]:
         return self._bluesky_client.reset_sim()
 
     def pause(self) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd("HOLD")
 
     def resume(self) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd("OP")
 
     def stop(self) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd("STOP")
 
     def step(self) -> Optional[str]:
         return self._bluesky_client.step()
 
     def set_speed(self, speed: float) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd(f"DTMULT {speed}")
 
     def upload_new_scenario(
         self, scn_name: str, content: Iterable[str]
     ) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.upload_new_scenario(scn_name, content)
 
     def set_seed(self, seed: int) -> Optional[str]:
-        raise NotImplementedError
+        return self._bluesky_client.send_stack_cmd(f"SEED {seed}")
 
     def _convert_to_sim_props(self, data: tuple) -> Union[props.SimProperties, str]:
         try:

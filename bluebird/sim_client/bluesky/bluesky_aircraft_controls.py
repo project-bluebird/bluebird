@@ -95,12 +95,12 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         waypoint: types.Waypoint,
         gspd: types.GroundSpeed,
     ) -> Optional[str]:
-        raise NotImplementedError
-        # cmd_str = f"ADDWPT {callsign} {waypoint}"
-        # cmd_str += " " + kwargs.get("alt", "")
-        # cmd_str += " " + kwargs.get("spd", "")
-        # cmd_str.strip()
-        # return self._tmp_stack_cmd_handle_list(cmd_str)
+        cmd_str = f"ADDWPT {callsign} {waypoint}"
+        if waypoint.altitude:
+            cmd_str += f" {waypoint.altitude}"
+        if gspd:
+            cmd_str += f" {gspd}"
+        return self._bluesky_client.send_stack_cmd(cmd_str)
 
     def create(
         self,
@@ -144,7 +144,12 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         return self._convert_to_ac_route(callsign, route)
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
-        raise NotImplementedError
+        all_callsings = self.callsigns
+        return (
+            bool(callsign in all_callsings)
+            if isinstance(all_callsings, list)
+            else all_callsings
+        )
 
     def _convert_to_ac_props(
         self, data: dict,

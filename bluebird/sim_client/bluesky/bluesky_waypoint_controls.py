@@ -2,9 +2,13 @@
 Contains the AbstractWaypointControls implementation for BlueSky
 """
 
+# Note(RKM 2019-11-24) BlueSky's set of commands relating to waypoints isn't that great,
+# so we just have to keep track of them ourselves (other then the DEFWPT command)
+
 from typing import Optional, Union
 
 import bluebird.utils.types as types
+from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
 
 
@@ -15,15 +19,20 @@ class BlueSkyWaypointControls(AbstractWaypointControls):
 
     @property
     def all_waypoints(self) -> Union[str, list]:
-        raise NotImplementedError
+        return self._waypoints
 
-    def __init__(self, sim_client):
-        self._sim_client = sim_client
+    def __init__(self, bluesky_client: BlueSkyClient):
+        self._bluesky_client = bluesky_client
+        self._waypoints = set()
 
     def find(self, waypoint_name: str) -> Optional[types.Waypoint]:
-        raise NotImplementedError
+        for wpt in self._waypoints:
+            if wpt.name == waypoint_name:
+                return wpt
 
     def define(
-        self, name: Optional[str], position: types.LatLon, **kwargs
+        self, name: str, position: types.LatLon, **kwargs
     ) -> Union[types.Waypoint, str]:
-        raise NotImplementedError
+        # TODO(RKM 2019-11-24) Ignoring the waypoint type here
+        cmd_str = f"DEFWPT {name} {position.latitude} {position.longitude}"
+        return self._bluesky_client.send_stack_cmd(cmd_str)
