@@ -168,7 +168,7 @@ class VerticalSpeed:
         return VerticalSpeed(vertical_speed * 60 / METERS_PER_FOOT)
 
 
-@dataclass(eq=True)
+@dataclass(eq=True, frozen=True)
 class Waypoint:
     """
     Dataclass representing a named waypoint and optional altitude

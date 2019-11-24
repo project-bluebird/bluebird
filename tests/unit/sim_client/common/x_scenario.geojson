@@ -1,0 +1,134 @@
+{
+    "aircraft": [
+        {
+            "callsign": "DELTA997",
+            "clearedFlightLevel": 320,
+            "currentFlightLevel": 320,
+            "departure": "DEP",
+            "destination": "DEST",
+            "requestedFlightLevel": 200,
+            "route": [
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "WITCH",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "SIREN",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "ABYSS",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 200,
+                    "ROUTE_ELEMENT_NAME": "DEMON",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 200,
+                    "ROUTE_ELEMENT_NAME": "SATAN",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                }
+            ],
+            "startPosition": "WITCH",
+            "startTime": 7,
+            "type": "B747"
+        },
+        {
+            "callsign": "EZY745",
+            "clearedFlightLevel": 240,
+            "currentFlightLevel": 240,
+            "departure": "DEP",
+            "destination": "DEST",
+            "requestedFlightLevel": 400,
+            "route": [
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "SATAN",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "DEMON",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "ABYSS",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 400,
+                    "ROUTE_ELEMENT_NAME": "SIREN",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 400,
+                    "ROUTE_ELEMENT_NAME": "WITCH",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                }
+            ],
+            "startPosition": "SATAN",
+            "startTime": 53,
+            "type": "B747"
+        },
+        {
+            "callsign": "VJ956",
+            "clearedFlightLevel": 240,
+            "currentFlightLevel": 240,
+            "departure": "DEP",
+            "destination": "DEST",
+            "requestedFlightLevel": 400,
+            "route": [
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "SIN",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "GATES",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 0,
+                    "ROUTE_ELEMENT_NAME": "ABYSS",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 400,
+                    "ROUTE_ELEMENT_NAME": "HAUNT",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                },
+                {
+                    "ROUTE_ELEMENT_LEVEL": 400,
+                    "ROUTE_ELEMENT_NAME": "LIMBO",
+                    "ROUTE_ELEMENT_SPEED": 0,
+                    "ROUTE_ELEMENT_TYPE": "FIX"
+                }
+            ],
+            "startPosition": "SIN",
+            "startTime": 112,
+            "type": "B747"
+        }
+    ],
+    "startTime": "00:00:00"
+}

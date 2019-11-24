@@ -77,7 +77,7 @@ class BlueBird:
 
         try:
             self.sim_proxy.connect()
-        except TimeoutError:
+        except (TimeoutError, KeyboardInterrupt):
             self._logger.error(f"Failed to connect to {sim_name}, exiting")
             return False
 
