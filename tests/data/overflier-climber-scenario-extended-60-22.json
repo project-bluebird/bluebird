@@ -1,0 +1,129 @@
+{
+  "aircraft": [
+    {
+      "callsign": "VJ159",
+      "clearedFlightLevel": 360,
+      "currentFlightLevel": 360,
+      "departure": "DEP",
+      "destination": "DEST",
+      "requestedFlightLevel": 360,
+      "route": [
+        {
+          "fixName": "EARTH",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.08383154960228
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "WATER",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.49999999999135
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "AIR",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.916128869951486
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "SPIRT",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              52.08256690115545
+            ],
+            "type": "Point"
+          }
+        }
+      ],
+      "startPosition": [
+        -0.1275,
+        50.80104879383575
+      ],
+      "startTime": "00:00:00",
+      "timedelta": 0,
+      "type": "A346"
+    },
+    {
+      "callsign": "VJ405",
+      "clearedFlightLevel": 300,
+      "currentFlightLevel": 300,
+      "departure": "DEST",
+      "destination": "DEP",
+      "requestedFlightLevel": 400,
+      "route": [
+        {
+          "fixName": "SPIRT",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              52.08256690115545
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "AIR",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.916128869951486
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "WATER",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.49999999999135
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "EARTH",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              51.08383154960228
+            ],
+            "type": "Point"
+          }
+        },
+        {
+          "fixName": "FIYRE",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              50.91735552314281
+            ],
+            "type": "Point"
+          }
+        }
+      ],
+      "startPosition": [
+        -0.1275,
+        52.27304310000724
+      ],
+      "startTime": "00:00:00",
+      "timedelta": 0,
+      "type": "B77W"
+    }
+  ],
+  "startTime": "00:00:00"
+}
