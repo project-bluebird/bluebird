@@ -4,7 +4,9 @@ Package for simulator clients and their associated logic
 
 import importlib.util
 import logging
+from typing import List
 
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from bluebird.settings import Settings
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 
@@ -31,7 +33,7 @@ assert isinstance(
 
 # TODO: We should be able to annotate this as returning a Tuple[AbstractSimClientType,
 # VersionInfo], but the current typing implementation seems to not like that...
-def setup_sim_client():
+def setup_sim_client(metrics_providers: List[AbstractMetricProvider]):
     """
     Imports and returns an instance of the AbstractSimClient class, as specified by
     Settings.SIM_TYPE
@@ -62,7 +64,7 @@ def setup_sim_client():
         )
 
     try:
-        sim_client = module.SimClient()
+        sim_client = module.SimClient(metrics_providers)
     except TypeError as exc:
         raise TypeError(
             f"Client class for {mod_name} does not properly implement the"

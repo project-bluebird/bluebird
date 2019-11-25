@@ -9,25 +9,18 @@ Paused      -> Running, Stepping, Stopped
 Stepping    -> Paused, Stopped
 """
 
-
 import logging
 import os
-from typing import Iterable
+from typing import Iterable, List
 
 from semver import VersionInfo
 
-import bluebird.utils.properties as props
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
+from .machcoll_client_imports import MCClientMetrics
+from .machcoll_aircraft_controls import MachCollAircraftControls
+from .machcoll_simulator_controls import MachCollSimulatorControls
+from .machcoll_waypoint_controls import MachCollWaypointControls
 from bluebird.settings import Settings
-from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
-from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
-    MachCollAircraftControls,
-)
-from bluebird.sim_client.machcoll.machcoll_simulator_controls import (
-    MachCollSimulatorControls,
-)
-from bluebird.sim_client.machcoll.machcoll_waypoint_controls import (
-    MachCollWaypointControls,
-)
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
 
@@ -41,6 +34,13 @@ MIN_SIM_VERSION = VersionInfo.parse(_MC_MIN_VERSION)
 
 def _raise_for_no_data(data):
     assert data, "No data received from the simulator"
+
+
+def _get_machcoll_provider(metrics_providers: list):
+    # TODO (RKM 2019-11-24) Improve this
+    machcoll_provider = [x for x in metrics_providers if str(x) == "MachColl"]
+    assert len(machcoll_provider) == 1
+    return machcoll_provider[0]
 
 
 class SimClient(AbstractSimClient):
@@ -64,13 +64,16 @@ class SimClient(AbstractSimClient):
     def waypoints(self) -> MachCollWaypointControls:
         return self._waypoint_controls
 
-    def __init__(self, **kwargs):
+    def __init__(self, metrics_providers: List[AbstractMetricProvider]):
         self.mc_client = None
         self._client_version: VersionInfo = None
-        self._sim_controls = MachCollSimulatorControls(self.mc_client)
-        self._aircraft_controls = MachCollAircraftControls(self.mc_client)
-        self._waypoint_controls = MachCollWaypointControls(self.mc_client)
         self._logger = logging.getLogger(__name__)
+        self._aircraft_controls = MachCollAircraftControls(self)
+        self._mc_metrics_provider = _get_machcoll_provider(metrics_providers)
+        self._sim_controls = MachCollSimulatorControls(
+            self, self._aircraft_controls, self._mc_metrics_provider,
+        )
+        self._waypoint_controls = MachCollWaypointControls(self)
 
     def connect(self, timeout: int = 1) -> None:
         self.mc_client = MCClientMetrics(host=Settings.SIM_HOST, port=Settings.MC_PORT)
@@ -81,6 +84,7 @@ class SimClient(AbstractSimClient):
 
         version_dict = self.mc_client.compare_api_version()
         self._client_version = VersionInfo.parse(version_dict["This client version"])
+        self._mc_metrics_provider.set_version(self._client_version)
         self._logger.info(f"MCClientMetrics connected. Version: {self._client_version}")
 
     def start_timers(self) -> Iterable[Timer]:
@@ -90,27 +94,29 @@ class SimClient(AbstractSimClient):
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
 
-        if not self.mc_client:
-            return True
-
-        sim_props = self.simulation.properties
-        if isinstance(sim_props, str):
-            self._logger.error(
-                f"Could not pause sim while disconnecting:\n'{sim_props}'"
-            )
-        elif sim_props.state == props.SimState.RUN:
-            stop_str = self.simulation.pause()
-            shutdown_ok = True
-            if stop_str:
-                self._logger.error(f"Error when stopping simulation: {stop_str}")
-                shutdown_ok = False
-
-        self.mc_client.close_mq()
+        if self.mc_client:
+            self.mc_client.close_mq()
 
         # NOTE: Using the presence of _client_version to infer that we have a connection
-        if not self._client_version or not shutdown_sim:
+        if not self._client_version:
             return True
 
-        # TODO
-        raise NotImplementedError("No sim shutdown method implemented")
-        return shutdown_ok
+        # TODO(RKM 2019-11-24) Re-enable this once the sandbox mode is fixed
+        # sim_props = self.simulation.properties
+        # if isinstance(sim_props, str):
+        #     self._logger.error(
+        #         f"Could not pause sim while disconnecting:\n'{sim_props}'"
+        #     )
+        # elif sim_props.state == props.SimState.RUN:
+        #     stop_str = self.simulation.pause()
+        #     shutdown_ok = True
+        #     if stop_str:
+        #         self._logger.error(f"Error when stopping simulation: {stop_str}")
+        #         shutdown_ok = False
+
+        if not shutdown_sim:
+            return True
+
+        self._logger.warning("No sim shutdown method implemented")
+        # return shutdown_ok
+        return True

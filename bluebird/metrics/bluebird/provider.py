@@ -15,14 +15,13 @@ class Provider(AbstractMetricProvider):
     """
 
     def __init__(self):
-        super().__init__()
         self._logger = logging.getLogger(__package__)
 
     def __call__(self, metric, *args, **kwargs):
-        return getattr(metrics, metric)(*args, **kwargs)  # TODO Kwargs need passed in
+        return getattr(metrics, metric)(*args, **kwargs)
 
     def __str__(self):
-        return "BlueBirdProvider"
+        return "BlueBird"
 
     def version(self):
         # Just track these metrics along with BlueBird release versions

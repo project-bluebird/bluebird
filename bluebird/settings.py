@@ -6,7 +6,6 @@ Default settings for the BlueBird app
 
 import logging
 import os
-from typing import List
 
 from semver import VersionInfo
 
@@ -36,7 +35,6 @@ class Settings:
                             the episode file
         LOGS_ROOT:          Root directory for log files
         CONSOLE_LOG_LEVEL:  The min. log level for console messages
-        METRICS_PROVIDERS:  List of package names containing metrics providers
         SIM_HOST:           Hostname of the simulation server
         SIM_MODE:           Mode for interacting with the simulator
         SIM_TYPE:           The simulator type
@@ -47,14 +45,11 @@ class Settings:
     VERSION: VersionInfo = _VERSION
     API_VERSION: int = _VERSION.major
     FLASK_DEBUG: bool = True
-    PORT: int = 5001
+    PORT: int = 5010
 
     SIM_LOG_RATE: float = 0.2
     LOGS_ROOT: str = os.getenv("BB_LOGS_ROOT", "logs")
     CONSOLE_LOG_LEVEL: int = logging.DEBUG
-
-    # TODO(RKM 2019-11-20) Move to metrics module
-    METRICS_PROVIDERS: List[str] = ["bluebird"]
 
     SIM_HOST: str = "localhost"
     SIM_MODE: SimMode = SimMode.Agent

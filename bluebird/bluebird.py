@@ -3,6 +3,7 @@ Contains the BlueBird class
 """
 
 import logging
+import traceback
 from typing import Any, Dict, Optional
 
 from bluebird.api import FLASK_APP
@@ -58,12 +59,11 @@ class BlueBird:
         :return:
         """
 
-        self.sim_client, self._min_sim_version = setup_sim_client()
-        self.sim_proxy = SimProxy(self.sim_client)
-
-        # TODO: Need to add/initialise any metrics providers from simulator clients...
-        # i.e. MachColl!
         self.metrics_providers = setup_metrics()
+        self.sim_client, self._min_sim_version = setup_sim_client(
+            self.metrics_providers
+        )
+        self.sim_proxy = SimProxy(self.sim_client)
 
     def connect_to_sim(self):
         """
@@ -78,7 +78,9 @@ class BlueBird:
         try:
             self.sim_proxy.connect()
         except (TimeoutError, KeyboardInterrupt):
-            self._logger.error(f"Failed to connect to {sim_name}, exiting")
+            self._logger.error(
+                f"Failed to connect to {sim_name}, exiting ({traceback.format_exc()})"
+            )
             return False
 
         if self.sim_proxy.sim_version < self._min_sim_version:

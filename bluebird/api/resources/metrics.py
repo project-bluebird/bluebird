@@ -10,12 +10,7 @@ import traceback
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import (
-    internal_err_resp,
-    bad_request_resp,
-    not_found_resp,
-    ok_resp,
-)
+import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import metrics_providers, parse_args
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 
@@ -28,15 +23,17 @@ _PARSER.add_argument("provider", type=str, location="args", required=False)
 _LOGGER = logging.getLogger(__name__)
 
 
-# -> Union[RespTuple, AbstractMetricProvider]:
 def _get_provider_by_name(provider_name: str):
     if not provider_name:
-        return bad_request_resp("Provider name must be specified")
+        return responses.bad_request_resp("Provider name must be specified")
 
-    provider = next((x for x in metrics_providers() if str(x) == provider_name), None)
+    provider = next(
+        (x for x in metrics_providers() if str(x).lower() == provider_name.lower()),
+        None,
+    )
 
     if not provider:
-        return bad_request_resp(f"Provider {provider_name} not found")
+        return responses.bad_request_resp(f"Provider {provider_name} not found")
 
     return provider
 
@@ -54,13 +51,13 @@ class Metric(Resource):
         """
 
         if not metrics_providers():
-            return internal_err_resp("No metrics available")
+            return responses.internal_err_resp("No metrics available")
 
         req_args = parse_args(_PARSER)
         metric_name = req_args["name"]
 
         if not metric_name:
-            return bad_request_resp("Metric name must be specified")
+            return responses.bad_request_resp("Metric name must be specified")
 
         # BlueBird's built-in metrics
         provider = metrics_providers()[0]
@@ -76,18 +73,21 @@ class Metric(Resource):
             result = provider(metric_name, *args)
         # Catch cases where a wrong metric name is given
         except AttributeError:
-            return not_found_resp(
+            return responses.not_found_resp(
                 f"Provider {str(provider)} (version {provider.version()}) has no "
                 f"metric named '{metric_name}'"
             )
         # Catch all other cases
         except Exception:
-            return bad_request_resp(
-                f"Metric function returned an error: {traceback.fromat_exc()}"
+            return responses.bad_request_resp(
+                f"Metric function returned an error: {traceback.format_exc()}"
             )
 
-        data = {metric_name: result}
-        return ok_resp(data)
+        return (
+            responses.ok_resp({metric_name: result})
+            if not isinstance(result, str)
+            else responses.internal_err_resp(result)
+        )
 
 
 class MetricProviders(Resource):
@@ -106,4 +106,4 @@ class MetricProviders(Resource):
         for provider in metrics_providers():
             data.update({str(provider): provider.version()})
 
-        return ok_resp(data)
+        return responses.ok_resp(data)

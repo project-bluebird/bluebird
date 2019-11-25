@@ -5,13 +5,14 @@ BlueSky simulation client class
 # TODO: Need to re-add the tests for string parsing/units from the old API tests
 
 import os
-from typing import Iterable
+from typing import Iterable, List
 
 from semver import VersionInfo
 
 from .bluesky_aircraft_controls import BlueSkyAircraftControls
 from .bluesky_simulator_controls import BlueSkySimulatorControls
 from .bluesky_waypoint_controls import BlueSkyWaypointControls
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from bluebird.settings import Settings
 from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
 from bluebird.utils.abstract_sim_client import AbstractSimClient
@@ -59,7 +60,7 @@ class SimClient(AbstractSimClient):
     def waypoints(self) -> BlueSkyWaypointControls:
         return self._waypoint_controls
 
-    def __init__(self):
+    def __init__(self, metrics_providers: List[AbstractMetricProvider]):
         self._client = BlueSkyClient()
         self._aircraft_controls = BlueSkyAircraftControls(self._client)
         self._sim_controls = BlueSkySimulatorControls(self._client)
