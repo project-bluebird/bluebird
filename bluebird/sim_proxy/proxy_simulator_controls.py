@@ -86,6 +86,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # Will clear, then re-fetch the latest properties
         self._clear_caches()
         self._log_sim_props()
+        # TODO(RKM 2019-11-25) Update metrics here (i.e. sector check)
         return None
 
     def set_speed(self, speed: float) -> Optional[str]:

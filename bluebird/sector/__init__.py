@@ -1,3 +1,0 @@
-"""
-BlueBird's sectors package
-"""
