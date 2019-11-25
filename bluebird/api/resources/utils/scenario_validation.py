@@ -1,5 +1,5 @@
 """
-Contains functions to validate a GeoJSON scenario
+Contains functions to validate scenario and sector data
 """
 
 import re
@@ -23,7 +23,7 @@ _AIRCRAFT_KEYS = [
 ]
 
 
-def validate_geojson_scenario(data: dict) -> Optional[str]:
+def validate_json_scenario(data: dict) -> Optional[str]:
     """Validates a given GeoJSON scenario file"""
     # TODO(RKM 2019-11-24) This doesn't attempt to deal with the weather data
     try:
@@ -38,9 +38,9 @@ def validate_geojson_scenario(data: dict) -> Optional[str]:
         return f"Error parsing scenario: {traceback.format_exc()}"
 
 
-def _validate_geojson_aircraft(data: dict) -> None:
+def _validate_json_aircraft(data: dict) -> None:
     raise NotImplementedError
 
 
-def _validate_geojson_route(data: list) -> None:
+def _validate_json_route(data: list) -> None:
     raise NotImplementedError

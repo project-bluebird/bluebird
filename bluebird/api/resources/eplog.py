@@ -8,8 +8,9 @@ from pathlib import Path
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 import bluebird.logging as bb_logging
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.settings import in_agent_mode
 
 
 _PARSER = reqparse.RequestParser()
@@ -26,6 +27,11 @@ class EpLog(Resource):
         """
         Logic for GET events. Returns the current episode ID and log content
         """
+
+        if not in_agent_mode():
+            return responses.bad_request_resp(
+                "Episode data only recorded when in Agent mode"
+            )
 
         req_args = parse_args(_PARSER)
         close_ep = req_args.get("close_ep", False)

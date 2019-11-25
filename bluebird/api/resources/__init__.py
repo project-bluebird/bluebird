@@ -22,7 +22,8 @@ from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
 from .seed import Seed
-from .scenario import Scenario
+from .upload_scenario import UploadScenario
+from .upload_sector import UploadSector
 from .step import Step
 from .time import Time
 
@@ -36,3 +37,35 @@ from .shutdown import Shutdown
 # Metrics
 from .metrics import Metric
 from .metrics import MetricProviders
+
+# Keep flake8 happy :)
+__all__ = [
+    "AddWpt",
+    "Alt",
+    "Cre",
+    "Direct",
+    "Hdg",
+    "ListRoute",
+    "Pos",
+    "Spd",
+    "Vs",
+    "DefWpt",
+    "DtMult",
+    "Hold",
+    "Ic",
+    "LoadLog",
+    "Op",
+    "Reset",
+    "Seed",
+    "UploadScenario",
+    "UploadSector",
+    "Step",
+    "Time",
+    "EpInfo",
+    "EpLog",
+    "SimInfo",
+    "SimMode",
+    "Shutdown",
+    "Metric",
+    "MetricProviders",
+]
