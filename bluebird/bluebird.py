@@ -85,7 +85,7 @@ class BlueBird:
 
         if self.sim_proxy.sim_version < self._min_sim_version:
             self._logger.error(
-                f"server of version {self.sim_proxy.sim_version} does not meet the "
+                f"Server of version {self.sim_proxy.sim_version} does not meet the "
                 f"minimum requirement ({self._min_sim_version})"
             )
             return False
@@ -99,6 +99,7 @@ class BlueBird:
             return False
 
         self._timers.extend(self.sim_proxy.start_timers())
+        self.sim_proxy.pre_fetch_data()
 
         if self._cli_args["reset_sim"]:
             err = self.sim_proxy.simulation.reset()

@@ -13,9 +13,6 @@ class AbstractWaypointControls(ABC):
     Abstract class defining waypoint control functions
     """
 
-    # TODO Will need a mapping between each client format and BlueBird's implementation
-    # TODO(RKM 2019-11-18) This can probably be cached once since we will be the ones
-    # updating any waypoints
     @property
     @abstractmethod
     def all_waypoints(self) -> Union[str, list]:

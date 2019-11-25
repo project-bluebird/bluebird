@@ -13,14 +13,6 @@ class AbstractSimulatorControls(ABC):
     Abstract class defining simulator control functions
     """
 
-    # @property
-    # @abstractmethod
-    # def stream_data(self) -> Optional[SimProperties]:
-    #     """
-    #     The current stream data of SimProperties. Will be None if streaming is not
-    #     enabled
-    #     """
-
     @property
     @abstractmethod
     def properties(self) -> Union[SimProperties, str]:
@@ -28,13 +20,6 @@ class AbstractSimulatorControls(ABC):
         :return: Returns the simulator's current properties, or a string to indicate an
         error
         """
-
-    # @property
-    # def time(self) -> Union[float, str]:
-    #     """
-    #     :return: Returns the current simulated time, or a string to indicate an
-    #     error
-    #     """
 
     @abstractmethod
     def load_scenario(
@@ -90,14 +75,6 @@ class AbstractSimulatorControls(ABC):
         :returns str: To indicate an error
         """
 
-    # @staticmethod
-    # @abstractmethod
-    # def parse_sim_state(val: str) -> Union[SimState, str]:
-    #     """
-    #     Parses a SimState value from the simulator's set of states. Returns a
-    #     string for errors
-    #     """
-
     @abstractmethod
     def step(self) -> Optional[str]:
         """
@@ -105,14 +82,6 @@ class AbstractSimulatorControls(ABC):
         :returns None: If simulation was stepped
         :returns str: To indicate an error
         """
-
-    # @abstractmethod
-    # def get_speed(self) -> Union[float, str]:
-    #     """
-    #     Get the simulator speed (DTMULT for BlueSky)
-    #     :returns float: The current sim speed
-    #     :returns str: To indicate an error
-    #     """
 
     @abstractmethod
     def set_speed(self, speed: float) -> Optional[str]:
@@ -135,12 +104,6 @@ class AbstractSimulatorControls(ABC):
         :returns None: If the scenario was uploaded
         :returns str: To indicate an error
         """
-
-    # @abstractmethod
-    # def get_seed(self) -> int:
-    #     """
-    #     Get the simulator's random seed
-    #     """
 
     # TODO Add info on supported ranges for seed (may differ between sim
     # implementations, but needs to be fixed for the external API)

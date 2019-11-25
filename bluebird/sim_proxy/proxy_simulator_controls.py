@@ -19,10 +19,6 @@ from bluebird.utils.types import is_valid_seed
 class ProxySimulatorControls(AbstractSimulatorControls):
     """Proxy implementation of AbstractSimulatorControls"""
 
-    # @property
-    # def stream_data(self) -> Optional[SimProperties]:
-    #     return self._sim_controls.stream_data
-
     @property
     def properties(self) -> Union[SimProperties, str]:
         if not self.sim_props:
@@ -31,10 +27,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
                 return sim_props
             self.sim_props = sim_props
         return self.sim_props
-
-    # @property
-    # def time(self) -> Union[float, str]:
-    #     raise NotImplementedError
 
     def __init__(
         self,
@@ -86,10 +78,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # TODO(RKM 2019-11-19) Pause timers?
         return self._sim_controls.stop()
 
-    # @staticmethod
-    # def parse_sim_state(val: str) -> Union[SimState, str]:
-    #     raise NotImplementedError
-
     @timeit("step")
     def step(self) -> Optional[str]:
         err = self._sim_controls.step()
@@ -100,9 +88,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._log_sim_props()
         return None
 
-    # def get_speed(self) -> Union[float, str]:
-    #     return self._sim_controls.get_speed()
-
     def set_speed(self, speed: float) -> Optional[str]:
         assert speed >= 0, "Speed must be positive"
         err = self._sim_controls.set_speed(speed)
@@ -110,9 +95,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             return err
         self.sim_props = None
         return None
-
-    # def get_seed(self) -> int:
-    #     raise NotImplementedError
 
     def set_seed(self, seed: int) -> Optional[str]:
         assert is_valid_seed(seed), "Invalid seed"

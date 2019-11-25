@@ -180,3 +180,6 @@ class Waypoint:
 
     def __post_init__(self):
         assert self.name, "Name must not be empty or None"
+
+    def __hash__(self):
+        return hash(self.name)

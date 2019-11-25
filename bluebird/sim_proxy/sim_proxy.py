@@ -7,19 +7,14 @@ Contains the SimProxy class
 # the same simulation
 
 import logging
-from typing import Iterable, Optional
+from typing import Iterable
 
 from semver import VersionInfo
 
-from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
 from bluebird.utils.abstract_sim_client import AbstractSimClient
-from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
-from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
-from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
-from bluebird.utils.properties import SimMode
 from bluebird.utils.timer import Timer
 
 
@@ -29,11 +24,11 @@ class SimProxy(AbstractSimClient):
     """
 
     @property
-    def aircraft(self) -> AbstractAircraftControls:
+    def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
 
     @property
-    def simulation(self) -> AbstractSimulatorControls:
+    def simulation(self) -> ProxySimulatorControls:
         return self._proxy_simulator_controls
 
     @property
@@ -41,19 +36,16 @@ class SimProxy(AbstractSimClient):
         return self._sim_client.sim_version
 
     @property
-    def waypoints(self) -> AbstractWaypointControls:
+    def waypoints(self) -> ProxyWaypointControls:
         return self._proxy_waypoint_controls
 
     def __init__(self, sim_client: AbstractSimClient):
 
         self._logger = logging.getLogger(__name__)
 
-        # self._timer = Timer(self._log_sim_props, Settings.SIM_LOG_RATE)
-
         # The actual sim_client
         self._sim_client: AbstractSimClient = sim_client
 
-        # TODO(RKM 2019-11-20) In sandbox mode, we shouldn't use the proxy classes
         # The proxy implementations
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
         self._proxy_waypoint_controls = ProxyWaypointControls(
@@ -71,24 +63,11 @@ class SimProxy(AbstractSimClient):
     def start_timers(self) -> Iterable[Timer]:
         # TODO(RKM 2019-11-18) Start own timers
         return self._sim_client.start_timers()
-        # Pre-fetch some data
-        self._sim_client.aircraft.all_properties
-        self._sim_client.simulation.properties
 
-    def stop(self, shutdown_sim: bool = False) -> bool:
-        raise NotImplementedError
-
-    def start_timer(self):
-        """
-        Starts the timer for logging
-        :return:
-        """
-        # TODO(RKM 2019-11-18) Start any child timers
-        self._timer.start()
-        self._logger.info(
-            f"Logging started. Initial SIM_LOG_RATE={Settings.SIM_LOG_RATE}"
-        )
-        return self._timer
+    def pre_fetch_data(self):
+        _ = self._sim_client.aircraft.all_properties
+        _ = self._sim_client.simulation.properties
+        self.waypoints
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
         """
@@ -100,6 +79,3 @@ class SimProxy(AbstractSimClient):
         was not requested
         """
         return self._sim_client.shutdown(shutdown_sim)
-
-    def set_mode(self, mode: SimMode) -> Optional[str]:
-        raise NotImplementedError
