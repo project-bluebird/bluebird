@@ -71,9 +71,7 @@ def after_req(response):
     return response
 
 
-# Our API endpoints are defined below here
-
-# region Resources
+# NOTE(RKM 2019-11-26) This is where we introduce the API endpoints to the Flask app
 
 # Aircraft control
 FLASK_API.add_resource(res.AddWpt, "/addwpt")
@@ -94,11 +92,12 @@ FLASK_API.add_resource(res.Ic, "/ic")
 FLASK_API.add_resource(res.LoadLog, "/loadlog")
 FLASK_API.add_resource(res.Op, "/op")
 FLASK_API.add_resource(res.Reset, "/reset")
+FLASK_API.add_resource(res.Seed, "/sectors")
 FLASK_API.add_resource(res.Seed, "/seed")
-FLASK_API.add_resource(res.UploadScenario, "/uploadScenario")
-FLASK_API.add_resource(res.UploadSector, "/uploadSector")
 FLASK_API.add_resource(res.Step, "/step")
 FLASK_API.add_resource(res.Time, "/time")
+FLASK_API.add_resource(res.UploadScenario, "/uploadScenario")
+FLASK_API.add_resource(res.UploadSector, "/uploadSector")
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
@@ -110,9 +109,3 @@ FLASK_API.add_resource(res.Shutdown, "/shutdown")
 # Metrics
 FLASK_API.add_resource(res.Metric, "/metric")
 FLASK_API.add_resource(res.MetricProviders, "/metricproviders")
-
-# endregion
-
-# region Static routes
-
-# endregion

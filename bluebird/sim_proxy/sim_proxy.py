@@ -33,6 +33,10 @@ class SimProxy(AbstractSimClient):
     def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
 
+    def sectors(self) -> list:
+        # TODO(RKM 2019-11-26) This needs to be a call to Aviary once it's installed
+        return []
+
     @property
     def simulation(self) -> ProxySimulatorControls:
         return self._proxy_simulator_controls
