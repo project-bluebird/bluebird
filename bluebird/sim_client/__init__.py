@@ -4,16 +4,19 @@ Package for simulator clients and their associated logic
 
 import importlib.util
 import logging
-from typing import List
+from typing import Tuple
 
-from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
+from semver import VersionInfo
+
+from bluebird.metrics import MetricsProviders
 from bluebird.settings import Settings
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 
 
 _LOGGER = logging.getLogger(__name__)
 
-_CLIENT_INIT_STR = """
+# NOTE(RKM 2019-11-26) Yes, I'm aware this is hack-y :^)
+CLIENT_INIT_STR = """
 from semver import VersionInfo
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 
@@ -31,13 +34,12 @@ assert isinstance(
 """
 
 
-# TODO: We should be able to annotate this as returning a Tuple[AbstractSimClientType,
-# VersionInfo], but the current typing implementation seems to not like that...
-def setup_sim_client(metrics_providers: List[AbstractMetricProvider]):
+def setup_sim_client(
+    metrics_providers: MetricsProviders,
+) -> Tuple[AbstractSimClient, VersionInfo]:
     """
-    Imports and returns an instance of the AbstractSimClient class, as specified by
-    Settings.SIM_TYPE
-    :return:
+    Imports and returns an instance of the AbstractSimClient class as specified by
+    Settings.SIM_TYPE, and the minimum version of simulator that the client supports
     """
 
     mod_name = Settings.SIM_TYPE.name

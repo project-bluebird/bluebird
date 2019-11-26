@@ -11,15 +11,15 @@ Stepping    -> Paused, Stopped
 
 import logging
 import os
-from typing import Iterable, List
+from typing import Iterable
 
 from semver import VersionInfo
 
-from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from .machcoll_client_imports import MCClientMetrics
 from .machcoll_aircraft_controls import MachCollAircraftControls
 from .machcoll_simulator_controls import MachCollSimulatorControls
 from .machcoll_waypoint_controls import MachCollWaypointControls
+from bluebird.metrics import MetricsProviders
 from bluebird.settings import Settings
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
@@ -34,13 +34,6 @@ MIN_SIM_VERSION = VersionInfo.parse(_MC_MIN_VERSION)
 
 def _raise_for_no_data(data):
     assert data, "No data received from the simulator"
-
-
-def _get_machcoll_provider(metrics_providers: list):
-    # TODO (RKM 2019-11-24) Improve this
-    machcoll_provider = [x for x in metrics_providers if str(x) == "MachColl"]
-    assert len(machcoll_provider) == 1
-    return machcoll_provider[0]
 
 
 class SimClient(AbstractSimClient):
@@ -64,12 +57,12 @@ class SimClient(AbstractSimClient):
     def waypoints(self) -> MachCollWaypointControls:
         return self._waypoint_controls
 
-    def __init__(self, metrics_providers: List[AbstractMetricProvider]):
+    def __init__(self, metrics_providers: MetricsProviders):
         self.mc_client = None
         self._client_version: VersionInfo = None
         self._logger = logging.getLogger(__name__)
         self._aircraft_controls = MachCollAircraftControls(self)
-        self._mc_metrics_provider = _get_machcoll_provider(metrics_providers)
+        self._mc_metrics_provider = metrics_providers.get("MachColl")
         self._sim_controls = MachCollSimulatorControls(
             self, self._aircraft_controls, self._mc_metrics_provider,
         )

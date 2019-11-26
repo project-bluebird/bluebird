@@ -53,19 +53,16 @@ class BlueBird:
         if self.sim_proxy:
             self.sim_proxy.shutdown()
 
-    def setup_sim_client(self):
-        """
-        Setup the simulation client class
-        :return:
-        """
+    def pre_connection_setup(self):
+        """Performs any actions required before connecting to the simulator"""
 
         self.metrics_providers = setup_metrics()
         self.sim_client, self._min_sim_version = setup_sim_client(
             self.metrics_providers
         )
-        self.sim_proxy = SimProxy(self.sim_client)
+        self.sim_proxy = SimProxy(self.sim_client, self.metrics_providers)
 
-    def connect_to_sim(self):
+    def connect_to_sim(self) -> bool:
         """
         Connect to the simulation server
         :param args: Parsed CLI arguments

@@ -15,10 +15,7 @@ _ARG_BOOL_ACTION = "store_true"
 
 
 def _parse_args() -> Dict[str, Any]:
-    """
-    Parse CLI arguments and override any default settings
-    :return:
-    """
+    """Parse CLI arguments and override any default settings"""
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -73,9 +70,9 @@ def main():
     load_dotenv(verbose=True, override=True)
 
     with BlueBird(args) as app:
-        app.setup_sim_client()
+        app.pre_connection_setup()
         if app.connect_to_sim():
-            # Run the Flask app. Blocks here until it exits
+            # Runs the Flask app. Blocks here until it exits
             app.run()
 
 

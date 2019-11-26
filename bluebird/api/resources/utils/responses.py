@@ -52,6 +52,7 @@ def checked_resp(err: Optional[str], code: HTTPStatus = HTTPStatus.OK):
     return make_response("", code)
 
 
+# TODO(RKM 2019-11-26) Make sure this is used throughout the API when needed
 def not_implemented_resp(api: str):
     """
     Generates a standard NOT_IMPLEMENTED response

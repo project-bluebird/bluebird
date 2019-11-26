@@ -2,15 +2,20 @@
 Contains the SimProxy class
 """
 
-# TODO(RKM 2019-11-17) Add functionality which never relies on any cached values. This
-# may be useful in cases where we are expecting multiple clients to be interacting with
-# the same simulation
+# TODO(RKM 2019-11-17) With the current SimProxy implementation, we assume that we are
+# the only client interacting with the simulation server when taking any actions that
+# involve updating the scenario / creating waypoints etc. This might cause trouble if
+# we wish to run another demo which involves multiple instances of BlueBird interacting
+# with the same simulation. If we want to support that, then we'll have to add logic
+# which allows one of the instances to act as the "master", and make the other instances
+# aware that some properties may change without their knowledge
 
 import logging
 from typing import Iterable
 
 from semver import VersionInfo
 
+from bluebird.metrics import MetricsProviders
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
@@ -20,7 +25,8 @@ from bluebird.utils.timer import Timer
 
 class SimProxy(AbstractSimClient):
     """
-    Class for handling and routing requests to the simulator client
+    Class which intercepts any requests before forwarding them to the sim client. Allows
+    any actions to be taken which are independent of the particular sim client
     """
 
     @property
@@ -39,12 +45,15 @@ class SimProxy(AbstractSimClient):
     def waypoints(self) -> ProxyWaypointControls:
         return self._proxy_waypoint_controls
 
-    def __init__(self, sim_client: AbstractSimClient):
-
+    def __init__(
+        self, sim_client: AbstractSimClient, metrics_providers: MetricsProviders
+    ):
         self._logger = logging.getLogger(__name__)
 
         # The actual sim_client
         self._sim_client: AbstractSimClient = sim_client
+
+        self._metrics_providers = metrics_providers
 
         # The proxy implementations
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)

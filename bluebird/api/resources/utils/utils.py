@@ -3,7 +3,7 @@ Contains utility functions for the API resources
 """
 
 import re
-from typing import List, Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union
 
 from flask import current_app, Response
 from flask_restful import reqparse
@@ -11,7 +11,7 @@ from flask_restful import reqparse
 import bluebird.utils.types as types
 import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.responses import bad_request_resp
-from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
+from bluebird.metrics import MetricsProviders
 from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.utils.properties import AircraftProperties, AircraftRoute
 
@@ -61,7 +61,7 @@ def sim_proxy() -> SimProxy:
     return _bb_app().sim_proxy
 
 
-def metrics_providers() -> List[AbstractMetricProvider]:
+def metrics_providers() -> MetricsProviders:
     """Utility function to return the metrics_providers instance"""
     return _bb_app().metrics_providers
 

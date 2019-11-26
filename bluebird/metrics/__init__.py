@@ -7,6 +7,7 @@ import importlib.util
 import logging
 from typing import List
 
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimType
 
@@ -15,10 +16,19 @@ _LOGGER = logging.getLogger(__name__)
 METRICS_PROVIDERS: List[str] = ["bluebird"]
 
 
-def setup_metrics():
+class MetricsProviders:
+    """Utility class to wrap the available metrics providers"""
+
+    def __init__(self, providers: List[AbstractMetricsProvider]):
+        self.providers = providers
+
+    def get(self, name: str) -> AbstractMetricsProvider:
+        return next((x for x in self.providers if str(x) == name), None)
+
+
+def setup_metrics() -> List[AbstractMetricsProvider]:
     """
     Loads the metrics providers defined in the global settings. Returns them as a list
-    :return:
     """
 
     if Settings.SIM_TYPE == SimType.MachColl:
@@ -38,4 +48,4 @@ def setup_metrics():
             _LOGGER.error(f"Couldn't import {mod_path}. Check the module exists")
             raise exc
 
-    return providers
+    return MetricsProviders(providers)

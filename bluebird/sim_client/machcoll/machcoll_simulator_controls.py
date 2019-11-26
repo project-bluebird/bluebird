@@ -4,10 +4,14 @@ Contains the AbstractSimulatorControls implementation for MachColl
 
 import logging
 import traceback
-from typing import Optional, Union, Iterable
+from typing import Optional, Union, Iterable, List
 
 import bluebird.utils.properties as props
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
+from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
+    MachCollAircraftControls,
+)
 from bluebird.settings import Settings
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 
@@ -20,10 +24,6 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     """
     AbstractSimulatorControls implementation for MachColl
     """
-
-    # @property
-    # def stream_data(self) -> Optional[bb_props.SimProperties]:
-    #     raise NotImplementedError
 
     @property
     def properties(self) -> Union[props.SimProperties, str]:
@@ -48,30 +48,28 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if not isinstance(responses[-1], str):
             return f"Could not get the current scenario name: {responses[-1]}"
 
-        try:
-            assert len(responses) == len(
-                props.SimProperties.__annotations__
-            ), "Expected the number of arguments to match"
-            return props.SimProperties(*responses)  # Splat!
-        except AssertionError:
-            return traceback.format_exc()
+        if len(responses) != len(props.SimProperties.__annotations__):
+            return "Expected the number of arguments to match"
+        return props.SimProperties(*responses)  # Splat!
 
-    def __init__(self, mc_client: MCClientMetrics):
-        self._mc_client = mc_client
+    def __init__(
+        self,
+        sim_client,
+        aircraft_controls: MachCollAircraftControls,
+        metrics_providers: List[AbstractMetricProvider],
+    ):
+        self._sim_client = sim_client
+        self._aircraft_controls = aircraft_controls
         self._logger = logging.getLogger(__name__)
 
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
     ) -> Optional[str]:
-        self._logger.debug(f"Loading {scenario_name}")
         self._logger.warning(f"Unhandled arguments: speed, start_paused")
         resp = self._mc_client().set_scenario_filename(scenario_name)
-        # TODO Check this is as expected. MCClient docstring suggests that an error
-        # response will be returned on failure, however currently None is returned on
-        # failure and the scenario name is passed back on success
         if not resp:
             return "Error: No confirmation received from MachColl"
-        return None
+        return None if resp == scenario_name else resp
 
     # TODO Assert state is as expected after all of these methods (should be in the
     # response)
@@ -117,7 +115,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if state == props.SimState.RUN:
             return None
         if state == props.SimState.END:
-            return 'Can\'t resume sim from "END" state'
+            return "Can't resume sim from 'END' state"
         resp = self._mc_client().sim_resume()
         _raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
@@ -133,21 +131,12 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
-        # TODO: Work-in the other metrics. Do we want to get every metric at every step?
-        self._mc_client().queue_metrics_query("metrics.score")
+        # TODO(RKM 2019-11-24) get the list of metrics to queue, and their args(?)
+        # self._mc_client().queue_metrics_query("metrics.score")
         resp = self._mc_client().set_increment()
         _raise_for_no_data(resp)
+        self._aircraft_controls.clear_cache()
         return None if self._is_success(resp) else str(resp)
-
-    # def get_speed(self) -> float:
-    #     resp = (
-    #         self._mc_client().get_step()
-    #         if Settings.SIM_MODE == bb_props.SimMode.Agent
-    #         else self._mc_client().get_speed()
-    #     )
-    #     _raise_for_no_data(resp)
-    #     _LOGGER.warning(f"Unhandled data: {resp}")
-    #     return -1
 
     def set_speed(self, speed: float) -> Optional[str]:
         resp = (
@@ -162,15 +151,22 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def upload_new_scenario(
         self, scn_name: str, content: Iterable[str]
     ) -> Optional[str]:
-        raise NotImplementedError
-
-    # def get_seed(self) -> int:
-    #     raise NotImplementedError
+        return "Not implemented"
 
     def set_seed(self, seed: int) -> Optional[str]:
-        # NOTE: There is a function in McClient for this, but it isn't implemented there
-        # yet
-        raise NotImplementedError
+        return "Not implemented"
+
+    def _mc_client(self) -> MCClientMetrics:
+        return self._sim_client.mc_client
+
+    def _get_state(self) -> Union[props.SimState, str]:
+        state = self._mc_client().get_state()
+        if not state:
+            return f"Could not get the sim state"
+        try:
+            return self._parse_sim_state(state)
+        except ValueError as exc:
+            return f"Error getting sim state: {exc}"
 
     @staticmethod
     def _parse_sim_state(val: str) -> props.SimState:
@@ -184,18 +180,6 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if val.upper() == "PAUSED":
             return props.SimState.HOLD
         raise ValueError(f'Unknown state: "{val}"')
-
-    def _mc_client(self) -> MCClientMetrics:
-        return self._sim_client.mc_client
-
-    def _get_state(self) -> Union[props.SimState, str]:
-        state = self._mc_client().get_state()
-        if not state:
-            return f"Could not get the sim state"
-        try:
-            return self._parse_sim_state(state)
-        except ValueError as exc:
-            return f"Error getting sim state: {exc}"
 
     @staticmethod
     def _is_success(data) -> bool:

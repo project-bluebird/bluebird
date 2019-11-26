@@ -12,7 +12,6 @@ from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import metrics_providers, parse_args
-from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
 
 
 _PARSER = reqparse.RequestParser()
@@ -21,21 +20,6 @@ _PARSER.add_argument("args", type=str, location="args", required=False)
 _PARSER.add_argument("provider", type=str, location="args", required=False)
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _get_provider_by_name(provider_name: str):
-    if not provider_name:
-        return responses.bad_request_resp("Provider name must be specified")
-
-    provider = next(
-        (x for x in metrics_providers() if str(x).lower() == provider_name.lower()),
-        None,
-    )
-
-    if not provider:
-        return responses.bad_request_resp(f"Provider {provider_name} not found")
-
-    return provider
 
 
 class Metric(Resource):
@@ -59,13 +43,14 @@ class Metric(Resource):
         if not metric_name:
             return responses.bad_request_resp("Metric name must be specified")
 
-        # BlueBird's built-in metrics
-        provider = metrics_providers()[0]
+        # Use the default metrics if not otherwise specified
+        provider = metrics_providers().get("BlueBird")
 
-        if req_args["provider"]:
-            provider = _get_provider_by_name(req_args["provider"])
-            if not isinstance(provider, AbstractMetricProvider):
-                return provider
+        req_provider = req_args["provider"]
+        if req_provider:
+            provider = metrics_providers().get(req_provider)
+            if not provider:
+                responses.bad_request_resp(f'Provider "{req_provider}" not found')
 
         args = req_args["args"].split(",") if req_args["args"] else []
 
@@ -103,7 +88,7 @@ class MetricProviders(Resource):
         """
 
         data = {}
-        for provider in metrics_providers():
+        for provider in metrics_providers().providers:
             data.update({str(provider): provider.version()})
 
         return responses.ok_resp(data)

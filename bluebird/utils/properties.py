@@ -57,12 +57,9 @@ class SimType(IntEnum):
         )
 
 
-@dataclass
+@dataclass(eq=True)
 class AircraftProperties:
-    """
-    Dataclass representing all the properties of an aircraft. Equality is only computed
-    by comparison with the Callsign
-    """
+    """Dataclass representing all the properties of an aircraft"""
 
     aircraft_type: str
     altitude: types.Altitude
@@ -73,11 +70,6 @@ class AircraftProperties:
     position: types.LatLon
     requested_flight_level: types.Altitude
     vertical_speed: types.VerticalSpeed
-
-    def __eq__(self, other):
-        if other.__class__ is not self.__class__:
-            return NotImplemented
-        return self.callsign == other.callsign
 
 
 @dataclass
