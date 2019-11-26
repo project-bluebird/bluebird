@@ -5,6 +5,7 @@ Contains functions to validate scenario and sector data
 from typing import Optional
 
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 
 _START_TIME_RE = r"\d{2}:\d{2}:\d{2}"
@@ -48,6 +49,7 @@ _SCENARIO_SCHEMA = {
                 "fixName": {"type": "string"},
                 "geometry": {"$ref": "#/definitions/geomItem"},
             },
+            "additionalProperties": False,
         },
         "geomItem": {
             "type": "object",
@@ -66,4 +68,7 @@ _SCENARIO_SCHEMA = {
 
 
 def validate_json_scenario(data: dict) -> Optional[str]:
-    return validate(instance=data, schema=_SCENARIO_SCHEMA)
+    try:
+        return validate(instance=data, schema=_SCENARIO_SCHEMA)
+    except ValidationError as exc:
+        return str(exc)
