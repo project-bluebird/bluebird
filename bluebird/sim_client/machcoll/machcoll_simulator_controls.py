@@ -4,10 +4,10 @@ Contains the AbstractSimulatorControls implementation for MachColl
 
 import logging
 import traceback
-from typing import Optional, Union, Iterable, List
+from typing import Optional, Union, Iterable
 
 import bluebird.utils.properties as props
-from bluebird.metrics.abstract_metrics_provider import AbstractMetricProvider
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
 from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
 from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
     MachCollAircraftControls,
@@ -56,10 +56,11 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self,
         sim_client,
         aircraft_controls: MachCollAircraftControls,
-        metrics_providers: List[AbstractMetricProvider],
+        mc_metrics_provider: AbstractMetricsProvider,
     ):
         self._sim_client = sim_client
         self._aircraft_controls = aircraft_controls
+        self._mc_metrics_provider = mc_metrics_provider
         self._logger = logging.getLogger(__name__)
 
     def load_scenario(
@@ -136,6 +137,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         resp = self._mc_client().set_increment()
         _raise_for_no_data(resp)
         self._aircraft_controls.clear_cache()
+        # TODO(RKM 2019-11-26) Update metrics
         return None if self._is_success(resp) else str(resp)
 
     def set_speed(self, speed: float) -> Optional[str]:

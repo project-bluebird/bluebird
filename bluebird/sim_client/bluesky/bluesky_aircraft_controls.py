@@ -154,7 +154,6 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     def _convert_to_ac_props(
         self, data: dict,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
-        assert data
         ac_props = {}
         try:
             for i in range(len(data["id"])):

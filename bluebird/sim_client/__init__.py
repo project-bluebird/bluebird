@@ -66,7 +66,7 @@ def setup_sim_client(
         )
 
     try:
-        sim_client = module.SimClient(metrics_providers)
+        sim_client = module.SimClient(metrics_providers=metrics_providers)
     except TypeError as exc:
         raise TypeError(
             f"Client class for {mod_name} does not properly implement the"
