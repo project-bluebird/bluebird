@@ -2,45 +2,68 @@
 Contains functions to validate scenario and sector data
 """
 
-import re
-import traceback
 from typing import Optional
 
-_START_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
+from jsonschema import validate
 
-_SCENARIO_KEYS = ["startTime", "aircraft"]
-_AIRCRAFT_KEYS = [
-    "callsign",
-    "type",
-    "departure",
-    "destination",
-    "startPosition",
-    "startTime",
-    "currentFlightLevel",
-    "clearedFlightLevel",
-    "requestedFlightLevel",
-    "route",
-]
+
+_START_TIME_RE = r"\d{2}:\d{2}:\d{2}"
+
+_SCENARIO_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "aircraft": {"type": "array", "items": {"$ref": "#/definitions/aircraft"}},
+        "startTime": {"type": "string", "pattern": _START_TIME_RE},
+    },
+    "additionalProperties": False,
+    "definitions": {
+        "aircraft": {
+            "type": "object",
+            "properties": {
+                "callsign": {"type": "string"},
+                "clearedFlightLevel": {"type": "integer"},
+                "currentFlightLevel": {"type": "integer"},
+                "departure": {"type": "string"},
+                "destination": {"type": "string"},
+                "requestedFlightLevel": {"type": "integer"},
+                "route": {
+                    "type": "array",
+                    "items": {"$ref": "#/definitions/routeItem"},
+                },
+                "startPosition": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 2,
+                    "maxItems": 2,
+                },
+                "startTime": {"type": "string", "pattern": _START_TIME_RE},
+                "timedelta": {"type": "integer"},
+                "type": {"type": "string"},
+            },
+            "additionalProperties": False,
+        },
+        "routeItem": {
+            "type": "object",
+            "properties": {
+                "fixName": {"type": "string"},
+                "geometry": {"$ref": "#/definitions/geomItem"},
+            },
+        },
+        "geomItem": {
+            "type": "object",
+            "properties": {
+                "coordinates": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 1,
+                },
+                "type": {"type": "string"},
+            },
+            "additionalProperties": False,
+        },
+    },
+}
 
 
 def validate_json_scenario(data: dict) -> Optional[str]:
-    """Validates a given GeoJSON scenario file"""
-    # TODO(RKM 2019-11-24) This doesn't attempt to deal with the weather data
-    try:
-        assert all(k in data for k in _SCENARIO_KEYS)
-        assert _START_TIME_RE.match(data["startTime"])
-        aircraft_node = data["aircraft"]
-        assert isinstance(aircraft_node, list) and len(aircraft_node)
-        for aircraft in aircraft_node:
-            assert isinstance(aircraft, dict)
-        return None
-    except AssertionError:
-        return f"Error parsing scenario: {traceback.format_exc()}"
-
-
-def _validate_json_aircraft(data: dict) -> None:
-    raise NotImplementedError
-
-
-def _validate_json_route(data: list) -> None:
-    raise NotImplementedError
+    return validate(instance=data, schema=_SCENARIO_SCHEMA)
