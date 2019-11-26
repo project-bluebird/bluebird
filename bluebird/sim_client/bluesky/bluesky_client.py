@@ -61,10 +61,6 @@ class BlueSkyClient(Client):
     def sim_info_stream_data(self):
         return deepcopy(self._sim_info_data)
 
-    # @property
-    # def route_stream_data(self):
-    #     return deepcopy(self._route_data)
-
     def __init__(self):
         super().__init__(ACTIVE_NODE_TOPICS)
         self._logger = logging.getLogger(__name__)
@@ -83,6 +79,7 @@ class BlueSkyClient(Client):
         self._echo_data = []
         self._scn_response = None
         self._awaiting_exit_resp = False
+        self._last_stream_time = None
 
     def start_timer(self):
         """
@@ -210,6 +207,9 @@ class BlueSkyClient(Client):
                     self.event(eventname, pydata, self.sender_id)
 
             if socks.get(self.stream_in) == zmq.POLLIN:
+
+                self._last_stream_time = time.time()
+
                 msg = self.stream_in.recv_multipart()
 
                 strmname = msg[0][:-5]
@@ -219,6 +219,10 @@ class BlueSkyClient(Client):
                 )
 
                 self.stream(strmname, pydata, sender_id)
+
+            # TODO(RKM 2019-11-26) This should probably be based on the stream frequency
+            if self._last_stream_time and time.time() - self._last_stream_time > 1:
+                raise TimeoutError("Lost connection to BlueSky")
 
             return True
 
