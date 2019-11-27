@@ -3,6 +3,10 @@ Contains the BlueBird class
 """
 
 import logging
+import os
+import signal
+import threading
+import time
 import traceback
 from typing import Any, Dict, Optional
 
@@ -19,6 +23,8 @@ class BlueBird:
     """
     The BlueBird application
     """
+
+    exit_flag: bool = False
 
     def __init__(self, args: Dict[str, Any]):
 
@@ -52,6 +58,8 @@ class BlueBird:
 
         if self.sim_proxy:
             self.sim_proxy.shutdown()
+
+        BlueBird.exit_flag = True
 
     def pre_connection_setup(self):
         """Performs any actions required before connecting to the simulator"""
@@ -118,9 +126,47 @@ class BlueBird:
 
         FLASK_APP.config[FLASK_CONFIG_LABEL] = self
 
-        FLASK_APP.run(
-            host="0.0.0.0",
-            port=Settings.PORT,
-            debug=Settings.FLASK_DEBUG,
-            use_reloader=False,
+        flask_thread = threading.Thread(
+            target=FLASK_APP.run,
+            kwargs={
+                "host": "0.0.0.0",
+                "port": Settings.PORT,
+                "debug": Settings.FLASK_DEBUG,
+                "use_reloader": False,
+            },
         )
+
+        flask_thread.start()
+
+        try:
+            while flask_thread.isAlive() and not self._check_timers():
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            self._logger.info("Ctrl+C - exiting")
+            _proc_killer()
+            return
+
+        err = self._check_timers()
+        if err:
+            exc_type, exc_value, exc_traceback = err
+            _proc_killer()
+            raise exc_type(exc_value).with_traceback(exc_traceback)
+
+    def _check_timers(self):
+        return next((x.exc_info for x in self._timers if x.exc_info), None)
+
+
+def _proc_killer():
+    r"""
+    Starts another thread which waits for BlueBird.exit_flag to be set, then sends
+    SIGINT to our own process. This is apparently the easiest way to clean things up and
+    cause the Flask server to exit if you decide to run it in another thread ¯\_(ツ)_/¯
+    """
+
+    def killer():
+        while not BlueBird.exit_flag:
+            time.sleep(0.1)
+        os.kill(os.getpid(), signal.SIGINT)
+
+    thread = threading.Thread(target=killer)
+    thread.start()
