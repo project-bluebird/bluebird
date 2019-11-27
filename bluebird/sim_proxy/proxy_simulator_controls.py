@@ -78,7 +78,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # TODO(RKM 2019-11-19) Pause timers?
         return self._sim_controls.stop()
 
-    @timeit("step")
+    @timeit("ProxySimulatorControls")
     def step(self) -> Optional[str]:
         err = self._sim_controls.step()
         if err:

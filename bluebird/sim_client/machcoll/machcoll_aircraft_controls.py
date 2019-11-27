@@ -2,6 +2,7 @@
 Contains the AbstractAircraftControls implementation for MachColl
 """
 
+import logging
 import traceback
 from typing import Dict, Optional, Union, List
 
@@ -28,6 +29,12 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def all_properties(
         self,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
+        self._logger.debug("BlueSkyAircraftControls.all_properties")
+        if not self._ac_data:
+            simt, data = self._mc_client().get_active_flight_states_and_time()
+            if not data:
+                return "No data received from MachColl"
+
         resp = self._mc_client().get_active_callsigns()
         _raise_for_no_data(resp)
         all_props = {}
@@ -39,7 +46,8 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
-        raise NotImplementedError
+        all_props = self.all_properties
+        return all_props if isinstance(all_props, str) else all_props.keys()
 
     @property
     def all_routes(self) -> Dict[types.Callsign, props.AircraftRoute]:
@@ -57,7 +65,8 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
-        self._lookup = None
+        self._logger = logging.getLogger(__name__)
+        self._ac_data = {}
 
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
@@ -121,6 +130,9 @@ class MachCollAircraftControls(AbstractAircraftControls):
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         raise NotImplementedError
+
+    def clear_cache(self):
+        self._ac_data = {}
 
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client

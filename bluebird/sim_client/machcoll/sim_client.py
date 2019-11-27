@@ -9,6 +9,8 @@ Paused      -> Running, Stepping, Stopped
 Stepping    -> Paused, Stopped
 """
 
+# TODO(RKM 2019-11-27) Add logic to handle MachColl becoming unavailable
+
 import logging
 import os
 from typing import Iterable
