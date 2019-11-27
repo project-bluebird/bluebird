@@ -230,7 +230,7 @@ class BlueSkyClient(Client):
             self._logger.error(exc)
             return False
 
-    @timeit("Client")
+    @timeit("BlueSkyClient")
     def upload_new_scenario(self, name, lines):
         """Uploads a new scenario file to the BlueSky simulation"""
 
