@@ -109,3 +109,5 @@ FLASK_API.add_resource(res.Shutdown, "/shutdown")
 # Metrics
 FLASK_API.add_resource(res.Metric, "/metric")
 FLASK_API.add_resource(res.MetricProviders, "/metricproviders")
+
+FLASK_API.add_resource(res.PoissonScenario, "/poissonScenario")

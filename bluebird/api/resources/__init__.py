@@ -39,6 +39,8 @@ from .shutdown import Shutdown
 from .metrics import Metric
 from .metrics import MetricProviders
 
+from .poisson_scenario import PoissonScenario
+
 # Keep flake8 happy :)
 __all__ = [
     "AddWpt",
@@ -70,4 +72,5 @@ __all__ = [
     "Shutdown",
     "Metric",
     "MetricProviders",
+    "PoissonScenario"
 ]
