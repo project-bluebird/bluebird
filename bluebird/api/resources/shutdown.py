@@ -2,42 +2,45 @@
 Provides logic for the shutdown endpoint
 """
 
-from flask import jsonify, request
+from flask import request
 from flask_restful import Resource, reqparse
 
-import bluebird.client as bb_client
+from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('stop_sim', type=bool, location='args', required=False)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("stop_sim", type=bool, location="args", required=False)
 
 
 class Shutdown(Resource):
-	"""
-	Contains logic for the shutdown endpoint
-	"""
+    """
+    Contains logic for the shutdown endpoint
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Shuts down the BlueBird server
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Shuts down the BlueBird server
+        :return:
+        """
 
-		parsed = PARSER.parse_args(strict=True)
-		stop_sim = not parsed['stop_sim'] is None
+        req_args = parse_args(_PARSER)
 
-		sim_quit_msg = ''
-		if stop_sim:
-			sim_quit = bb_client.CLIENT_SIM.quit()
-			sim_quit_msg = f'. (Sim exited ok: {sim_quit})'
+        sim_quit = sim_proxy().shutdown(shutdown_sim=bool(req_args["stop_sim"]))
+        sim_quit_msg = f"(Sim shutdown ok = {sim_quit})"
 
-		try:
-			request.environ.get('werkzeug.server.shutdown')()
-		except Exception as exc:  # pylint: disable=W0703
-			resp = jsonify(f'Could not shutdown: {exc}{sim_quit_msg}')
-			resp.status_code = 500
-			return resp
+        # TODO Check we still get a response before this executes. If not, need to set
+        # this to fire on a timer
+        try:
+            shutdown_fn = request.environ.get("werkzeug.server.shutdown")
+            if not shutdown_fn:
+                return internal_err_resp(
+                    f"No shutdown function available. {sim_quit_msg}"
+                )
+            shutdown_fn()
+        except Exception as exc:
+            return internal_err_resp(f"Could not shutdown: {exc}. {sim_quit_msg}")
 
-		resp = jsonify(f'Shutting down{sim_quit_msg}')
-		resp.status_code = 200
-		return resp
+        data = f"BlueBird shutting down! {sim_quit_msg}"
+        return ok_resp(data)

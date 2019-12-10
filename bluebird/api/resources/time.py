@@ -2,39 +2,31 @@
 Provides logic for the TIME (get simulator time) API endpoint
 """
 
-import logging
-
-from flask import jsonify
 from flask_restful import Resource
 
-import bluebird.client
-
-_LOGGER = logging.getLogger('bluebird')
+from bluebird.api.resources.utils.responses import internal_err_resp, ok_resp
+from bluebird.api.resources.utils.utils import sim_proxy
+from bluebird.utils.properties import SimProperties
 
 
 class Time(Resource):
-	"""
-	BlueSky TIME (get simulated time) command
-	"""
+    """
+    TIME (get simulator time) command
+    """
 
-	@staticmethod
-	def get():
-		"""
-		GET the current simulated time.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """
+        GET the current simulator time
+        :return:
+        """
 
-		cmd_str = 'TIME'
+        props = sim_proxy().simulation.properties
+        if not isinstance(props, SimProperties):
+            return internal_err_resp(f"Error: {props}")
 
-		_LOGGER.debug(f'Sending stack command: {cmd_str}')
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
-
-		if not reply:
-			resp = jsonify('Error: No time data received from BlueSky')
-			resp.status_code = 500
-			return resp
-
-		date_time = ' '.join(reply[0].split()[3:])
-		resp = jsonify({'sim_utc': date_time})
-		resp.status_code = 200
-		return resp
+        data = {
+            "utc_time": str(props.utc_time)[:-7],
+            "scenario_time": props.scenario_time,
+        }
+        return ok_resp(data)

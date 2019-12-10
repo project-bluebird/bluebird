@@ -2,87 +2,93 @@
 Logic for metric endpoints
 """
 
-import logging
+# TODO(RKM 2019-11-23) Should add a flag to assert that the sim has advanced (has been
+# stepped) since the previous call to the metric endpoint
 
-from flask import jsonify
+import logging
+import traceback
+
 from flask_restful import Resource, reqparse
 
-import bluebird.metrics as bb_metrics
+import bluebird.api.resources.utils.responses as responses
+from bluebird.api.resources.utils.utils import metrics_providers, parse_args
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('name', type=str, location='args', required=True)
-PARSER.add_argument('args', type=str, location='args', required=False)
-PARSER.add_argument('provider', type=str, location='args', required=False)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("name", type=str, location="args", required=True)
+_PARSER.add_argument("args", type=str, location="args", required=False)
+_PARSER.add_argument("provider", type=str, location="args", required=False)
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class Metric(Resource):
-	"""
-	BlueBird Metric endpoint
-	"""
+    """
+    BlueBird Metrics endpoint
+    """
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events. Attempts to call the method for the given metric
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """
+        Logic for GET events. Attempts to call the method for the given metric
+        :return:
+        """
 
-		parsed = PARSER.parse_args()
+        if not metrics_providers():
+            return responses.internal_err_resp("No metrics available")
 
-		if not bb_metrics.METRIC_PROVIDERS:
-			resp = jsonify('No metrics available')
-			resp.status_code = 500
-			return resp
+        req_args = parse_args(_PARSER)
+        metric_name = req_args["name"]
 
-		metric = parsed['name']
+        if not metric_name:
+            return responses.bad_request_resp("Metric name must be specified")
 
-		if parsed['provider']:
-			prov_name = parsed['provider']
-			provider = next((x for x in bb_metrics.METRIC_PROVIDERS if str(x) == prov_name), None)
-		else:
-			provider = bb_metrics.METRIC_PROVIDERS[0]  # BlueBird's built-in metrics
+        # Use the default metrics if not otherwise specified
+        provider = metrics_providers().get("BlueBird")
 
-		args = parsed['args'].split(',') if parsed['args'] else []
+        req_provider = req_args["provider"]
+        if req_provider:
+            provider = metrics_providers().get(req_provider)
+            if not provider:
+                responses.bad_request_resp(f'Provider "{req_provider}" not found')
 
-		try:
+        args = req_args["args"].split(",") if req_args["args"] else []
 
-			result = provider(metric, *args)
+        try:
+            result = provider(metric_name, *args)
+        # Catch cases where a wrong metric name is given
+        except AttributeError:
+            return responses.not_found_resp(
+                f"Provider {str(provider)} (version {provider.version()}) has no "
+                f"metric named '{metric_name}'"
+            )
+        # Catch all other cases
+        except Exception:
+            return responses.bad_request_resp(
+                f"Metric function returned an error: {traceback.format_exc()}"
+            )
 
-		except AttributeError:
-
-			resp = jsonify(
-							f'Provider {str(provider)} (version {provider.version()}) has no metric named '
-							f'\'{metric}\'')
-			resp.status_code = 404
-			return resp
-
-		except (TypeError, AssertionError) as exc:
-
-			resp = jsonify(f'Invalid arguments for metric function: {str(exc)}')
-			resp.status_code = 400
-			return resp
-
-		resp = jsonify({metric: result})
-		resp.status_code = 200
-		return resp
+        return (
+            responses.ok_resp({metric_name: result})
+            if not isinstance(result, str)
+            else responses.internal_err_resp(result)
+        )
 
 
 class MetricProviders(Resource):
-	"""
-	BlueBird metric providers endpoint
-	"""
+    """
+    BlueBird metric providers endpoint
+    """
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events. Returns a list of all the available metric providers
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """
+        Logic for GET events. Returns a list of all the available metric providers
+        :return:
+        """
 
-		data = {}
-		for provider in bb_metrics.METRIC_PROVIDERS:
-			data.update({str(provider): provider.version()})
+        data = {}
+        for provider in metrics_providers().providers:
+            data.update({str(provider): provider.version()})
 
-		return jsonify(data)
+        return responses.ok_resp(data)

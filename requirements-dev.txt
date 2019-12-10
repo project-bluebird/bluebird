@@ -1,7 +1,11 @@
 
 # In addition to requirements.txt, the following are required for development and testing
 
-pytest == 4.1.*
-pytest-docker-compose == 1.0.*
-pylint == 2.2.*
-pylint-exit == 1.0.*
+black
+flake8
+
+pytest
+pytest-docker-compose
+mock
+
+pre-commit

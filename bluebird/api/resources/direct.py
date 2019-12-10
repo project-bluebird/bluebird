@@ -2,26 +2,51 @@
 Provides logic for the DIRECT API endpoint
 """
 
-from flask_restful import Resource
+# TODO Could also specify a target altitude here
 
-from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
+from flask_restful import Resource, reqparse
 
-REQ_ARGS = ['waypoint']
-PARSER = generate_arg_parser(REQ_ARGS)
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.types import Callsign
+
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+)
+_PARSER.add_argument("waypoint", type=str, location="json", required=True)
 
 
 class Direct(Resource):
-	"""
-	Contains logic for the DIRECT endpoint
-	"""
+    """
+    Contains logic for the DIRECT endpoint
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to move directly to the specified waypoint. The specified waypoint must exist on the
-		aircraft's route.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. If the request contains an existing aircraft ID and valid
+        waypoint name, then a request is sent to the aircraft to head directly to the
+        waypoint
+        """
 
-		return process_ac_cmd('DIRECT', PARSER, REQ_ARGS)
+        req_args = utils.parse_args(_PARSER)
+        waypoint_str = req_args["waypoint"]
+
+        if not waypoint_str:
+            return responses.bad_request_resp("Waypoint name must be specified")
+
+        waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
+        if not waypoint:
+            return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
+
+        callsign = req_args[utils.CALLSIGN_LABEL]
+
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
+
+        err = utils.sim_proxy().aircraft.direct_to_waypoint(callsign, waypoint)
+
+        return responses.bad_request_resp(err) if err else responses.ok_resp()

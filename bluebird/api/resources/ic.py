@@ -2,60 +2,58 @@
 Provides logic for the IC (initial condition) API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client as bb_client
-import bluebird.settings as settings
-from bluebird.api.resources.utils import check_ac_data
+import bluebird.api.resources.utils.responses as responses
+from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimProperties, SimMode
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('filename', type=str, location='json', required=True)
-PARSER.add_argument('multiplier', type=float, location='json', required=False)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("filename", type=str, location="json", required=True)
+_PARSER.add_argument("multiplier", type=float, location="json", required=False)
 
 
 class Ic(Resource):
-	"""
-	BlueSky IC (initial condition) command
-	"""
+    """
+    IC (initial condition) command
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. Loads the scenario contained in the given file
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """
+        Gets the current scenario (file)name
+        """
 
-		parsed = PARSER.parse_args()
-		filename = fn_base = parsed['filename']
+        props = sim_proxy().simulation.properties
+        if not isinstance(props, SimProperties):
+            return responses.internal_err_resp("Could not get sim properties")
 
-		if not filename:
-			resp = jsonify(f'No filename specified')
-			resp.status_code = 400
-			return resp
+        data = {"scenario_name": props.scenario_name}
+        return responses.ok_resp(data)
 
-		if not filename.lower().endswith('.scn'):
-			filename += '.scn'
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. Loads the scenario contained in the given file
+        :return:
+        """
 
-		multiplier = parsed['multiplier']
-		speed = multiplier if multiplier else 1.0
+        req_args = parse_args(_PARSER)
+        filename = req_args["filename"]
 
-		if speed <= 0.0:
-			resp = jsonify(f'Invalid speed {speed}')
-			resp.status_code = 400
-			return resp
+        if not filename:
+            return responses.bad_request_resp("No filename specified")
 
-		start_paused = settings.SIM_MODE == 'agent'
-		err = bb_client.CLIENT_SIM.load_scenario(filename, speed=speed, start_paused=start_paused)
+        multiplier = req_args["multiplier"]
+        speed = multiplier if multiplier else 1.0
 
-		if err:
-			resp = jsonify(f'Error: Could not load scenario {fn_base}. Error was: {err}')
-			resp.status_code = 500
+        if speed <= 0.0:
+            return responses.bad_request_resp(f"Invalid speed {speed}")
 
-		err_resp = check_ac_data()
-		if err_resp:
-			return err_resp
+        err = sim_proxy().simulation.load_scenario(
+            filename, speed=speed, start_paused=(Settings.SIM_MODE == SimMode.Agent)
+        )
 
-		resp = jsonify(f'Scenario {fn_base} loaded')
-		resp.status_code = 200
-		return resp
+        return responses.checked_resp(err)

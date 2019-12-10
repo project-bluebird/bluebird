@@ -1,59 +1,55 @@
 """
-Provides logic for the ADDWPT (add waypoint) API endpoint
+Provides logic for the ADDWPT (add waypoint to route) API endpoint
+
+TODO: Consider renaming this since its meaning can be confusing
 """
 
-import logging
-
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils import check_acid, process_stack_cmd
+import bluebird.api.resources.utils.utils as utils
+import bluebird.api.resources.utils.responses as responses
+import bluebird.utils.types as types
 
-_LOGGER = logging.getLogger('bluebird')
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('acid', type=str, location='json', required=True)
-PARSER.add_argument('wpname', type=str, location='json', required=False)
-PARSER.add_argument('lat', type=float, location='json', required=False)
-PARSER.add_argument('lon', type=float, location='json', required=False)
-PARSER.add_argument('alt', type=str, location='json', required=False)
-PARSER.add_argument('spd', type=float, location='json', required=False)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=types.Callsign, location="json", required=True
+)
+_PARSER.add_argument("waypoint", type=str, location="json", required=True)
+_PARSER.add_argument("alt", type=types.Altitude, location="json", required=False)
+_PARSER.add_argument("gspd", type=types.GroundSpeed, location="json", required=False)
 
 
 class AddWpt(Resource):
-	"""
-	BlueSky ADDWPT (add waypoint) command
-	"""
+    """
+    BlueSky ADDWPT (add waypoint to route) command
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request is valid, then the specified waypoint is added to the
-		aircraft's route
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. If the request is valid, then the specified waypoint is
+        added to the aircraft's route
+        :return:
+        """
 
-		parsed = PARSER.parse_args()
-		acid = parsed['acid']
+        req_args = utils.parse_args(_PARSER)
+        callsign: types.Callsign = req_args[utils.CALLSIGN_LABEL]
 
-		resp = check_acid(acid)
-		if resp is not None:
-			return resp
+        waypoint_str = req_args["waypoint"]
+        if not waypoint_str:
+            return responses.bad_request_resp("A waypoint name must be provided")
 
-		cmd_str = f'ADDWPT {acid} '
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
 
-		# TODO Tidy this
+        waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
+        if not waypoint:
+            return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
 
-		if parsed['wpname']:
-			cmd_str += parsed['wpname']
-		elif parsed['lat'] and parsed['lon']:
-			cmd_str += f'{parsed["lat"]} {parsed["lon"]}'
-		else:
-			resp = jsonify("Must provide either a waypoint, or a latitude and longitude")
-			resp.status_code = 400
-			return resp
+        err = utils.sim_proxy().aircraft.add_waypoint_to_route(
+            callsign, waypoint, spd=req_args["gspd"]
+        )
 
-		cmd_str += f' {parsed["alt"]}' if parsed['alt'] else ''
-		cmd_str += f' {parsed["spd"]}' if parsed['spd'] else ''
-
-		return process_stack_cmd(cmd_str)
+        return responses.checked_resp(err)

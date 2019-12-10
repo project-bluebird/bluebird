@@ -2,102 +2,84 @@
 Provides logic for the ALT (altitude) API endpoint
 """
 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client
-from bluebird.api.resources.listroute import parse_route_data
-from bluebird.api.resources.utils import check_acid, generate_arg_parser, process_stack_cmd
-from bluebird.cache import AC_DATA
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.types import Altitude, Callsign, VerticalSpeed
 
-REQ_ARGS = ['alt']
-OPT_ARGS = ['vspd']
-PARSER = generate_arg_parser(REQ_ARGS, OPT_ARGS)
+# Parser for post requests
+_PARSER_POST = reqparse.RequestParser()
+_PARSER_POST.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+)
+# TODO Update API.md and make all type args match their __init__ options (i.e. str or
+# int here)
+_PARSER_POST.add_argument("alt", type=Altitude, location="json", required=True)
+_PARSER_POST.add_argument("vspd", type=VerticalSpeed, location="json", required=False)
 
 # Parser for get requests
-PARSER_GET = reqparse.RequestParser()
-PARSER_GET.add_argument('acid', type=str, location='args', required=True)
+_PARSER_GET = reqparse.RequestParser()
+_PARSER_GET.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="args", required=True
+)
 
 
 class Alt(Resource):
-	"""
-	BlueSky ALT (altitude) command
-	"""
+    """
+    ALT (altitude) command
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to alter its altitude.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. If the request contains an existing aircraft ID, then a
+        request is sent to alter its altitude.
+        :return:
+        """
 
-		parsed = PARSER.parse_args(strict=True)
-		acid = parsed['acid']
-		fl_cleared = parsed['alt']
-		vspd = parsed['vspd'] if parsed['vspd'] else ''
+        req_args = utils.parse_args(_PARSER_POST)
+        callsign: Callsign = req_args[utils.CALLSIGN_LABEL]
+        fl_cleared: Altitude = req_args["alt"]
 
-		resp = check_acid(acid)
-		if resp is not None:
-			return resp
+        err = utils.sim_proxy().aircraft.set_cleared_fl(
+            callsign, fl_cleared, vspd=req_args.get("vspd")
+        )
 
-		fl_cleared_feet_or_fl = fl_cleared
+        return responses.checked_resp(err)
 
-		# Parse FL to meters
-		if fl_cleared.upper().startswith('FL'):
-			fl_cleared = round(int(fl_cleared[2:]) * 100 * 0.3048)
+    @staticmethod
+    def get():
+        """
+        Logic for GET events. If the request contains an identifier to an existing
+        aircraft, then its current, requested, and cleared flight levels are returned
+        (if they can be determined)
+        :return:
+        """
 
-		AC_DATA.cleared_fls.update({acid: fl_cleared})
+        req_args = utils.parse_args(_PARSER_GET)
+        callsign = req_args[utils.CALLSIGN_LABEL]
 
-		cmd_str = f'ALT {acid} {fl_cleared_feet_or_fl} {vspd}'.strip()
-		return process_stack_cmd(cmd_str)
+        resp = utils.check_exists(callsign)
+        if resp:
+            return resp
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then its current, requested, and cleared flight levels are returned (if they can be
-		determined).
-		:return: :class:`~flask.Response`
-		"""
+        aircraft_props = utils.sim_proxy().aircraft.get_properties(callsign)
 
-		parsed = PARSER_GET.parse_args()
-		acid = parsed['acid']
+        if not isinstance(aircraft_props, AircraftProperties):
+            return responses.internal_err_resp(
+                f"Could not get properties for {callsign}: {aircraft_props}"
+            )
 
-		if not AC_DATA.store:
-			resp = jsonify('No aircraft in the simulation')
-			resp.status_code = 400
-			return resp
+        # TODO Check units (from BlueSky) - should be meters, but have changed to feet
+        # here
+        data = {
+            callsign.value: {
+                "fl_current": aircraft_props.altitude.feet,
+                "fl_cleared": aircraft_props.cleared_flight_level.feet,
+                "fl_requested": aircraft_props.requested_flight_level.feet,
+            }
+        }
 
-		if check_acid(acid):
-			resp = jsonify('Invalid ACID, or the aircraft does not exist')
-			resp.status_code = 400
-			return resp
-
-		# Current flight level
-		fl_current = AC_DATA.get(acid)[acid]['alt']
-
-		# Cleared flight level
-		fl_cleared = AC_DATA.cleared_fls.get(acid)
-		if fl_cleared:
-			fl_cleared = int(fl_cleared)
-
-		# Requested flight level
-		fl_requested = None
-		cmd_str = f'LISTRTE {acid}'
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
-
-		if reply and isinstance(reply, list):
-			parsed_route = parse_route_data(reply)
-			if isinstance(parsed_route, list):
-				for part in parsed_route:
-					if part['is_current']:
-						fl_requested = part['req_alt']
-
-		if isinstance(fl_requested, str):
-			fl_requested = round(int(fl_requested[2:]) * 100 * 0.3048)
-
-		resp = jsonify(
-						{'fl_current': fl_current, 'fl_cleared': fl_cleared, 'fl_requested': fl_requested})
-		resp.status_code = 200
-		return resp
+        return responses.ok_resp(data)

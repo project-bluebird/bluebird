@@ -2,74 +2,79 @@
 Entry point for the BlueBird app
 """
 
-import os
-
 import argparse
+from typing import Any, Dict
+
 from dotenv import load_dotenv
-from semver import VersionInfo
 
-from bluebird import BlueBird, settings
+from bluebird import BlueBird
+from bluebird.settings import Settings
+from bluebird.utils.properties import SimType
 
-
-def _parse_args():
-	"""
-	Parse cli arguments and override any BlueBird settings
-	:return:
-	"""
-
-	# TODO Add verb for selecting bluesky/nats sim. Default to bluesky if not specified
-
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--bluesky_host', type=str, help='Hostname of the BlueSky simulation to '
-	                                                     'connect to')
-	parser.add_argument('--reset_sim', action='store_true', help='Reset the simulation on '
-	                                                             'connection')
-	parser.add_argument('--log_rate', type=float, help='Log rate in sim-seconds')
-	parser.add_argument('--sim_mode', type=str, help='Set the initial mode')
-	args = parser.parse_args()
-
-	if args.bluesky_host:
-		settings.BS_HOST = args.bluesky_host
-
-	if args.log_rate:
-		if args.log_rate > 0:
-			settings.SIM_LOG_RATE = args.log_rate
-		else:
-			raise ValueError('Rate must be positive')
-
-	mode = args.sim_mode
-	if mode:
-		if not mode in settings.SIM_MODES:
-			available = ', '.join(settings.SIM_MODES)
-			raise ValueError(f'Mode \'{mode}\' not supported. Must be one of: {available}')
-		settings.SIM_MODE = mode
-
-	return args
+_ARG_BOOL_ACTION = "store_true"
 
 
-def _get_min_bs_version():
-	bs_min_version = os.getenv('BS_MIN_VERSION')
-	if not bs_min_version:
-		raise ValueError('Error: the BS_MIN_VERSION environment variable must be set')
-	return VersionInfo.parse(bs_min_version)
+def _parse_args() -> Dict[str, Any]:
+    """Parse CLI arguments and override any default settings"""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--sim-type",
+        type=SimType,
+        help=f"The type of simulator to connect to. Supported values are: "
+        f'{", ".join([x.name for x in SimType])}',
+    )
+    parser.add_argument(
+        "--sim-host", type=str, help="Hostname or IP of the simulator to connect to"
+    )
+    parser.add_argument(
+        "--reset-sim",
+        action=_ARG_BOOL_ACTION,
+        help="Resets the simulation on connection",
+    )
+    parser.add_argument("--log-rate", type=float, help="Log rate in sim-seconds")
+    # NOTE(RKM 2019-11-21) Disabled until we re-implement the free-run mode
+    # parser.add_argument(
+    #     "--sim-mode",
+    #     type=SimMode,
+    #     help="Set the initial mode. Supported values are: "
+    #     f'{", ".join([x.name for x in SimMode])}',
+    # )
+
+    args = parser.parse_args()
+
+    if args.sim_host:
+        Settings.SIM_HOST = args.sim_host
+
+    if args.log_rate:
+        if args.log_rate < 0:
+            raise ValueError("Rate must be positive")
+        Settings.SIM_LOG_RATE = args.log_rate
+
+    # if args.sim_mode:
+    #     Settings.SIM_MODE = args.sim_mode
+
+    if args.sim_type:
+        Settings.SIM_TYPE = args.sim_type
+
+    return vars(args)
 
 
 def main():
-	"""
-	Main app entry point
-	:return:
-	"""
+    """
+    Main app entry point
+    :return:
+    """
 
-	load_dotenv(verbose=True, override=True)
-	bs_min_version = _get_min_bs_version()
+    args = _parse_args()
+    load_dotenv(verbose=True, override=True)
 
-	args = _parse_args()
+    with BlueBird(args) as app:
+        app.pre_connection_setup()
+        if app.connect_to_sim():
+            # Runs the Flask app. Blocks here until it exits
+            app.run()
 
-	with BlueBird() as app:
-		if app.client_connect(bs_min_version, args.reset_sim):
-			# Run the Flask app. Blocks here until it exits
-			app.run()
 
-
-if __name__ == '__main__':
-	main()
+if __name__ == "__main__":
+    main()

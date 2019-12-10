@@ -21,17 +21,53 @@ from .ic import Ic
 from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
+from .sectors import Sectors
 from .seed import Seed
-from .scenario import Scenario
 from .step import Step
 from .time import Time
+from .upload_scenario import UploadScenario
+from .upload_sector import UploadSector
 
-# Application control
+# BlueBird control
 from .epinfo import EpInfo
 from .eplog import EpLog
+from .siminfo import SimInfo
 from .simmode import SimMode
 from .shutdown import Shutdown
 
 # Metrics
 from .metrics import Metric
 from .metrics import MetricProviders
+
+# Keep flake8 happy :)
+__all__ = [
+    "AddWpt",
+    "Alt",
+    "Cre",
+    "Direct",
+    "Hdg",
+    "ListRoute",
+    "Pos",
+    "Spd",
+    "Vs",
+    "DefWpt",
+    "DtMult",
+    "Hold",
+    "Ic",
+    "LoadLog",
+    "Op",
+    "Reset",
+    "Sectors",
+    "Seed",
+    "Step",
+    "Time",
+    "UploadScenario",
+    "UploadSector",
+    "EpInfo",
+    "EpLog",
+    "SimInfo",
+    "SimMode",
+    "Shutdown",
+    "Metric",
+    "MetricProviders",
+]

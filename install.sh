@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Check for python3.
-if command -v python3 &>/dev/null; then
-    printf "Found python3\n"
+# Check for python3.7
+cmd="python3 -c \"import sys; print('.'.join(map(str, sys.version_info[:2])))\""
+if [ python3 2>&1 > /dev/null ] && [ $(eval $cmd) == "3.7" ]; then
+    echo "Found python3.7"
 else
-    printf "Please install python3\n"
+    echo "Please install Python 3.7"
     exit 1
 fi
 
 # Check for pip3.
-if command -v pip3 &>/dev/null; then
+if command -v pip3 &> /dev/null; then
     printf "Found pip3\n"
 else
     printf "Please install python3-pip\n"
@@ -95,7 +96,10 @@ if [[ "$?" != 0 ]]; then
     exit 1
 fi
 
-printf "Setting up BlueSky submodule"
+printf "Installing pre-commit hooks\n"
+pre-commit install
+
+printf "Setting up BlueSky submodule\n"
 git submodule update --init --recursive
 
 printf "Installation successful\n"

@@ -2,54 +2,49 @@
 Provides logic for the DEFWPT (define waypoint) API endpoint
 """
 
+from http import HTTPStatus
 import logging
 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 
-import bluebird.client
+from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
+from bluebird.api.resources.utils.utils import parse_args, try_parse_lat_lon, sim_proxy
+from bluebird.utils.types import LatLon
 
-_LOGGER = logging.getLogger('bluebird')
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('wpname', type=str, location='json', required=True)
-PARSER.add_argument('lat', type=float, location='json', required=True)
-PARSER.add_argument('lon', type=float, location='json', required=True)
-PARSER.add_argument('type', type=str, location='json', required=False)
+_LOGGER = logging.getLogger(__name__)
+
+# TODO Maybe add altitude as an optional arg
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("wpname", type=str, location="json", required=True)
+_PARSER.add_argument("lat", type=float, location="json", required=True)
+_PARSER.add_argument("lon", type=float, location="json", required=True)
+_PARSER.add_argument("type", type=str, location="json", required=False)
 
 
 class DefWpt(Resource):
-	"""
-	BlueSky DEFWPT (define waypoint) command
-	"""
+    """
+    DEFWPT (define waypoint) command
+    """
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request contains valid waypoint information, then a request is
-		sent to the simulator to create it.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. If the request contains valid waypoint information, then
+        a request is sent to the simulator to create it.
+        :return:
+        """
 
-		parsed = PARSER.parse_args(strict=True)
+        req_args = parse_args(_PARSER)
 
-		if not parsed['wpname']:
-			resp = jsonify('Waypoint name must be provided')
-			resp.status_code = 400
-			return resp
+        wp_name = req_args["wpname"]
+        if not wp_name:
+            return bad_request_resp("Waypoint name must be provided")
 
-		wp_name = parsed["wpname"]
-		wp_type = parsed['type'] if parsed['type'] else ''
-		cmd_str = f'DEFWPT {wp_name} {parsed["lat"]} {parsed["lon"]} {wp_type}'
+        position = try_parse_lat_lon(req_args)
+        if not isinstance(position, LatLon):
+            return position
 
-		_LOGGER.info(f'Sending stack command: {cmd_str}')
-		err = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str)
+        err = sim_proxy().waypoints.define(wp_name, position, type=req_args["type"])
 
-		if err:
-			resp = jsonify(f'Error: {err}')
-			resp.status_code = 500
-			return resp
-
-		resp = jsonify(f'Waypoint {wp_name} created')
-		resp.status_code = 201
-		return resp
+        return bad_request_resp(err) if err else checked_resp(err, HTTPStatus.CREATED)

@@ -26,83 +26,94 @@ corresponding lower thresholds, that is: C_h = 10 nm, C_v = 2000 ft
 import numpy as np
 from pyproj import Geod
 
-from bluebird.cache import AC_DATA
+from bluebird.metrics.bluebird import config as cfg
 from bluebird.utils.strings import is_acid
-from . import config as cfg
 
-_WGS84 = Geod(ellps='WGS84')
+_WGS84 = Geod(ellps="WGS84")
 
 _ONE_NM = 1852  # Meters
 
 _SCALE_METRES_TO_FEET = 3.280839895
 
 
-def _get_pos(acid):
-	assert isinstance(acid, str), 'Expected the input to be a string'
-	assert is_acid(acid), 'Expected the input to be a valid ACID'
-	assert AC_DATA.contains(acid), 'Expected the aircraft to exist in the simulation'
-	return AC_DATA.get(acid)[acid]
+def _get_pos(ac_data, acid):
+    assert isinstance(acid, str), "Expected the input to be a string"
+    assert is_acid(acid), "Expected the input to be a valid ACID"
+    assert ac_data.contains(acid), "Expected the aircraft to exist in the simulation"
+    return ac_data.get(acid)[acid]
 
 
-def _vertical_separation(acid1, acid2):
-	"""
-	Basic vertical separation metric
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
+def _vertical_separation(ac_data, acid1, acid2):
+    """
+    Basic vertical separation metric
+    :param ac_data:
+    :param acid1:
+    :param acid2:
+    :return:
+    """
 
-	alt1 = _get_pos(acid1)['alt']
-	alt2 = _get_pos(acid2)['alt']
-	vertical_sep_metres = abs(alt1 - alt2)
+    alt1 = _get_pos(ac_data, acid1)["alt"]
+    alt2 = _get_pos(ac_data, acid2)["alt"]
+    vertical_sep_metres = abs(alt1 - alt2)
+    vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
 
-	vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
+    if vertical_sep_ft < cfg.VERT_MIN_DIST:
+        return cfg.LOS_SCORE
 
-	if vertical_sep_ft < cfg.VERT_MIN_DIST:
-		return cfg.LOS_SCORE
+    if vertical_sep_ft < cfg.VERT_WARN_DIST:
+        # Linear score between the minimum and warning distances
+        return np.interp(
+            vertical_sep_ft, [cfg.VERT_MIN_DIST, cfg.VERT_WARN_DIST], [cfg.LOS_SCORE, 0]
+        )
 
-	if vertical_sep_ft < cfg.VERT_WARN_DIST:
-		# Linear score between the minimum and warning distances
-		return np.interp(vertical_sep_ft,
-		                 [cfg.VERT_MIN_DIST, cfg.VERT_WARN_DIST], [cfg.LOS_SCORE, 0])
-
-	return 0
-
-
-def _horizontal_separation(acid1, acid2):
-	"""
-	Basic horizontal separation metric
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
-
-	pos1 = _get_pos(acid1)
-	pos2 = _get_pos(acid2)
-
-	_, _, horizontal_sep_m = _WGS84.inv(pos1['lon'], pos1['lat'], pos2['lon'], pos2['lat'])
-	horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)
-
-	if horizontal_sep_nm < cfg.HOR_MIN_DIST:
-		return round(cfg.LOS_SCORE, 1)
-
-	if horizontal_sep_nm < cfg.HOR_WARN_DIST:
-		# Linear score between the minimum and warning distances
-		return round(np.interp(horizontal_sep_nm,
-		                       [cfg.HOR_MIN_DIST, cfg.HOR_WARN_DIST], [cfg.LOS_SCORE, 0]), 1)
-
-	return 0
+    return 0
 
 
-def aircraft_separation(acid1, acid2):
-	"""
-	Combined score based on horizontal and vertical separation.
-	:param acid1:
-	:param acid2:
-	:return:
-	"""
+def _horizontal_separation(ac_data, acid1, acid2):
 
-	horizontal_sep = _horizontal_separation(acid1, acid2)
-	vertical_sep = _vertical_separation(acid1, acid2)
+    """
+    Basic horizontal separation metric
+    :param ac_data:
+    :param acid1:
+    :param acid2:
+    :return:
+    """
 
-	return max(horizontal_sep, vertical_sep)
+    pos1 = _get_pos(ac_data, acid1)
+    pos2 = _get_pos(ac_data, acid2)
+
+    _, _, horizontal_sep_m = _WGS84.inv(
+        pos1["lon"], pos1["lat"], pos2["lon"], pos2["lat"]
+    )
+    horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)
+
+    if horizontal_sep_nm < cfg.HOR_MIN_DIST:
+        return round(cfg.LOS_SCORE, 1)
+
+    if horizontal_sep_nm < cfg.HOR_WARN_DIST:
+        # Linear score between the minimum and warning distances
+        return round(
+            np.interp(
+                horizontal_sep_nm,
+                [cfg.HOR_MIN_DIST, cfg.HOR_WARN_DIST],
+                [cfg.LOS_SCORE, 0],
+            ),
+            1,
+        )
+
+    return 0
+
+
+# TODO Refactor the state out of this
+def aircraft_separation(ac_data, acid1, acid2):
+    """
+    Combined score based on horizontal and vertical separation.
+    :param acid1:
+    :param acid2:
+    :return:
+    """
+
+    horizontal_sep = _horizontal_separation(ac_data, acid1, acid2)
+    vertical_sep = _vertical_separation(ac_data, acid1, acid2)
+
+    return max(horizontal_sep, vertical_sep)
