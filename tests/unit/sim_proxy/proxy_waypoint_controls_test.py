@@ -34,7 +34,7 @@ def test_all_waypoints():
     type(mock_waypoint_controls).all_waypoints = mock_all_waypoints
     waypoints = proxy_waypoint_controls.all_waypoints
     assert waypoints == "Error"
-    assert not proxy_waypoint_controls.waypoints
+    assert not proxy_waypoint_controls._waypoints
     mock_all_waypoints.assert_called_once()
 
     # Test initial population of the waypoints cache
@@ -42,7 +42,7 @@ def test_all_waypoints():
     type(mock_waypoint_controls).all_waypoints = mock_all_waypoints
     waypoints = proxy_waypoint_controls.all_waypoints
     assert waypoints == _TEST_WAYPOINTS
-    assert proxy_waypoint_controls.waypoints == _TEST_WAYPOINTS
+    assert proxy_waypoint_controls._waypoints == _TEST_WAYPOINTS
     mock_all_waypoints.assert_called_once()
 
     # Test use of the cache
@@ -69,14 +69,14 @@ def test_find():
     assert not res
 
     # Test find with existing waypoints
-    proxy_waypoint_controls.waypoints = _TEST_WAYPOINTS
+    proxy_waypoint_controls._waypoints = _TEST_WAYPOINTS
     res = proxy_waypoint_controls.find("FAKE")
     assert not res
     res = proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
     assert res == _TEST_WAYPOINTS[0]
 
     # Test that we get a sensible error when we have multiple waypoints of the same name
-    proxy_waypoint_controls.waypoints = [_TEST_WAYPOINTS[0], _TEST_WAYPOINTS[0]]
+    proxy_waypoint_controls._waypoints = [_TEST_WAYPOINTS[0], _TEST_WAYPOINTS[0]]
     with pytest.raises(AssertionError, match='Duplicate waypoints with name "FIX1"'):
         proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
 
@@ -92,7 +92,7 @@ def test_define():
         proxy_waypoint_controls.define(None, None)
 
     # Test define with unspecified name but existing LatLon
-    proxy_waypoint_controls.waypoints = [_TEST_WAYPOINTS[0]]
+    proxy_waypoint_controls._waypoints = [_TEST_WAYPOINTS[0]]
     res = proxy_waypoint_controls.define(None, _TEST_WAYPOINTS[0].position)
     assert res == "A waypoint with LatLon 0.000000 1.000000 already exists"
 
@@ -115,11 +115,11 @@ def test_define():
         sepc=AbstractWaypointControls.define, return_value=new_waypoint
     )
     mock_waypoint_controls.define = mock_define
-    proxy_waypoint_controls.waypoints = []
+    proxy_waypoint_controls._waypoints = []
     res = proxy_waypoint_controls.define("FIX3", types.LatLon(0, 0), a=1)
     assert res == new_waypoint
     mock_define.assert_called_once_with("FIX3", types.LatLon(0, 0), a=1)
 
     # Test that the newly created waypoint is in the cache
-    assert len(proxy_waypoint_controls.waypoints) == 1
-    assert proxy_waypoint_controls.waypoints[0] == new_waypoint
+    assert len(proxy_waypoint_controls._waypoints) == 1
+    assert proxy_waypoint_controls._waypoints[0] == new_waypoint
