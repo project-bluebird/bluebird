@@ -39,7 +39,7 @@ class ProxyWaypointControls(AbstractWaypointControls):
             # find the waypoint #multi-client:
             # return self._waypoint_controls.find(waypoint_name)
             return None
-        return waypoint[0]
+        return waypoint
 
     def define(
         self, name: Optional[str], position: types.LatLon, **kwargs
