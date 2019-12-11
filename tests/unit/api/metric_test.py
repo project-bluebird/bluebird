@@ -9,7 +9,7 @@ import pytest
 import bluebird.api.resources.utils.utils as api_utils
 from tests.unit import API_PREFIX
 from tests.unit.api import MockBlueBird
-
+from bluebird.metrics import MetricsProviders
 
 class Provider:
     """
@@ -33,7 +33,7 @@ class Provider:
 def _set_bb_app(monkeypatch, set_provider):
     mock = MockBlueBird()
     if set_provider:
-        mock.metrics_providers = [Provider()]
+        mock.metrics_providers = MetricsProviders([Provider()])
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
@@ -50,7 +50,7 @@ def _set_bb_app_with_provider(monkeypatch):
 def test_metric_get_no_providers(test_flask_client, _set_bb_app_no_provider):
     """Tests the GET method when there are no metrics providers available"""
 
-    resp = test_flask_client.get(f"{API_PREFIX}/metric?name=,")
+    resp = test_flask_client.get(f"{API_PREFIX}/metric?provider=TestProvider&name=,")
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert resp.data.decode() == "No metrics available"
 
@@ -74,7 +74,7 @@ def test_metric_get(test_flask_client, _set_bb_app_with_provider):
 
     # Test invalid metric name
 
-    arg_str = f"name=AAA&"
+    arg_str = f"provider=TestProvider&name=AAA&"
     resp = test_flask_client.get(f"{endpoint}?{arg_str}")
     assert resp.status_code == HTTPStatus.NOT_FOUND
     assert (
@@ -84,15 +84,15 @@ def test_metric_get(test_flask_client, _set_bb_app_with_provider):
 
     # Test metric args parsing
 
-    arg_str = f"name=TEST&"
+    arg_str = f"provider=TestProvider&name=TEST&"
     resp = test_flask_client.get(f"{endpoint}?{arg_str}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode().startswith(
-        "Metric function returned an error: Invalid args"
+        "Metric function returned an error" #: Invalid args"
     )
 
     # Test valid args
-    arg_str = f"name=TEST&args=123"
+    arg_str = f"provider=TestProvider&name=TEST&args=123"
     resp = test_flask_client.get(f"{endpoint}?{arg_str}")
     assert resp.status_code == HTTPStatus.OK
     assert resp.json == {"TEST": 123}
