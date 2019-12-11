@@ -7,7 +7,7 @@ import pytest
 
 from bluebird.metrics import setup_metrics
 import bluebird.metrics.bluebird.config as cfg
-from bluebird.metrics.bluebird import Provider
+from bluebird.metrics.bluebird.provider import Provider
 from tests.unit import TEST_ACIDS, TEST_DATA
 
 
