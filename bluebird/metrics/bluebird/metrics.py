@@ -2,6 +2,8 @@
 BlueBird's built-in metrics, provided by Aviary
 """
 
+# TODO(RKM 2019-12-12) Maybe suggest using __all__ in Aviary to only expose the required
+# API functions
 import aviary.metrics as aviary_metrics
 
 import bluebird.utils.types as types
@@ -26,12 +28,12 @@ def pairwise_separation_metric(
     props1 = proxy_aircraft_controls.properties(types.Callsign(args[0]))
     if not isinstance(props1, props.AircraftProperties):
         err_resp = f": {props1}" if props1 else ""
-        raise Exception(f"Could not get properties for {args[0]}{err_resp}")
+        raise ValueError(f"Could not get properties for {args[0]}{err_resp}")
 
     props2 = proxy_aircraft_controls.properties(types.Callsign(args[1]))
     if not isinstance(props2, props.AircraftProperties):
         err_resp = f": {props2}" if props2 else ""
-        raise Exception(f"Could not get properties for {args[1]}{err_resp}")
+        raise ValueError(f"Could not get properties for {args[1]}{err_resp}")
 
     return aviary_metrics.pairwise_separation_metric(
         lon1=props1.position.lon_degrees,
