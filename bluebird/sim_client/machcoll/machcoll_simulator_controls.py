@@ -138,6 +138,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         _raise_for_no_data(resp)
         self._aircraft_controls.clear_cache()
         # TODO(RKM 2019-11-26) Update metrics
+        # self._mc_metrics_provider.update(...)
         return None if self._is_success(resp) else str(resp)
 
     def set_speed(self, speed: float) -> Optional[str]:
