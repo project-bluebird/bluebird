@@ -1,12 +1,5 @@
 # TODO(RKM 2019-11-20) Make the docker push only happen for tagged builds on master
 
-branches:
-  only:
-    - master
-    - /^release\/.*$/
-    - /^hotfix\/.*$/
-    - feature/mach-coll-integration-2
-
 dist: bionic
 
 language: python
