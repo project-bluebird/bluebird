@@ -23,89 +23,16 @@ and C_v > c_v), so the function should take them as arguments. Default values co
 corresponding lower thresholds, that is: C_h = 10 nm, C_v = 2000 ft
 """
 
-import numpy as np
-from pyproj import Geod
+from aviary.metrics.separation_metric import pairwise_separation_metric
 
+from bluebird.api.resources.utils.utils import sim_proxy
 from bluebird.metrics.bluebird import config as cfg
 from bluebird.utils.strings import is_acid
-
-_WGS84 = Geod(ellps="WGS84")
-
-_ONE_NM = 1852  # Meters
-
-_SCALE_METRES_TO_FEET = 3.280839895
+from bluebird.utils.types import Callsign
+import bluebird.api.resources.utils.utils as utils
 
 
-def _get_pos(ac_data, acid):
-    assert isinstance(acid, str), "Expected the input to be a string"
-    assert is_acid(acid), "Expected the input to be a valid ACID"
-    assert ac_data.contains(acid), "Expected the aircraft to exist in the simulation"
-    return ac_data.get(acid)[acid]
-
-
-def _vertical_separation(ac_data, acid1, acid2):
-    """
-    Basic vertical separation metric
-    :param ac_data:
-    :param acid1:
-    :param acid2:
-    :return:
-    """
-
-    alt1 = _get_pos(ac_data, acid1)["alt"]
-    alt2 = _get_pos(ac_data, acid2)["alt"]
-    vertical_sep_metres = abs(alt1 - alt2)
-    vertical_sep_ft = vertical_sep_metres * _SCALE_METRES_TO_FEET
-
-    if vertical_sep_ft < cfg.VERT_MIN_DIST:
-        return cfg.LOS_SCORE
-
-    if vertical_sep_ft < cfg.VERT_WARN_DIST:
-        # Linear score between the minimum and warning distances
-        return np.interp(
-            vertical_sep_ft, [cfg.VERT_MIN_DIST, cfg.VERT_WARN_DIST], [cfg.LOS_SCORE, 0]
-        )
-
-    return 0
-
-
-def _horizontal_separation(ac_data, acid1, acid2):
-
-    """
-    Basic horizontal separation metric
-    :param ac_data:
-    :param acid1:
-    :param acid2:
-    :return:
-    """
-
-    pos1 = _get_pos(ac_data, acid1)
-    pos2 = _get_pos(ac_data, acid2)
-
-    _, _, horizontal_sep_m = _WGS84.inv(
-        pos1["lon"], pos1["lat"], pos2["lon"], pos2["lat"]
-    )
-    horizontal_sep_nm = round(horizontal_sep_m / _ONE_NM)
-
-    if horizontal_sep_nm < cfg.HOR_MIN_DIST:
-        return round(cfg.LOS_SCORE, 1)
-
-    if horizontal_sep_nm < cfg.HOR_WARN_DIST:
-        # Linear score between the minimum and warning distances
-        return round(
-            np.interp(
-                horizontal_sep_nm,
-                [cfg.HOR_MIN_DIST, cfg.HOR_WARN_DIST],
-                [cfg.LOS_SCORE, 0],
-            ),
-            1,
-        )
-
-    return 0
-
-
-# TODO Refactor the state out of this
-def aircraft_separation(ac_data, acid1, acid2):
+def aircraft_separation(acid1, acid2):
     """
     Combined score based on horizontal and vertical separation.
     :param acid1:
@@ -113,7 +40,14 @@ def aircraft_separation(ac_data, acid1, acid2):
     :return:
     """
 
-    horizontal_sep = _horizontal_separation(ac_data, acid1, acid2)
-    vertical_sep = _vertical_separation(ac_data, acid1, acid2)
+    props1 = sim_proxy().aircraft.properties(Callsign(acid1))
+    props2 = sim_proxy().aircraft.properties(Callsign(acid2))
 
-    return max(horizontal_sep, vertical_sep)
+    return pairwise_separation_metric(
+        lon1=props1.position.lon_degrees,
+        lat1=props1.position.lat_degrees,
+        alt1=props1.altitude.meters,
+        lon2=props2.position.lon_degrees,
+        lat2=props2.position.lat_degrees,
+        alt2=props2.altitude.meters
+    )
