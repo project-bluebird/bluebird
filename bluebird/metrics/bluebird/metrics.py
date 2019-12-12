@@ -19,14 +19,16 @@ def pairwise_separation_metric(
     See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/separation_metric.py # noqa
     """
 
-    assert len(args) == 2, "Expected 2 arguments"
+    assert len(args) == 2 and all(
+        isinstance(x, str) for x in args
+    ), "Expected 2 string arguments"
 
-    props1 = proxy_aircraft_controls.aircraft.properties(types.Callsign(args[0]))
+    props1 = proxy_aircraft_controls.properties(types.Callsign(args[0]))
     if not isinstance(props1, props.AircraftProperties):
         err_resp = f": {props1}" if props1 else ""
         raise Exception(f"Could not get properties for {args[0]}{err_resp}")
 
-    props2 = proxy_aircraft_controls.aircraft.properties(types.Callsign(args[1]))
+    props2 = proxy_aircraft_controls.properties(types.Callsign(args[1]))
     if not isinstance(props2, props.AircraftProperties):
         err_resp = f": {props2}" if props2 else ""
         raise Exception(f"Could not get properties for {args[1]}{err_resp}")
