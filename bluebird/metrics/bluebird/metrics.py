@@ -5,6 +5,7 @@ BlueBird's built-in metrics, provided by Aviary
 import aviary.metrics as aviary_metrics
 
 import bluebird.utils.types as types
+import bluebird.utils.properties as props
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 
 
@@ -13,12 +14,22 @@ def pairwise_separation_metric(
     proxy_aircraft_controls: AbstractAircraftControls, *args, **kwargs
 ):
     """
+    The Aviary aircraft separation metric function. Expected *args are two aircraft
+    callsigns.
     See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/separation_metric.py # noqa
     """
 
-    # TODO Test args
+    assert len(args) == 2, "Expected 2 arguments"
+
     props1 = proxy_aircraft_controls.aircraft.properties(types.Callsign(args[0]))
+    if not isinstance(props1, props.AircraftProperties):
+        err_resp = f": {props1}" if props1 else ""
+        raise Exception(f"Could not get properties for {args[0]}{err_resp}")
+
     props2 = proxy_aircraft_controls.aircraft.properties(types.Callsign(args[1]))
+    if not isinstance(props2, props.AircraftProperties):
+        err_resp = f": {props2}" if props2 else ""
+        raise Exception(f"Could not get properties for {args[1]}{err_resp}")
 
     return aviary_metrics.pairwise_separation_metric(
         lon1=props1.position.lon_degrees,
@@ -34,6 +45,8 @@ def sector_exit_metric(
     proxy_aircraft_controls: AbstractAircraftControls, *args, **kwargs
 ):
     """
+    The Aviary sector exit metric function. Expected *args are:
+    []
     See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/sector_exit_metric.py # noqa
     """
 
