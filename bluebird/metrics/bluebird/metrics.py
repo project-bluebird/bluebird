@@ -12,9 +12,7 @@ from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 
 
 # TODO Update metrics docs
-def pairwise_separation_metric(
-    proxy_aircraft_controls: AbstractAircraftControls, *args, **kwargs
-):
+def pairwise_separation_metric(*args, **kwargs):
     """
     The Aviary aircraft separation metric function. Expected *args are two aircraft
     callsigns.
@@ -25,12 +23,14 @@ def pairwise_separation_metric(
         isinstance(x, str) for x in args
     ), "Expected 2 string arguments"
 
-    props1 = proxy_aircraft_controls.properties(types.Callsign(args[0]))
+    aircraft_controls: AbstractAircraftControls = kwargs["aircraft_controls"]
+
+    props1 = aircraft_controls.properties(types.Callsign(args[0]))
     if not isinstance(props1, props.AircraftProperties):
         err_resp = f": {props1}" if props1 else ""
         raise ValueError(f"Could not get properties for {args[0]}{err_resp}")
 
-    props2 = proxy_aircraft_controls.properties(types.Callsign(args[1]))
+    props2 = aircraft_controls.properties(types.Callsign(args[1]))
     if not isinstance(props2, props.AircraftProperties):
         err_resp = f": {props2}" if props2 else ""
         raise ValueError(f"Could not get properties for {args[1]}{err_resp}")
@@ -45,9 +45,7 @@ def pairwise_separation_metric(
     )
 
 
-def sector_exit_metric(
-    proxy_aircraft_controls: AbstractAircraftControls, *args, **kwargs
-):
+def sector_exit_metric(*args, **kwargs):
     """
     The Aviary sector exit metric function. Expected *args are:
     []
@@ -69,3 +67,5 @@ def sector_exit_metric(
     # vert_warn_dist=VERT_WARN_DIST,
     # vert_max_dist=VERT_MAX_DIST
     # return aviary_metrics.sector_exit_metric()
+
+    return aviary_metrics.sector_exit_metric()

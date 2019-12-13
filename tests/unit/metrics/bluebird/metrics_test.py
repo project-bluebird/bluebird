@@ -36,10 +36,14 @@ def test_pairwise_separation_metric():
     # Test invalid args
 
     with pytest.raises(AssertionError, match="Expected 2 string arguments"):
-        metrics.pairwise_separation_metric(mock_aircraft_controls, None, None)
+        metrics.pairwise_separation_metric(
+            None, None, aircraft_controls=mock_aircraft_controls
+        )
 
     with pytest.raises(AssertionError, match="Invalid callsign ''"):
-        metrics.pairwise_separation_metric(mock_aircraft_controls, "", "")
+        metrics.pairwise_separation_metric(
+            "", "", aircraft_controls=mock_aircraft_controls
+        )
 
     mock_aircraft_controls.properties = mock.Mock(
         sepc=AbstractAircraftControls.properties
@@ -48,19 +52,25 @@ def test_pairwise_separation_metric():
     mock_aircraft_controls.properties.return_value = None
 
     with pytest.raises(ValueError, match="Could not get properties for TEST1"):
-        metrics.pairwise_separation_metric(mock_aircraft_controls, "TEST1", "")
+        metrics.pairwise_separation_metric(
+            "TEST1", "", aircraft_controls=mock_aircraft_controls
+        )
 
     mock_aircraft_controls.properties.side_effect = [_TEST_PROPS, None]
 
     with pytest.raises(ValueError, match="Could not get properties for TEST2"):
-        metrics.pairwise_separation_metric(mock_aircraft_controls, "TEST1", "TEST2")
+        metrics.pairwise_separation_metric(
+            "TEST1", "TEST2", aircraft_controls=mock_aircraft_controls
+        )
 
     # Test result with valid args
 
     mock_aircraft_controls.properties.side_effect = None
     mock_aircraft_controls.properties.return_value = _TEST_PROPS
 
-    res = metrics.pairwise_separation_metric(mock_aircraft_controls, "TEST1", "TEST2")
+    res = metrics.pairwise_separation_metric(
+        "TEST1", "TEST2", aircraft_controls=mock_aircraft_controls
+    )
     assert res == -1, "Expected -1 since we passed the same properties twice!"
 
 

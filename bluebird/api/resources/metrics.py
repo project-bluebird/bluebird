@@ -11,7 +11,7 @@ import traceback
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import metrics_providers, parse_args
+import bluebird.api.resources.utils.utils as utils
 
 
 _PARSER = reqparse.RequestParser()
@@ -34,36 +34,31 @@ class Metric(Resource):
         :return:
         """
 
-        if not metrics_providers():
+        if not utils.sim_proxy().metrics_providers:
             return responses.internal_err_resp("No metrics available")
 
-        req_args = parse_args(_PARSER)
+        req_args = utils.parse_args(_PARSER)
         metric_name = req_args["name"]
 
         if not metric_name:
             return responses.bad_request_resp("Metric name must be specified")
 
         # Use the default metrics if not otherwise specified
-        provider = metrics_providers().get("BlueBird")
-
-        req_provider = req_args["provider"]
-        if req_provider:
-            provider = metrics_providers().get(req_provider)
-            if not provider:
-                responses.bad_request_resp(f'Provider "{req_provider}" not found')
+        provider_name = req_args["provider"] if req_args["provider"] else "BlueBird"
+        provider = utils.sim_proxy().metrics_providers.get(provider_name)
+        if not provider:
+            return responses.bad_request_resp(f'Provider "{provider_name}" not found')
 
         args = req_args["args"].split(",") if req_args["args"] else []
 
         try:
-            result = provider(metric_name, *args)
-        # Catch cases where a wrong metric name is given
-        except AttributeError:
+            result = utils.sim_proxy().call_metric_function(provider, metric_name, args)
+        except AttributeError:  # Catch cases where a wrong metric name is given
             return responses.not_found_resp(
                 f"Provider {str(provider)} (version {provider.version()}) has no "
                 f"metric named '{metric_name}'"
             )
-        # Catch all other cases
-        except Exception:
+        except Exception:  # Catch all other cases
             return responses.bad_request_resp(
                 f"Metric function returned an error: {traceback.format_exc()}"
             )
@@ -88,7 +83,7 @@ class MetricProviders(Resource):
         """
 
         data = {}
-        for provider in metrics_providers().providers:
+        for provider in utils.sim_proxy().metrics_providers:
             data.update({str(provider): provider.version()})
 
         return responses.ok_resp(data)

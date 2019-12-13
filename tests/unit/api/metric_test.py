@@ -1,22 +1,29 @@
 """
-Tests for the METRIC and METRICPROVIDERS endpoint
+Tests for the METRIC and METRICPROVIDERS endpoints
 """
 
 from http import HTTPStatus
 
+import mock
 import pytest
 
-import bluebird.api.resources.utils.utils as api_utils
-from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
 from bluebird.metrics import MetricsProviders
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
+from bluebird.sim_proxy.sim_proxy import SimProxy
 
-class Provider:
-    """
-    Mock metric provider
-    """
+from bluebird.utils.debug import ASSERT_NOT_REACHED
+
+from tests.unit import API_PREFIX
+
+
+_UTILS_SIM_PROXY = "bluebird.api.resources.utils.utils.sim_proxy"
+
+
+class TestProvider(AbstractMetricsProvider):
+    """Test metric provider"""
 
     def __call__(self, metric: str, *args, **kwargs):
+        ASSERT_NOT_REACHED("call_metric_function")
         assert isinstance(metric, str)
         if not metric == "TEST":
             raise AttributeError
@@ -27,38 +34,40 @@ class Provider:
         return "TestProvider"
 
     def version(self):
-        return "1.0.0"
-
-
-def _set_bb_app(monkeypatch, set_provider):
-    mock = MockBlueBird()
-    if set_provider:
-        mock.metrics_providers = MetricsProviders([Provider()])
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
+        return "0.0.0"
 
 
 @pytest.fixture
-def _set_bb_app_no_provider(monkeypatch):
-    _set_bb_app(monkeypatch, False)
+def sim_proxy_fixture():
+    def apply_fixture(with_test_provider: bool):
+        providers = [TestProvider()] if with_test_provider else []
+        # Create the SimProxy Mock
+        sim_proxy_mock = mock.create_autospec(spec=SimProxy, wraps=SimProxy)
+        sim_proxy_mock.metrics_providers = MetricsProviders(providers)
+        # Patch the API utils function
+        sim_proxy_function_patch = mock.patch(_UTILS_SIM_PROXY)
+        sim_proxy_function = sim_proxy_function_patch.start()
+        # Attach the mock to the API utils function
+        sim_proxy_function.return_value = sim_proxy_mock
+        return sim_proxy_mock
+
+    return apply_fixture
 
 
-@pytest.fixture
-def _set_bb_app_with_provider(monkeypatch):
-    _set_bb_app(monkeypatch, True)
-
-
-def test_metric_get_no_providers(test_flask_client, _set_bb_app_no_provider):
+def test_metric_get_no_providers(test_flask_client, sim_proxy_fixture):
     """Tests the GET method when there are no metrics providers available"""
+
+    sim_proxy_fixture(with_test_provider=False)
 
     resp = test_flask_client.get(f"{API_PREFIX}/metric?provider=TestProvider&name=,")
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert resp.data.decode() == "No metrics available"
 
 
-def test_metric_get(test_flask_client, _set_bb_app_with_provider):
-    """
-    Tests the GET method
-    """
+def test_metric_get(test_flask_client, sim_proxy_fixture):
+    """Tests the GET method"""
+
+    sim_proxy_mock: SimProxy = sim_proxy_fixture(with_test_provider=True)
 
     endpoint = f"{API_PREFIX}/metric"
 
@@ -74,12 +83,14 @@ def test_metric_get(test_flask_client, _set_bb_app_with_provider):
 
     # Test invalid metric name
 
+    sim_proxy_mock.call_metric_function.side_effect = AttributeError("foo")
+
     arg_str = f"provider=TestProvider&name=AAA&"
     resp = test_flask_client.get(f"{endpoint}?{arg_str}")
     assert resp.status_code == HTTPStatus.NOT_FOUND
     assert (
-        resp.data.decode()
-        == "Provider TestProvider (version 1.0.0) has no metric named 'AAA'"
+        resp.data.decode() == "Provider TestProvider (version 0.0.0) has no metric "
+        "named 'AAA'"
     )
 
     # Test metric args parsing
@@ -88,7 +99,7 @@ def test_metric_get(test_flask_client, _set_bb_app_with_provider):
     resp = test_flask_client.get(f"{endpoint}?{arg_str}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode().startswith(
-        "Metric function returned an error" #: Invalid args"
+        "Metric function returned an error"  #: Invalid args"
     )
 
     # Test valid args
@@ -98,11 +109,11 @@ def test_metric_get(test_flask_client, _set_bb_app_with_provider):
     assert resp.json == {"TEST": 123}
 
 
-def test_metricproviders_get(test_flask_client, _set_bb_app_with_provider):
+def test_metricproviders_get(test_flask_client):
     """Tests the GET method"""
 
     endpoint = f"{API_PREFIX}/metricproviders"
 
     resp = test_flask_client.get(endpoint)
     assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {str(Provider()): Provider().version()}
+    # assert resp.json == {str(Provider()): Provider().version()}
