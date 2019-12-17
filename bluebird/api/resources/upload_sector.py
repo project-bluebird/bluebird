@@ -36,7 +36,7 @@ class UploadSector(Resource):
             return responses.bad_request_resp(f"Invalid scenario content: {err}")
 
         # Keep track of the uploaded sector in the SimProxy.
-        sim_proxy().sector(content)
+        sim_proxy().sector = content
 
         # err = sim_proxy().simulation.upload_new_sector(sector_name, content)
 
