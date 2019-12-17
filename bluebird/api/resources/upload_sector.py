@@ -11,7 +11,7 @@ from bluebird.api.resources.utils.utils import sim_proxy, parse_args
 
 
 _PARSER = reqparse.RequestParser()
-_PARSER.add_argument("sector_name", type=str, location="json", required=True)
+# _PARSER.add_argument("sector_name", type=str, location="json", required=True)
 _PARSER.add_argument("content", type=dict, location="json", required=True)
 
 
@@ -24,10 +24,10 @@ class UploadSector(Resource):
 
         req_args = parse_args(_PARSER)
 
-        sector_name = req_args["sector_name"]
+        # sector_name = req_args["sector_name"]
 
-        if not sector_name:
-            return responses.bad_request_resp("Sector name must be provided")
+        # if not sector_name:
+        #     return responses.bad_request_resp("Sector name must be provided")
 
         content = req_args["content"]
 
