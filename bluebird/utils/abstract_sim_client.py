@@ -52,15 +52,7 @@ class AbstractSimClient(ABC):
         :return: Returns the client's waypoint controller instance
         :rtype: AbstractWaypointControls
         """
-
-    @property
-    @abstractmethod
-    def sector(self) -> SectorElement:
-        """
-        :return: Returns the sector
-        :rtype: SectorElement
-        """
-
+        
     @abstractmethod
     def connect(self, timeout: int = 1) -> None:
         """
