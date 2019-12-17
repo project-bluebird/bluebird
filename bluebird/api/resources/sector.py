@@ -8,15 +8,15 @@ import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
 
 
-class Sectors(Resource):
+class Sector(Resource):
     """
-    Contains logic for the SECTORS endpoint
+    Contains logic for the SECTOR endpoint
     """
 
     @staticmethod
     def get():
-        """Returns all the sectors defined in the current simulation"""
+        """Returns the sector defined in the current simulation"""
 
-        sectors = utils.sim_proxy().sectors
+        sector = utils.sim_proxy().sector
 
-        return responses.ok_resp({"sectors": sectors})
+        return responses.ok_resp({"sector": sector})

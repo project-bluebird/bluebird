@@ -16,7 +16,7 @@ _PARSER.add_argument("content", type=dict, location="json", required=True)
 
 
 class UploadSector(Resource):
-    """Contains logic for the scenario endpoint"""
+    """Contains logic for the upload sector endpoint"""
 
     @staticmethod
     def post():
@@ -35,6 +35,9 @@ class UploadSector(Resource):
         if err:
             return responses.bad_request_resp(f"Invalid scenario content: {err}")
 
-        err = sim_proxy().simulation.upload_new_sector(sector_name, content)
+        # Keep track of the uploaded sector in the SimProxy.
+        sim_proxy().sector(content)
 
-        return responses.checked_resp(err, HTTPStatus.CREATED)
+        # err = sim_proxy().simulation.upload_new_sector(sector_name, content)
+
+        return responses.checked_resp(None, HTTPStatus.CREATED)

@@ -7,6 +7,8 @@ from typing import Iterable
 
 from semver import VersionInfo
 
+from aviary.sector.sector_element import SectorElement
+
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
@@ -49,6 +51,14 @@ class AbstractSimClient(ABC):
         """
         :return: Returns the client's waypoint controller instance
         :rtype: AbstractWaypointControls
+        """
+
+    @property
+    @abstractmethod
+    def sector(self) -> SectorElement:
+        """
+        :return: Returns the sector
+        :rtype: SectorElement
         """
 
     @abstractmethod

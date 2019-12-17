@@ -21,7 +21,7 @@ from .ic import Ic
 from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
-from .sectors import Sectors
+from .sector import Sector
 from .seed import Seed
 from .step import Step
 from .time import Time
@@ -57,7 +57,7 @@ __all__ = [
     "LoadLog",
     "Op",
     "Reset",
-    "Sectors",
+    "Sector",
     "Seed",
     "Step",
     "Time",

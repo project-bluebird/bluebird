@@ -15,6 +15,8 @@ from typing import Iterable
 
 from semver import VersionInfo
 
+from aviary.sector.sector_element import SectorElement
+
 from bluebird.metrics import MetricsProviders
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
@@ -33,9 +35,20 @@ class SimProxy(AbstractSimClient):
     def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
 
-    def sectors(self) -> list:
-        # TODO(RKM 2019-11-26) This needs to be a call to Aviary once it's installed
-        return []
+    # OLD: superceded by sector property.
+    # def sectors(self) -> list:
+    #     # TODO(RKM 2019-11-26) This needs to be a call to Aviary once it's installed
+    #     return []
+
+    @property
+    def sector(self) -> SectorElement:
+        return self._sector
+
+    @sector.setter
+    def sector(self, geojson):
+        # Deserialise the sector geojson.
+        sector = 0 #TODO: support deserialisation in Aviary.
+        self._sector = sector
 
     @property
     def simulation(self) -> ProxySimulatorControls:
