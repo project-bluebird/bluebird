@@ -17,6 +17,7 @@ _SECTOR_SCHEMA = {
     "properties": {
         "features": {"type": "array", "items": {"$ref": "#/definitions/feature"}}
     },
+    "required": ["features"],
     "additionalProperties": False,
     "definitions": {
         "feature": {
@@ -26,6 +27,7 @@ _SECTOR_SCHEMA = {
                 "type": {"type": "string"},
                 "geometry": {"$ref": "#/definitions/geometry"},
             },
+            "required": ["properties", "type", "geometry"],
             "additionalProperties": False,
         },
         "properties": {
