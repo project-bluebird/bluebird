@@ -75,11 +75,6 @@ def test_find():
     res = proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
     assert res == _TEST_WAYPOINTS[0]
 
-    # Test that we get a sensible error when we have multiple waypoints of the same name
-    proxy_waypoint_controls._waypoints = [_TEST_WAYPOINTS[0], _TEST_WAYPOINTS[0]]
-    with pytest.raises(AssertionError, match='Duplicate waypoints with name "FIX1"'):
-        proxy_waypoint_controls.find(_TEST_WAYPOINTS[0].name)
-
 
 def test_define():
     """Tests that ProxyWaypointControls implements define"""
