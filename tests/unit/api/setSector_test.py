@@ -12,7 +12,7 @@ from tests.unit import API_PREFIX
 from tests.unit.api import MockBlueBird
 
 
-_ENDPOINT = f"{API_PREFIX}/uploadSector"
+_ENDPOINT = f"{API_PREFIX}/setSector"
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def _set_bb_app(monkeypatch):
     monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
-def test_uploadSector(test_flask_client, _set_bb_app):
+def test_setSector(test_flask_client, _set_bb_app):
 
     # Test error handling - content not provided
 

@@ -26,7 +26,7 @@ from .seed import Seed
 from .step import Step
 from .time import Time
 from .upload_scenario import UploadScenario
-from .upload_sector import UploadSector
+from .set_sector import SetSector
 
 # BlueBird control
 from .epinfo import EpInfo
@@ -62,7 +62,7 @@ __all__ = [
     "Step",
     "Time",
     "UploadScenario",
-    "UploadSector",
+    "SetSector",
     "EpInfo",
     "EpLog",
     "SimInfo",

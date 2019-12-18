@@ -1,5 +1,5 @@
 """
-Provides logic for the upload sector endpoint
+Provides logic for the set sector endpoint
 """
 
 from http import HTTPStatus
@@ -15,7 +15,7 @@ _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("content", type=dict, location="json", required=True)
 
 
-class UploadSector(Resource):
+class SetSector(Resource):
     """Contains logic for the upload sector endpoint"""
 
     @staticmethod

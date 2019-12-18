@@ -97,7 +97,7 @@ FLASK_API.add_resource(res.Seed, "/seed")
 FLASK_API.add_resource(res.Step, "/step")
 FLASK_API.add_resource(res.Time, "/time")
 FLASK_API.add_resource(res.UploadScenario, "/uploadScenario")
-FLASK_API.add_resource(res.UploadSector, "/uploadSector")
+FLASK_API.add_resource(res.SetSector, "/setSector")
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
