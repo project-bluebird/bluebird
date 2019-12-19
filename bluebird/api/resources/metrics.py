@@ -23,16 +23,11 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class Metric(Resource):
-    """
-    BlueBird Metrics endpoint
-    """
+    """BlueBird Metrics endpoint"""
 
     @staticmethod
     def get():
-        """
-        Logic for GET events. Attempts to call the method for the given metric
-        :return:
-        """
+        """Logic for GET events. Attempts to call the method for the given metric"""
 
         if not utils.sim_proxy().metrics_providers:
             return responses.internal_err_resp("No metrics available")
@@ -58,9 +53,10 @@ class Metric(Resource):
                 f"Provider {str(provider)} (version {provider.version()}) has no "
                 f"metric named '{metric_name}'"
             )
-        except Exception:  # Catch all other cases
+        except Exception as exc:  # Catch all other cases
+            msg = exc.args[0].split("\n")[0]
             return responses.bad_request_resp(
-                f"Metric function returned an error: {traceback.format_exc()}"
+                f"Metric function returned an error: {msg}\n{traceback.format_exc()}"
             )
 
         return (
@@ -71,16 +67,11 @@ class Metric(Resource):
 
 
 class MetricProviders(Resource):
-    """
-    BlueBird metric providers endpoint
-    """
+    """BlueBird metric providers endpoint"""
 
     @staticmethod
     def get():
-        """
-        Logic for GET events. Returns a list of all the available metric providers
-        :return:
-        """
+        """Logic for GET events. Returns a list of all the available metric providers"""
 
         data = {}
         for provider in utils.sim_proxy().metrics_providers:
