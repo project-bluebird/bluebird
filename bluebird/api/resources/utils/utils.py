@@ -11,7 +11,6 @@ from flask_restful import reqparse
 import bluebird.utils.types as types
 import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.responses import bad_request_resp
-from bluebird.metrics import MetricsProviders
 from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.utils.properties import AircraftProperties, AircraftRoute
 
@@ -59,11 +58,6 @@ def sim_proxy() -> SimProxy:
     entry from the API layer to the rest of the app
     """
     return _bb_app().sim_proxy
-
-
-def metrics_providers() -> MetricsProviders:
-    """Utility function to return the metrics_providers instance"""
-    return _bb_app().metrics_providers
 
 
 def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Response]:

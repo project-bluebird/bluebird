@@ -2,15 +2,24 @@
 Basic test configuration
 """
 
+import mock
 import pytest
 
 
 @pytest.fixture(scope="function", autouse=True)
 def log_break():
-    """
-    Adds a line break in the debug log file before each test
-    :return:
-    """
+    """Adds setup and teardown code around each unit test"""
+
+    # Runs before each test
+
+    # NOTE(RKM 2019-12-12) Call this beforehand in-case the test throws an exception
+    mock.patch.stopall()
+
     print()
+
+    # Runs the test
     yield
+
+    # Runs after each test
+
     print(f"\n=== New test ===")

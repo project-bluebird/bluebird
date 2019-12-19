@@ -72,7 +72,7 @@ class Callsign:
 
     def __post_init__(self):
         self.value = self.value.upper()
-        assert _CALLSIGN_REGEX.match(self.value), f"Invalid callsign {self.value}"
+        assert _CALLSIGN_REGEX.match(self.value), f"Invalid callsign '{self.value}'"
 
     def __hash__(self):
         return hash(self.value)
