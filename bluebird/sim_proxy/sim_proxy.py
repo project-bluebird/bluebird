@@ -48,7 +48,7 @@ class SimProxy(AbstractSimClient):
     @sector.setter
     def sector(self, geojson):
         # Deserialise the sector geojson.
-        sector = 0 #TODO: support deserialisation in Aviary.
+        sector = 0  # TODO: support deserialisation in Aviary.
         self._sector = sector
 
     @property
