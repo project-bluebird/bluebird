@@ -59,7 +59,7 @@ def test_setSector(test_flask_client, _set_bb_app):
     )
     assert resp.status_code == HTTPStatus.CREATED
 
-    with open("sector_test.geojson", "r") as f:
+    with open("tests/unit/api/sector_test.geojson", "r") as f:
         data = {"content": f.read()}
 
     resp = test_flask_client.post(_ENDPOINT, json=data)

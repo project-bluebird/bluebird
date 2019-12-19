@@ -25,7 +25,7 @@ def test_sector(test_flask_client, monkeypatch):
 
     # Test OK response (sector has been set)
 
-    with open("sector_test.geojson", "r") as f:
+    with open("tests/unit/api/sector_test.geojson", "r") as f:
         geoJSON = f.read()
 
     mock.sim_proxy.sector = geoJSON
