@@ -64,7 +64,7 @@ def test_eplog_get(test_flask_client, _set_bb_app):
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert resp.data.decode().startswith("Could not find episode file")
 
-    test_eplog_path = "tests/unit/api/testEpisode.log"
+    test_eplog_path = "tests/unit/api/eplog_test.log"
     bb_logging.EP_FILE = test_eplog_path
     bb_logging.EP_ID = 123
     resp = test_flask_client.get(f"{endpoint}?close_ep=True")
