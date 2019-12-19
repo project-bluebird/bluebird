@@ -2,8 +2,9 @@
 Contains logic for flask and our app routes
 """
 
-from http import HTTPStatus
 import logging
+import re
+from http import HTTPStatus
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -34,39 +35,43 @@ LOGGER = logging.getLogger(__name__)
 
 @FLASK_APP.before_request
 def before_req():
-    """
-    Method called before every request is handled
-    :return:
-    """
+    """Method called before every request is handled"""
 
     json = request.get_json()
+    json = re.sub(r"\s+", " ", str(json)).replace("\\n", "") if json else ""
 
-    if "loadlog" in request.url.lower():
-        json = "<LOADLOG data>"
+    orig_json = None
+    if json and request.endpoint.lower() in ("loadlog", "setsector"):
+        orig_json = json
+        json = f"<{request.endpoint} data>"
 
-    LOGGER.info(f'REQ {request.method} {request.full_path} "{json if json else ""}"')
+    LOGGER.info(f'REQ {request.method} {request.full_path} {json if json else ""}')
+
+    if orig_json:
+        LOGGER.debug(f"Full: {orig_json}")
 
 
 # TODO(RKM 2019-11-18) We could modify the standard Flask "missing argument" response
 # here so that users can more clearly see the mistake
 @FLASK_APP.after_request
 def after_req(response):
-    """
-    Method called before any response is returned
-    :param response:
-    :return:
-    """
+    """Method called before any response is returned"""
 
-    data = response.get_json()
-    if not data:
-        data = response.data.decode()
+    json = response.get_json()
+    if not json:
+        json = response.data.decode()
 
-    if "eplog" in request.url.lower() and response.status_code == HTTPStatus.OK:
-        data = "<EPLOG data>"
+    json = re.sub(r"\s+", " ", str(json)) if json else ""
 
-    if isinstance(data, str):
-        data = data.replace("\n", "")
-    LOGGER.info(f'RESP {response.status_code} "{data}"')
+    orig_json = None
+    if response.status_code == HTTPStatus.OK and request.endpoint.lower() in ("eplog"):
+        orig_json = json
+        json = f"<{request.endpoint} data>"
+
+    LOGGER.info(f"RESP {response.status_code} {json}")
+
+    if orig_json:
+        LOGGER.debug(f"Full: {orig_json}")
 
     return response
 
