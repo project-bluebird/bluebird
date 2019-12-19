@@ -12,3 +12,6 @@ matplotlib
 numpy
 msgpack
 zmq
+
+# TODO : eventually this should be download from master branch
+git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary

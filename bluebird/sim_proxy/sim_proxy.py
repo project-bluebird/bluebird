@@ -18,6 +18,7 @@ from semver import VersionInfo
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.metrics import MetricsProviders
+from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
@@ -70,7 +71,7 @@ class SimProxy(AbstractSimClient):
         # The actual sim_client
         self._sim_client: AbstractSimClient = sim_client
 
-        self._metrics_providers = metrics_providers
+        self.metrics_providers = metrics_providers
 
         # The proxy implementations
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
@@ -105,3 +106,9 @@ class SimProxy(AbstractSimClient):
         was not requested
         """
         return self._sim_client.shutdown(shutdown_sim)
+
+    def call_metric_function(
+        self, provider: AbstractMetricsProvider, metric_name: str, args: list
+    ):
+        """Calls the metric specified"""
+        return provider(metric_name, *args, aircraft_controls=self.aircraft)

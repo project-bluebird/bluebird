@@ -25,6 +25,13 @@ class MetricsProviders:
     def get(self, name: str) -> AbstractMetricsProvider:
         return next((x for x in self.providers if str(x) == name), None)
 
+    def __iter__(self):
+        for p in self.providers:
+            yield p
+
+    def __bool__(self):
+        return bool(self.providers)
+
 
 def setup_metrics() -> List[AbstractMetricsProvider]:
     """
