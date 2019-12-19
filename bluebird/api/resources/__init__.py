@@ -32,7 +32,6 @@ from .set_sector import SetSector
 from .epinfo import EpInfo
 from .eplog import EpLog
 from .siminfo import SimInfo
-from .simmode import SimMode
 from .shutdown import Shutdown
 
 # Metrics
@@ -66,7 +65,6 @@ __all__ = [
     "EpInfo",
     "EpLog",
     "SimInfo",
-    "SimMode",
     "Shutdown",
     "Metric",
     "MetricProviders",
