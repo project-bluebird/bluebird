@@ -41,7 +41,7 @@ def before_req():
     json = re.sub(r"\s+", " ", str(json)).replace("\\n", "") if json else ""
 
     orig_json = None
-    if json and request.endpoint.lower() in ("loadlog", "setsector"):
+    if json and request.endpoint.lower() in ("loadlog", "sector"):
         orig_json = json
         json = f"<{request.endpoint} data>"
 
