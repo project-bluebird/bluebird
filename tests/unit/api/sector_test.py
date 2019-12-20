@@ -6,10 +6,12 @@ from http import HTTPStatus
 
 from pytest import fixture
 
+from bluebird.api.resources.utils.sector_validation import validate_geojson_sector
 import bluebird.api.resources.utils.utils as api_utils
 
 from tests.unit import API_PREFIX
 from tests.unit.api import MockBlueBird
+
 
 _ENDPOINT = f"{API_PREFIX}/sector"
 
@@ -82,6 +84,8 @@ def test_setSector(test_flask_client, _set_bb_app):
 
     with open("tests/unit/api/sector_test.geojson", "r") as f:
         data = {"content": f.read()}
+        # Check that the test sector passes our validation
+        assert not validate_geojson_sector(data["content"])
 
     resp = test_flask_client.post(_ENDPOINT, json=data)
     assert resp.status_code == HTTPStatus.CREATED
