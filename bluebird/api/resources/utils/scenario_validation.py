@@ -38,7 +38,7 @@ _SCENARIO_SCHEMA = {
                     "maxItems": 2,
                 },
                 "startTime": {"type": "string", "pattern": _START_TIME_RE},
-                "timedelta": {"type": "integer"},
+                "timedelta": {"type": "number"},
                 "type": {"type": "string"},
             },
             "additionalProperties": False,
