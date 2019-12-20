@@ -69,6 +69,6 @@ _SCENARIO_SCHEMA = {
 
 def validate_json_scenario(data: dict) -> Optional[str]:
     try:
-        return validate(instance=data, schema=_SCENARIO_SCHEMA)
+        validate(instance=data, schema=_SCENARIO_SCHEMA)
     except ValidationError as exc:
         return str(exc)
