@@ -11,8 +11,10 @@ Contains the SimProxy class
 # aware that some properties may change without their knowledge
 
 import logging
+from dataclasses import dataclass
 from typing import Iterable
 
+from aviary.sector.sector_element import SectorElement
 from semver import VersionInfo
 
 from bluebird.metrics import MetricsProviders
@@ -22,6 +24,12 @@ from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
+
+
+@dataclass
+class Sector:
+    name: str
+    element: SectorElement
 
 
 class SimProxy(AbstractSimClient):
@@ -34,9 +42,9 @@ class SimProxy(AbstractSimClient):
     def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
 
-    def sectors(self) -> list:
-        # TODO(RKM 2019-11-26) This needs to be a call to Aviary once it's installed
-        return []
+    @property
+    def sector(self) -> Sector:
+        return self._sector
 
     @property
     def simulation(self) -> ProxySimulatorControls:
@@ -71,6 +79,8 @@ class SimProxy(AbstractSimClient):
             self._proxy_waypoint_controls,
         )
 
+        self._sector: Sector = None
+
     def connect(self, timeout: int = 1) -> None:
         self._sim_client.connect(timeout)
 
@@ -99,3 +109,8 @@ class SimProxy(AbstractSimClient):
     ):
         """Calls the metric specified"""
         return provider(metric_name, *args, aircraft_controls=self.aircraft)
+
+    def set_sector(self, name: str, element: SectorElement):
+        """Updates the current sector and sends it to the sim"""
+        self._sector = Sector(name, element)
+        # TODO(RKM 2019-12-20) Update the sim

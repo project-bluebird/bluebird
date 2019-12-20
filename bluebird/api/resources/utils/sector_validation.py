@@ -5,11 +5,10 @@ Contains functions to validate scenario and sector data
 # TODO(RKM 2019-11-26) Should we attempt to validate that the schema is self-consistent?
 # (i.e. all children of properties refer to other properties in the data)
 
-from typing import Optional
+from typing import Union
 
-
+from aviary.sector.sector_element import SectorElement
 from jsonschema import validate
-from jsonschema.exceptions import ValidationError
 
 
 _SECTOR_SCHEMA = {
@@ -17,6 +16,7 @@ _SECTOR_SCHEMA = {
     "properties": {
         "features": {"type": "array", "items": {"$ref": "#/definitions/feature"}}
     },
+    "required": ["features"],
     "additionalProperties": False,
     "definitions": {
         "feature": {
@@ -26,6 +26,7 @@ _SECTOR_SCHEMA = {
                 "type": {"type": "string"},
                 "geometry": {"$ref": "#/definitions/geometry"},
             },
+            "required": ["properties", "type", "geometry"],
             "additionalProperties": False,
         },
         "properties": {
@@ -59,8 +60,10 @@ _SECTOR_SCHEMA = {
 }
 
 
-def validate_geojson_sector(data: dict) -> Optional[str]:
+def validate_geojson_sector(geojson: dict) -> Union[SectorElement, str]:
     try:
-        return validate(instance=data, schema=_SECTOR_SCHEMA)
-    except ValidationError as exc:
+        validate(instance=geojson, schema=_SECTOR_SCHEMA)
+        # TODO (RKM 2019-12-20) Check what exceptions this can throw
+        return SectorElement.deserialise(geojson)
+    except Exception as exc:
         return str(exc)

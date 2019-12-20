@@ -2,8 +2,9 @@
 Contains logic for flask and our app routes
 """
 
-from http import HTTPStatus
 import logging
+import re
+from http import HTTPStatus
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -34,39 +35,43 @@ LOGGER = logging.getLogger(__name__)
 
 @FLASK_APP.before_request
 def before_req():
-    """
-    Method called before every request is handled
-    :return:
-    """
+    """Method called before every request is handled"""
 
     json = request.get_json()
+    json = re.sub(r"\s+", " ", str(json)).replace("\\n", "") if json else ""
 
-    if "loadlog" in request.url.lower():
-        json = "<LOADLOG data>"
+    orig_json = None
+    if json and request.endpoint.lower() in ("loadlog", "sector"):
+        orig_json = json
+        json = f"<{request.endpoint} data>"
 
-    LOGGER.info(f'REQ {request.method} {request.full_path} "{json if json else ""}"')
+    LOGGER.info(f'REQ {request.method} {request.full_path} {json if json else ""}')
+
+    if orig_json:
+        LOGGER.debug(f"Full: {orig_json}")
 
 
 # TODO(RKM 2019-11-18) We could modify the standard Flask "missing argument" response
 # here so that users can more clearly see the mistake
 @FLASK_APP.after_request
 def after_req(response):
-    """
-    Method called before any response is returned
-    :param response:
-    :return:
-    """
+    """Method called before any response is returned"""
 
-    data = response.get_json()
-    if not data:
-        data = response.data.decode()
+    json = response.get_json()
+    if not json:
+        json = response.data.decode()
 
-    if "eplog" in request.url.lower() and response.status_code == HTTPStatus.OK:
-        data = "<EPLOG data>"
+    json = re.sub(r"\s+", " ", str(json)) if json else ""
 
-    if isinstance(data, str):
-        data = data.replace("\n", "")
-    LOGGER.info(f'RESP {response.status_code} "{data}"')
+    orig_json = None
+    if response.status_code == HTTPStatus.OK and request.endpoint.lower() in ("eplog"):
+        orig_json = json
+        json = f"<{request.endpoint} data>"
+
+    LOGGER.info(f"RESP {response.status_code} {json}")
+
+    if orig_json:
+        LOGGER.debug(f"Full: {orig_json}")
 
     return response
 
@@ -92,18 +97,16 @@ FLASK_API.add_resource(res.Ic, "/ic")
 FLASK_API.add_resource(res.LoadLog, "/loadlog")
 FLASK_API.add_resource(res.Op, "/op")
 FLASK_API.add_resource(res.Reset, "/reset")
-FLASK_API.add_resource(res.Sectors, "/sectors")
+FLASK_API.add_resource(res.Sector, "/sector")
 FLASK_API.add_resource(res.Seed, "/seed")
 FLASK_API.add_resource(res.Step, "/step")
 FLASK_API.add_resource(res.Time, "/time")
 FLASK_API.add_resource(res.UploadScenario, "/uploadScenario")
-FLASK_API.add_resource(res.UploadSector, "/uploadSector")
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
 FLASK_API.add_resource(res.EpLog, "/eplog")
 FLASK_API.add_resource(res.SimInfo, "/siminfo")
-# FLASK_API.add_resource(res.SimMode, "/simmode")
 FLASK_API.add_resource(res.Shutdown, "/shutdown")
 
 # Metrics

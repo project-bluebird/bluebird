@@ -2,7 +2,6 @@
 Tests for the STEP endpoint
 """
 
-import datetime
 from http import HTTPStatus
 
 import pytest

@@ -21,18 +21,16 @@ from .ic import Ic
 from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
-from .sectors import Sectors
+from .sector import Sector
 from .seed import Seed
 from .step import Step
 from .time import Time
 from .upload_scenario import UploadScenario
-from .upload_sector import UploadSector
 
 # BlueBird control
 from .epinfo import EpInfo
 from .eplog import EpLog
 from .siminfo import SimInfo
-from .simmode import SimMode
 from .shutdown import Shutdown
 
 # Metrics
@@ -57,16 +55,14 @@ __all__ = [
     "LoadLog",
     "Op",
     "Reset",
-    "Sectors",
+    "Sector",
     "Seed",
     "Step",
     "Time",
     "UploadScenario",
-    "UploadSector",
     "EpInfo",
     "EpLog",
     "SimInfo",
-    "SimMode",
     "Shutdown",
     "Metric",
     "MetricProviders",

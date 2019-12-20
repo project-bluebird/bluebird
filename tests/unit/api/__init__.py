@@ -28,6 +28,14 @@ class MockSimProxy:
     def waypoints(self):
         return self._mock_waypoint_controls
 
+    @property
+    def sector(self):
+        return self._sector
+
+    @sector.setter
+    def sector(self, sector):
+        self._sector = sector
+
     def __init__(self):
         self._mock_aircraft_controls = None
         self._mock_simulator_controls = None
