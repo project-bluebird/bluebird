@@ -4,131 +4,121 @@ Tests for the ALT endpoint
 
 from http import HTTPStatus
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftProperties
+import mock
+
+import bluebird.api as api
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import bad_request_resp
 
 from tests.unit import API_PREFIX
+from tests.unit.api.resources import patch_path, TEST_AIRCRAFT_PROPS
 
 
-_ENDPOINT = f"{API_PREFIX}/alt"
+_ENDPOINT = "alt"
+_ENDPOINT_PATH = f"{API_PREFIX}/{_ENDPOINT}"
 
 
-class MockAircraftControls:
-    def __init__(self):
-        self.last_cfl = None
-
-    def set_cleared_fl(
-        self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
-    ):
-        assert isinstance(callsign, types.Callsign)
-        assert isinstance(flight_level, types.Altitude)
-        assert "vspd" in kwargs
-        self.last_cfl = {"callsign": callsign, "flight_level": flight_level, **kwargs}
-
-    def exists(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        # "TEST*" aircraft exist, all others do not
-        return str(callsign).upper().startswith("TEST")
-
-    def get_properties(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        if not self.exists(callsign):
-            return "Error: Could not get properties"
-        return AircraftProperties(
-            "A380",
-            types.Altitude(18_500),
-            callsign,
-            types.Altitude(22_000),
-            types.GroundSpeed(53),
-            types.Heading(74),
-            types.LatLon(51.529761, -0.127531),
-            types.Altitude(25_300),
-            types.VerticalSpeed(73),
-        )
-
-
-def test_alt_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+def test_alt_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test arg parsing
 
     data = {}
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
     callsign = "X"
-    data = {api_utils.CALLSIGN_LABEL: callsign}
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+    data = {utils.CALLSIGN_LABEL: callsign}
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert api_utils.CALLSIGN_LABEL in resp.json["message"]
+    assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    data = {api_utils.CALLSIGN_LABEL: "TEST", "alt": -1}
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+    data = {utils.CALLSIGN_LABEL: "TEST", "alt": -1}
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "alt" in resp.json["message"]
 
     data["alt"] = 0
     data["vspd"] = "..."
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "vspd" in resp.json["message"]
 
-    # Test correct units
+    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    callsign = "TEST"
-    data = {api_utils.CALLSIGN_LABEL: callsign}
-    alt = types.Altitude(12_300)
-    for test_case in [alt.flight_levels, alt.feet]:
-        data["alt"] = test_case
-        resp = test_flask_client.post(_ENDPOINT, json=data)
+        mock_sim_proxy = mock.MagicMock()
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        utils_patch.sim_proxy.return_value = mock_sim_proxy
+
+        # Test error from set_cleared_fl
+
+        mock_sim_proxy.aircraft.set_cleared_fl.return_value = "Couldn't set CFL"
+
+        data["vspd"] = 123
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't set CFL"
+
+        # Test valid response
+
+        mock_sim_proxy.aircraft.set_cleared_fl.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
         assert resp.status_code == HTTPStatus.OK
-        cfl_args = api_utils.sim_proxy().aircraft.last_cfl
-        assert cfl_args, "Expected set_cleared_fl to be called"
-        assert str(cfl_args["callsign"]) == callsign
-        assert cfl_args["flight_level"] == alt
-
-    # Test optional arg passed to set_cleared_fl
-
-    data["vspd"] = 20
-    resp = test_flask_client.post(_ENDPOINT, json=data)
-    assert resp.status_code == HTTPStatus.OK
-    cfl_args = api_utils.sim_proxy().aircraft.last_cfl
-    assert cfl_args, "Expected set_cleared_fl to be called"
-    assert cfl_args["vspd"] == types.VerticalSpeed(20), ""
 
 
-def test_alt_get(test_flask_client, _set_bb_app):
-    """
-    Tests the GET method
-    """
+def test_alt_get(test_flask_client):
+    """Tests the GET method"""
 
     # Test arg parsing
 
-    resp = test_flask_client.get(f"{_ENDPOINT}?")
+    resp = test_flask_client.get(f"{_ENDPOINT_PATH}?")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
-    callsign = "T"
-    resp = test_flask_client.get(f"{_ENDPOINT}?{api_utils.CALLSIGN_LABEL}={callsign}")
+    resp = test_flask_client.get(f"{_ENDPOINT_PATH}?{utils.CALLSIGN_LABEL}=T")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert api_utils.CALLSIGN_LABEL in resp.json["message"]
+    assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    # Test aircraft exists check
+    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    callsign = "AAA"
-    resp = test_flask_client.get(f"{_ENDPOINT}?{api_utils.CALLSIGN_LABEL}={callsign}")
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
+        mock_sim_proxy = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = mock_sim_proxy
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
 
-    # Test response units
+        # Test aircraft exists check
 
-    callsign = "TEST"
-    args = f"?{api_utils.CALLSIGN_LABEL}={callsign}"
+        with api.FLASK_APP.test_request_context():
+            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
 
-    resp = test_flask_client.get(f"{_ENDPOINT}{args}")
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.json[callsign]["fl_current"] == 18_500
-    assert resp.json[callsign]["fl_cleared"] == 22_000
-    assert resp.json[callsign]["fl_requested"] == 25_300
+        api_path = (
+            f"{_ENDPOINT_PATH}?{utils.CALLSIGN_LABEL}={TEST_AIRCRAFT_PROPS.callsign}"
+        )
+        resp = test_flask_client.get(api_path)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Missing aircraft"
+
+        # Test error response from get_properties
+
+        utils_patch.check_exists.return_value = None
+        mock_sim_proxy.aircraft.get_properties.return_value = "Error"
+
+        resp = test_flask_client.get(api_path)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert (
+            resp.data.decode()
+            == f"Couldn't get properties for {TEST_AIRCRAFT_PROPS.callsign}: Error"
+        )
+
+        # Test valid response
+
+        mock_sim_proxy.aircraft.get_properties.return_value = TEST_AIRCRAFT_PROPS
+
+        resp = test_flask_client.get(api_path)
+        assert resp.status_code == HTTPStatus.OK
+        assert TEST_AIRCRAFT_PROPS.callsign in resp.json
+
+        props = resp.json[TEST_AIRCRAFT_PROPS.callsign]
+        assert props["fl_current"] == TEST_AIRCRAFT_PROPS.altitude.feet
+        assert props["fl_cleared"] == TEST_AIRCRAFT_PROPS.cleared_flight_level.feet
+        assert props["fl_requested"] == TEST_AIRCRAFT_PROPS.requested_flight_level.feet

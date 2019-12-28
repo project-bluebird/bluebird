@@ -27,16 +27,13 @@ _PARSER_GET.add_argument(
 
 
 class Alt(Resource):
-    """
-    ALT (altitude) command
-    """
+    """ALT (altitude) command"""
 
     @staticmethod
     def post():
         """
         Logic for POST events. If the request contains an existing aircraft ID, then a
-        request is sent to alter its altitude.
-        :return:
+        request is sent to alter its altitude
         """
 
         req_args = utils.parse_args(_PARSER_POST)
@@ -55,7 +52,6 @@ class Alt(Resource):
         Logic for GET events. If the request contains an identifier to an existing
         aircraft, then its current, requested, and cleared flight levels are returned
         (if they can be determined)
-        :return:
         """
 
         req_args = utils.parse_args(_PARSER_GET)
@@ -69,7 +65,7 @@ class Alt(Resource):
 
         if not isinstance(aircraft_props, AircraftProperties):
             return responses.internal_err_resp(
-                f"Could not get properties for {callsign}: {aircraft_props}"
+                f"Couldn't get properties for {callsign}: {aircraft_props}"
             )
 
         # TODO Check units (from BlueSky) - should be meters, but have changed to feet

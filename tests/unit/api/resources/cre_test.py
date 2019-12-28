@@ -11,73 +11,77 @@ import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
 
 from tests.unit import API_PREFIX
+from tests.unit.api.resources import patch_path
+
+
+_ENDPOINT = "cre"
 
 
 def test_cre_post(test_flask_client):
     """Tests the POST method"""
 
-    endpoint = f"{API_PREFIX}/cre"
+    endpoint_path = f"{API_PREFIX}/{_ENDPOINT}"
 
     # Test arg parsing
 
     data = {}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert utils.CALLSIGN_LABEL in resp.json["message"]
 
     callsign = "T"
     data = {utils.CALLSIGN_LABEL: callsign}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert utils.CALLSIGN_LABEL in resp.json["message"]
 
     callsign = "AAA"
     data = {utils.CALLSIGN_LABEL: callsign}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "type" in resp.json["message"]
 
     data["type"] = ""
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "lat" in resp.json["message"]
 
     data["lat"] = 91
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "lon" in resp.json["message"]
 
     data["lon"] = 181
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "hdg" in resp.json["message"]
 
     data["hdg"] = "aaa"
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.json["message"]["hdg"] == "Heading must be an int"
 
     data["hdg"] = 123
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "alt" in resp.json["message"]
 
     data["alt"] = -1
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.json["message"]["alt"] == "Altitude must be positive"
 
     data["alt"] = "FL100"
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "gspd" in resp.json["message"]
 
     data["gspd"] = "..."
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(endpoint_path, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.json["message"]["gspd"] == "Ground speed must be numeric"
 
-    with mock.patch("bluebird.api.resources.cre.utils", wraps=utils) as utils_patch:
+    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
 
@@ -98,7 +102,7 @@ def test_cre_post(test_flask_client):
             "gspd": 50,
         }
 
-        resp = test_flask_client.post(endpoint, json=data)
+        resp = test_flask_client.post(endpoint_path, json=data)
         assert resp.status_code == HTTPStatus.BAD_REQUEST
         assert resp.data.decode() == "Missing aircraft"
 
@@ -109,14 +113,14 @@ def test_cre_post(test_flask_client):
         data[utils.CALLSIGN_LABEL] = "AAA"
         data["lat"] = -91
 
-        resp = test_flask_client.post(endpoint, json=data)
+        resp = test_flask_client.post(endpoint_path, json=data)
         assert resp.status_code == HTTPStatus.BAD_REQUEST
         assert resp.data.decode().startswith("Invalid LatLon")
 
         # Test type check
 
         data["lat"] = 0
-        resp = test_flask_client.post(endpoint, json=data)
+        resp = test_flask_client.post(endpoint_path, json=data)
         assert resp.status_code == HTTPStatus.BAD_REQUEST
         assert resp.data.decode().startswith("Aircraft type must be specified")
 
@@ -129,7 +133,7 @@ def test_cre_post(test_flask_client):
 
         data["type"] = "TEST"
 
-        resp = test_flask_client.post(endpoint, json=data)
+        resp = test_flask_client.post(endpoint_path, json=data)
         assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert resp.data.decode() == "Couldn't create aircraft"
 
@@ -137,5 +141,5 @@ def test_cre_post(test_flask_client):
 
         mock_sim_proxy.aircraft.create.return_value = None
 
-        resp = test_flask_client.post(endpoint, json=data)
+        resp = test_flask_client.post(endpoint_path, json=data)
         assert resp.status_code == HTTPStatus.CREATED
