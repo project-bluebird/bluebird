@@ -1,15 +1,20 @@
 {
+    "type": "FeatureCollection",
     "features": [
         {
             "type": "Feature",
-            "geometry": {},
             "properties": {
                 "name": "test_sector",
                 "type": "SECTOR",
+                "shape": "I",
+                "origin": [
+                    -0.1275,
+                    51.5
+                ],
                 "children": {
                     "SECTOR_VOLUME": {
                         "names": [
-                            "221395673130872533"
+                            "-14746818374995097"
                         ]
                     },
                     "ROUTE": {
@@ -19,7 +24,8 @@
                         ]
                     }
                 }
-            }
+            },
+            "geometry": {}
         },
         {
             "type": "Feature",
@@ -51,7 +57,7 @@
                 ]
             },
             "properties": {
-                "name": "221395673130872533",
+                "name": "-14746818374995097",
                 "type": "SECTOR_VOLUME",
                 "lower_limit": 60,
                 "upper_limit": 460,
@@ -214,5 +220,6 @@
                 ]
             }
         }
-    ]
+    ],
+    "_source": "https://github.com/alan-turing-institute/aviary/blob/e28c465512b6c00d57f7a3a3a925fc2622883af4/aviary/test/conftest.py"
 }
