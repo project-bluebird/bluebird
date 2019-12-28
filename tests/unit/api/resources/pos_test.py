@@ -5,15 +5,11 @@ Tests for the POS endpoint
 import datetime
 from http import HTTPStatus
 
-import pytest
-
 import bluebird.api.resources.utils.utils as api_utils
 import bluebird.utils.types as types
 from bluebird.utils.properties import SimProperties, SimState, AircraftProperties
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
-
 
 _ENDPOINT = f"{API_PREFIX}/pos"
 
@@ -74,13 +70,6 @@ class MockSimulatorControls:
 
     def __init__(self):
         self._props_called = False
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(MockAircraftControls(), MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
 def test_pos_get_single(test_flask_client, _set_bb_app):

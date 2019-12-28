@@ -13,11 +13,11 @@ import pytest
 
 from bluebird.api.resources.loadlog import parse_lines
 import bluebird.api.resources.utils.utils as api_utils
-from bluebird.utils.properties import SimProperties, SimMode, SimState
-from bluebird.settings import Settings
+from bluebird.utils.properties import SimProperties, SimState
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird, MockSimProxy
+
+# from tests.unit.api import MockBlueBird, MockSimProxy
 
 
 _TEST_FILE = "tests/unit/api/testEpisode.log"
@@ -78,15 +78,6 @@ class MockSimulatorControls:
     def set_speed(self, speed: float):
         assert isinstance(speed, float)
         self.speed_set = True
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    setattr(MockSimProxy, "set_mode", lambda x, y: None)
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
-    Settings.SIM_MODE = SimMode.Agent
 
 
 def test_parse_lines():

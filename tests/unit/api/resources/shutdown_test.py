@@ -4,12 +4,8 @@ Tests for the SHUTDOWN endpoint
 
 from http import HTTPStatus
 
-import pytest
-
-import bluebird.api.resources.utils.utils as api_utils
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird, MockSimProxy
 
 
 def _mock_shutdown(self, shutdown_sim: bool = False) -> bool:
@@ -19,14 +15,6 @@ def _mock_shutdown(self, shutdown_sim: bool = False) -> bool:
         _mock_shutdown._called_flag = True
         return False
     return True
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    setattr(MockSimProxy, "shutdown", _mock_shutdown)
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, None, None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
 # TODO(RKM 2019-11-18) Find some way of patching the request.environ

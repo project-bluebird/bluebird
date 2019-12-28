@@ -6,7 +6,7 @@ from http import HTTPStatus
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
+import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
 from bluebird.utils.types import Callsign, Altitude, LatLon, Heading, GroundSpeed
 
@@ -46,11 +46,8 @@ class Cre(Resource):
         if not isinstance(position_or_resp, LatLon):
             return position_or_resp
 
-        if req_args["gspd"].meters_per_sec <= 0:
-            return bad_request_resp("Speed must be positive")
-
         if not req_args["type"]:
-            return bad_request_resp("Aircraft type must be specified")
+            return responses.bad_request_resp("Aircraft type must be specified")
 
         err = utils.sim_proxy().aircraft.create(
             callsign,
@@ -61,4 +58,4 @@ class Cre(Resource):
             req_args["gspd"],
         )
 
-        return checked_resp(err, HTTPStatus.CREATED)
+        return responses.checked_resp(err, HTTPStatus.CREATED)

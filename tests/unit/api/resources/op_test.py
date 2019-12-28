@@ -4,14 +4,10 @@ Tests for the OP endpoint
 
 from http import HTTPStatus
 
-import pytest
-
-import bluebird.api.resources.utils.utils as api_utils
 import bluebird.settings as settings
 from bluebird.utils.properties import SimMode
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
 
 
 _ENDPOINT = f"{API_PREFIX}/op"
@@ -26,13 +22,6 @@ class MockSimulatorControls:
             self._reset_flag = True
             return "Error: Couldn't resume simulation"
         return None
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
 def test_op_post_agent_mode(test_flask_client, _set_bb_app):

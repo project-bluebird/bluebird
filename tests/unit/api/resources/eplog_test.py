@@ -6,13 +6,10 @@ import os
 from pathlib import Path
 from http import HTTPStatus
 
-import pytest
 
-import bluebird.api.resources.utils.utils as api_utils
 import bluebird.logging as bb_logging
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
 
 
 class MockSimulatorControls:
@@ -24,13 +21,6 @@ class MockSimulatorControls:
             return None
         self._reset_flag = True
         return "Error!"
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
 def test_eplog_get(test_flask_client, _set_bb_app):

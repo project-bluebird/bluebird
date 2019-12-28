@@ -5,14 +5,12 @@ Tests for the IC endpoint
 import datetime
 from http import HTTPStatus
 
-import pytest
 
 import bluebird.api.resources.utils.utils as api_utils
 import bluebird.settings as settings
 from bluebird.utils.properties import SimMode, SimProperties, SimState
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
 
 
 _ENDPOINT = f"{API_PREFIX}/ic"
@@ -50,13 +48,6 @@ class MockSimulatorControls:
             "speed": speed,
             "start_paused": start_paused,
         }
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
 
 
 def test_ic_get(test_flask_client, _set_bb_app):

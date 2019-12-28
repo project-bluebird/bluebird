@@ -4,13 +4,9 @@ Tests for the DEFWPT endpoint
 
 from http import HTTPStatus
 
-import pytest
-
-import bluebird.api.resources.utils.utils as api_utils
 import bluebird.utils.types as types
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird, TEST_LAT, TEST_LON
 
 
 class MockWaypointControls:
@@ -29,13 +25,6 @@ class MockWaypointControls:
         self.last_wpt = {"name": name, "position": position, **kwargs}
 
 
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, None, MockWaypointControls())
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
-
-
 def test_defwpt_post(test_flask_client, _set_bb_app):
     """
     Tests the POST method
@@ -48,7 +37,7 @@ def test_defwpt_post(test_flask_client, _set_bb_app):
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
-    data = {"wpname": "", "lat": 91, "lon": TEST_LON}
+    data = {"wpname": "", "lat": 91, "lon": "1.23"}
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "Waypoint name must be provided"
@@ -62,7 +51,7 @@ def test_defwpt_post(test_flask_client, _set_bb_app):
 
     # Test define_waypoint
 
-    data["lat"] = TEST_LAT
+    data["lat"] = "1.23"
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.CREATED
 
