@@ -4,94 +4,79 @@ Tests for the ADDWPT endpoint
 
 from http import HTTPStatus
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.utils.types as types
+import mock
+
+import bluebird.api as api
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import bad_request_resp
+
 
 from tests.unit import API_PREFIX
 
 
-class MockAircraftControls:
-    """Mock WaypointControls for the DEFWPT tests"""
-
-    def __init__(self):
-        self._waypoint_added = False
-
-    def exists(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        return (
-            "Error: Invalid callsign"
-            if str(callsign) == "ERR"
-            # "TEST*" aircraft exist, all others do not
-            else str(callsign).upper().startswith("TEST")
-        )
-
-    def add_waypoint_to_route(
-        self, callsign: types.Callsign, waypoint: types.Waypoint, **kwargs
-    ):
-        assert isinstance(callsign, types.Callsign)
-        assert isinstance(waypoint, types.Waypoint)
-        assert "spd" in kwargs
-        if not self._waypoint_added:
-            self._waypoint_added = True
-            return "Error: Invalid waypoint"
-        return None
+_ENDPOINT = f"{API_PREFIX}/addwpt"
 
 
-class MockWaypointControls:
-    """Mock WaypointControls for the DEFWPT tests"""
-
-    def find(self, waypoint_name: str):
-        assert isinstance(waypoint_name, str)
-        return (
-            types.Waypoint(waypoint_name, types.LatLon(45, 90), None)
-            if waypoint_name.startswith("FIX")
-            else None
-        )
-
-
-def test_addwpt_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
-
-    endpoint = f"{API_PREFIX}/addwpt"
+def test_addwpt_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test arg parsing
 
-    resp = test_flask_client.post(endpoint)
+    resp = test_flask_client.post(_ENDPOINT)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
-    data = {api_utils.CALLSIGN_LABEL: "AAA"}
+    data = {utils.CALLSIGN_LABEL: "AAA"}
 
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "waypoint" in resp.json["message"]
 
     # Test waypoint name check
 
     data["waypoint"] = ""
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "A waypoint name must be provided"
 
-    # Test aircraft exists check
+    with mock.patch("bluebird.api.resources.addwpt.utils", wraps=utils) as utils_patch:
 
-    data["waypoint"] = "FAKE"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
+        mock_sim_proxy = mock.MagicMock()
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        utils_patch.sim_proxy.return_value = mock_sim_proxy
 
-    # Test find waypoint by name
+        # Test aircraft exists check
 
-    data[api_utils.CALLSIGN_LABEL] = "TEST"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Could not find waypoint FAKE"
+        with api.FLASK_APP.test_request_context():
+            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
 
-    data["waypoint"] = "FIX1"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Invalid waypoint"
+        data["waypoint"] = "FAKE"
+        resp = test_flask_client.post(_ENDPOINT, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Missing aircraft"
 
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.OK
+        # Test missing waypoint handling
+
+        utils_patch.check_exists.return_value = None
+        mock_sim_proxy.waypoints.find.return_value = None
+
+        data[utils.CALLSIGN_LABEL] = "TEST"
+        resp = test_flask_client.post(_ENDPOINT, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == 'Could not find waypoint "FAKE"'
+
+        # Test error from add_waypoint_to_route
+
+        mock_sim_proxy.waypoints.find.return_value = True
+        mock_sim_proxy.aircraft.add_waypoint_to_route.return_value = (
+            "Couldn't add to route"
+        )
+
+        resp = test_flask_client.post(_ENDPOINT, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't add to route"
+
+        # Test valid response
+
+        mock_sim_proxy.aircraft.add_waypoint_to_route.return_value = None
+        resp = test_flask_client.post(_ENDPOINT, json=data)
+        assert resp.status_code == HTTPStatus.OK

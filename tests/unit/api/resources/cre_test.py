@@ -122,10 +122,10 @@ def test_cre_post(test_flask_client):
 
         # Test error response from aircraft creation
 
-        mock_proxy = mock.MagicMock()
-        utils_patch.sim_proxy.return_value = mock_proxy
+        mock_sim_proxy = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = mock_sim_proxy
 
-        mock_proxy.aircraft.create.return_value = "Couldn't create aircraft"
+        mock_sim_proxy.aircraft.create.return_value = "Couldn't create aircraft"
 
         data["type"] = "TEST"
 
@@ -135,7 +135,7 @@ def test_cre_post(test_flask_client):
 
         # Test valid aircraft creation
 
-        mock_proxy.aircraft.create.return_value = None
+        mock_sim_proxy.aircraft.create.return_value = None
 
         resp = test_flask_client.post(endpoint, json=data)
         assert resp.status_code == HTTPStatus.CREATED

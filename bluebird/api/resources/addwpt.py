@@ -21,16 +21,13 @@ _PARSER.add_argument("gspd", type=types.GroundSpeed, location="json", required=F
 
 
 class AddWpt(Resource):
-    """
-    BlueSky ADDWPT (add waypoint to route) command
-    """
+    """ADDWPT (add waypoint to route) command"""
 
     @staticmethod
     def post():
         """
         Logic for POST events. If the request is valid, then the specified waypoint is
         added to the aircraft's route
-        :return:
         """
 
         req_args = utils.parse_args(_PARSER)
@@ -46,7 +43,9 @@ class AddWpt(Resource):
 
         waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
         if not waypoint:
-            return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
+            return responses.bad_request_resp(
+                f'Could not find waypoint "{waypoint_str}"'
+            )
 
         err = utils.sim_proxy().aircraft.add_waypoint_to_route(
             callsign, waypoint, spd=req_args["gspd"]
