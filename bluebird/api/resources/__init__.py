@@ -21,11 +21,11 @@ from .ic import Ic
 from .loadlog import LoadLog
 from .op import Op
 from .reset import Reset
+from .scenario import Scenario
 from .sector import Sector
 from .seed import Seed
 from .step import Step
 from .time import Time
-from .upload_scenario import UploadScenario
 
 # BlueBird control
 from .epinfo import EpInfo
@@ -55,11 +55,11 @@ __all__ = [
     "LoadLog",
     "Op",
     "Reset",
+    "Scenario",
     "Sector",
     "Seed",
     "Step",
     "Time",
-    "UploadScenario",
     "EpInfo",
     "EpLog",
     "SimInfo",

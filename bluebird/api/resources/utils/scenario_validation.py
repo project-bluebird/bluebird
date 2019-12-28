@@ -16,6 +16,7 @@ _SCENARIO_SCHEMA = {
         "aircraft": {"type": "array", "items": {"$ref": "#/definitions/aircraft"}},
         "startTime": {"type": "string", "pattern": _START_TIME_RE},
     },
+    "required": ["aircraft", "startTime"],
     "additionalProperties": False,
     "definitions": {
         "aircraft": {

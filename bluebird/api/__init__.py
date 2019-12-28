@@ -97,11 +97,11 @@ FLASK_API.add_resource(res.Ic, "/ic")
 FLASK_API.add_resource(res.LoadLog, "/loadlog")
 FLASK_API.add_resource(res.Op, "/op")
 FLASK_API.add_resource(res.Reset, "/reset")
+FLASK_API.add_resource(res.Scenario, "/scenario")
 FLASK_API.add_resource(res.Sector, "/sector")
 FLASK_API.add_resource(res.Seed, "/seed")
 FLASK_API.add_resource(res.Step, "/step")
 FLASK_API.add_resource(res.Time, "/time")
-FLASK_API.add_resource(res.UploadScenario, "/uploadScenario")
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')

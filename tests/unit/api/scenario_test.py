@@ -2,32 +2,18 @@
 Tests for the SCENARIO endpoint
 """
 
+import json
 from http import HTTPStatus
 
-import pytest
+import mock
 
-import bluebird.api.resources.utils.utils as api_utils
+import bluebird.api.resources.utils.utils as original_utils
 
 from tests.unit import API_PREFIX
-from tests.unit.api import MockBlueBird
 
 
-class MockSimulatorControls:
-    # TODO(RKM 2019-11-18) Will need - supload_new_scenario, load_scenario
-    pass
-
-
-@pytest.fixture
-def _set_bb_app(monkeypatch):
-    mock = MockBlueBird()
-    mock.sim_proxy.set_props(None, MockSimulatorControls(), None)
-    monkeypatch.setattr(api_utils, "_bb_app", lambda: mock)
-
-
-def test_scenario_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+def test_scenario_post(test_flask_client):
+    """Tests the POST method"""
 
     endpoint = f"{API_PREFIX}/scenario"
 
@@ -35,72 +21,59 @@ def test_scenario_post(test_flask_client, _set_bb_app):
 
     resp = test_flask_client.post(endpoint)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert "scn_name" in resp.json["message"]
+    assert "name" in resp.json["message"]
 
-    data = {"scn_name": ""}
+    data = {"name": ""}
     resp = test_flask_client.post(endpoint, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "content" in resp.json["message"]
 
-    # Test scn_name check
+    with mock.patch(
+        "bluebird.api.resources.scenario.utils", wraps=original_utils
+    ) as utils:
 
-    data["content"] = [""]
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == "Scenario name must be provided"
+        mock_proxy = mock.MagicMock()
+        utils.sim_proxy.return_value = mock_proxy
 
-    data["scn_name"] = "TEST"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
+        # Test no sector set
 
-    # TODO: Update this once the GeoJSON upload is implemented
-    assert (
-        resp.data.decode()
-        == "Invalid scenario content: validate_scenario is depreciated"
-    )
+        mock_proxy.sector = None
 
+        data["content"] = ""
+        resp = test_flask_client.post(endpoint, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode().startswith("A sector definition is required")
 
-# def test_scenario_endpoint(test_flask_client):
-#     """
-#     Tests the create scenario endpoint
-#     :param test_flask_client
-#     :return:
-#     """
+        # Test name check
 
-#     resp = test_flask_client.post(API_PREFIX + "/scenario")
-#     assert resp.status == "400 BAD REQUEST"
+        mock_proxy.sector = True
 
-#     data = {"scn_name": "new-scenario", "content": []}
+        resp = test_flask_client.post(endpoint, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Scenario name must be provided"
 
-#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
-#     assert resp.status == "400 BAD REQUEST"
+        # Test validate_json_scenario
 
-#     data["content"] = ["invalid", "invalid"]
+        data["name"] = "TEST"
+        resp = test_flask_client.post(endpoint, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode().startswith("Invalid scenario content")
 
-#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
-#     assert resp.status == "400 BAD REQUEST"
+        # Test error from upload_new_scenario
 
-#     data["content"] = [
-#         "00:00:00>CRE TEST A320 0 0 0 0",
-#         "00:00:00 > CRE TEST A320 0 0 0 0",
-#     ]
+        mock_proxy.simulation.upload_new_scenario.return_value = (
+            "Couldn't upload scenario"
+        )
 
-#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
-#     assert resp.status == "201 CREATED"
+        with open("tests/data/test_scenario.json", "r") as f:
+            data = {"name": "test", "content": json.load(f)}
 
-#     data["start_new"] = True
-#     data["start_dtmult"] = 1.23
+        resp = test_flask_client.post(endpoint, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode().startswith("Couldn't upload scenario")
 
-#     resp = test_flask_client.post(API_PREFIX + "/scenario", json=data)
-#     assert resp.status == "200 OK"
+        # Test valid response
 
-#     assert (
-#         bb_app().sim_client.last_scenario == "new-scenario.scn"
-#     ), "Expected the filename to be loaded"
-#     assert bb_app().sim_client.last_dtmult == 1.23, "Expected the dtmult to be set"
-
-#     # Remove the test file from the BlueSky submodule
-#     try:
-#         os.remove("bluesky/scenario/new-scenario.scn")
-#     except OSError:
-#         pass
+        mock_proxy.simulation.upload_new_scenario.return_value = None
+        resp = test_flask_client.post(endpoint, json=data)
+        assert resp.status_code == HTTPStatus.CREATED
