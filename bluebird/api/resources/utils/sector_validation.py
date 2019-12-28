@@ -21,7 +21,7 @@ _SECTOR_SCHEMA = {
         # NOTE(RKM 2019-12-28) Only used for debugging
         "_source": {"type": "string"},
     },
-    "required": ["features"],
+    "required": ["features", "type"],
     "additionalProperties": False,
     "definitions": {
         "feature": {

@@ -13,6 +13,7 @@ Contains the SimProxy class
 import logging
 from dataclasses import dataclass
 from typing import Iterable
+from typing import Optional
 
 from aviary.sector.sector_element import SectorElement
 from semver import VersionInfo
@@ -110,7 +111,7 @@ class SimProxy(AbstractSimClient):
         """Calls the metric specified"""
         return provider(metric_name, *args, aircraft_controls=self.aircraft)
 
-    def set_sector(self, name: str, element: SectorElement):
+    def set_sector(self, sector: Sector) -> Optional[str]:
         """Updates the current sector and sends it to the sim"""
-        self._sector = Sector(name, element)
+        self._sector = sector
         # TODO(RKM 2019-12-20) Update the sim

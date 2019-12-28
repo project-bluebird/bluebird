@@ -32,13 +32,13 @@ class Sector(Resource):
         sector: Proxy_Sector = utils.sim_proxy().sector
 
         if not sector:
-            return responses.internal_err_resp("No sector has been set")
+            return responses.bad_request_resp("No sector has been set")
 
         # TODO (RKM 2019-12-20) Check what exceptions this can throw
         try:
             geojson = sector.element.sector_geojson()
         except Exception as exc:
-            return responses.bad_request_resp(f"Couldn't get sector geojson: {exc}")
+            return responses.internal_err_resp(f"Couldn't get sector geojson: {exc}")
 
         return responses.ok_resp({"name": sector.name, "content": geojson})
 
@@ -48,7 +48,7 @@ class Sector(Resource):
 
         req_args = utils.parse_args(_PARSER)
 
-        sector_name = req_args["sector_name"]
+        sector_name = req_args["name"]
 
         if not sector_name:
             return responses.bad_request_resp("Sector name must be provided")
@@ -57,5 +57,5 @@ class Sector(Resource):
         if not isinstance(sector, SectorElement):
             return responses.bad_request_resp(f"Invalid scenario content: {sector}")
 
-        err = utils.sim_proxy().set_sector(sector_name, sector)
+        err = utils.sim_proxy().set_sector(Proxy_Sector(sector_name, sector))
         return responses.checked_resp(err, HTTPStatus.CREATED)
