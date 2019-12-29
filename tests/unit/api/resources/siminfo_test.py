@@ -2,84 +2,62 @@
 Tests for the SIMINFO endpoint
 """
 
-import datetime
 from http import HTTPStatus
 
-from bluebird.utils.properties import SimProperties, SimState
+import mock
+
+from bluebird.settings import Settings
 from bluebird.utils.types import Callsign
 
-from tests.unit import API_PREFIX
-
-_DATETIME = datetime.datetime.now()
-
-
-class MockAircraftControls:
-    @property
-    def callsigns(self):
-        if not self._call_count:
-            self._call_count = 1
-            return "Error"
-        self._call_count += 1
-        return [] if self._call_count < 3 else [Callsign("TEST1"), Callsign("TEST2")]
-
-    def __init__(self):
-        self._call_count = None
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
+from tests.unit.api.resources import TEST_SIM_PROPS
 
 
-class MockSimulatorControls:
-    @property
-    def properties(self):
-        if not self._props_called:
-            self._props_called = True
-            return "Error"
-        return SimProperties(
-            scenario_name="TEST",
-            scenario_time=0,
-            seed=0,
-            speed=1.0,
-            state=SimState.INIT,
-            step_size=1.0,
-            utc_time=_DATETIME,
-        )
-
-    def __init__(self):
-        self._props_called = False
+_ENDPOINT = "siminfo"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_siminfo_get(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+def test_siminfo_get(test_flask_client):
+    """Tests the POST method"""
 
-    endpoint = f"{API_PREFIX}/siminfo"
+    with mock.patch(patch_utils_path(_ENDPOINT)) as utils_patch:
 
-    resp = test_flask_client.get(endpoint)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Couldn't get the sim properties: Error"
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.get(endpoint)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Couldn't get the callsigns: Error"
+        # Test error from simulation properties
 
-    resp = test_flask_client.get(endpoint)
-    assert resp.status_code == HTTPStatus.OK
+        sim_proxy_mock.simulation.properties = "Error"
 
-    expected = {
-        "callsigns": [],
-        "mode": "Sandbox",
-        "scenario_name": "TEST",
-        "scenario_time": 0,
-        "seed": 0,
-        "sim_type": "BlueSky",
-        "speed": 1.0,
-        "state": "INIT",
-        "step_size": 1.0,
-        "utc_time": str(_DATETIME)[:-7],
-    }
-    assert resp.json == expected
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't get the sim properties: Error"
 
-    resp = test_flask_client.get(endpoint)
-    assert resp.status_code == HTTPStatus.OK
+        # Test error from aircraft callsigns
 
-    expected["callsigns"] = ["TEST1", "TEST2"]
-    assert resp.json == expected
+        sim_proxy_mock.simulation.properties = TEST_SIM_PROPS
+        sim_proxy_mock.aircraft.callsigns = "Error"
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't get the callsigns: Error"
+
+        # Test valid response
+
+        sim_proxy_mock.aircraft.callsigns = [Callsign("AAA"), Callsign("BBB")]
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.OK
+        assert resp.json == {
+            "callsigns": ["AAA", "BBB"],
+            "mode": Settings.SIM_MODE.name,
+            "scenario_name": "TEST",
+            "scenario_time": 0,
+            "seed": 0,
+            "sim_type": "BlueSky",
+            "speed": 1.0,
+            "state": "INIT",
+            "step_size": 1.0,
+            "utc_time": str(TEST_SIM_PROPS.utc_time)[:-7],
+        }

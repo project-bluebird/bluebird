@@ -18,16 +18,11 @@ _PARSER.add_argument(
 
 
 class Pos(Resource):
-    """
-    POS (position) command
-    """
+    """POS (position) command"""
 
     @staticmethod
     def get():
-        """
-        Logic for GET events. Returns properties for the specified aircraft
-        :return:
-        """
+        """Logic for GET events. Returns properties for the specified aircraft"""
 
         req_args = utils.parse_args(_PARSER)
         callsign = req_args[utils.CALLSIGN_LABEL]
@@ -45,10 +40,8 @@ class Pos(Resource):
             if not isinstance(props, AircraftProperties):
                 return internal_err_resp(props)
 
-            data = {
-                **utils.convert_aircraft_props(props),
-                "scenario_time": sim_props.scenario_time,
-            }
+            data = utils.convert_aircraft_props(props)
+            data.update({"scenario_time": sim_props.scenario_time})
 
             return responses.ok_resp(data)
 
@@ -57,7 +50,7 @@ class Pos(Resource):
         props = utils.sim_proxy().aircraft.all_properties
         if isinstance(props, str):
             return responses.internal_err_resp(
-                f"Couldn't get all the aircraft properties: {props}"
+                f"Couldn't get the aircraft properties: {props}"
             )
         if not props:
             return responses.bad_request_resp("No aircraft in the simulation")

@@ -4,66 +4,62 @@ Tests for the SPD endpoint
 
 from http import HTTPStatus
 
+import mock
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.utils.types as types
+import bluebird.api as api
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import bad_request_resp
 
-from tests.unit import API_PREFIX
-
-
-class MockAircraftControls:
-    def __init__(self):
-        self.last_ground_speed = None
-
-    def exists(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        # "TEST*" aircraft exist, all others do not
-        return str(callsign).upper().startswith("TEST")
-
-    def set_ground_speed(
-        self, callsign: types.Callsign, ground_speed: types.GroundSpeed
-    ):
-        assert isinstance(callsign, types.Callsign)
-        assert isinstance(ground_speed, types.GroundSpeed)
-        if not self.last_ground_speed:
-            self.last_ground_speed = True
-            return "Error: Couldn't set ground speed"
-        self.last_ground_speed = ground_speed
-        return None
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
-def test_spd_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+_ENDPOINT = "spd"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
-    endpoint = f"{API_PREFIX}/spd"
+
+def test_spd_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test arg parsing
 
-    resp = test_flask_client.post(endpoint)
+    resp = test_flask_client.post(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert api_utils.CALLSIGN_LABEL in resp.json["message"]
+    assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    data = {api_utils.CALLSIGN_LABEL: "AAA"}
-    resp = test_flask_client.post(endpoint, json=data)
+    data = {utils.CALLSIGN_LABEL: "AAA"}
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "spd" in resp.json["message"]
 
-    # Test callsign exists check
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    data["spd"] = 123
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == 'Aircraft "AAA" does not exist'
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        sim_proxy_patch = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_patch
 
-    # Test set_ground_speed
+        # Test callsign exists check
 
-    data[api_utils.CALLSIGN_LABEL] = "TEST"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't set ground speed"
+        with api.FLASK_APP.test_request_context():
+            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
 
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.OK
-    assert api_utils.sim_proxy().aircraft.last_ground_speed == types.GroundSpeed(123)
+        data["spd"] = 123
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Missing aircraft"
+
+        # Test error from set_ground_speed
+
+        utils_patch.check_exists.return_value = None
+        sim_proxy_patch.aircraft.set_ground_speed.return_value = "Error"
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Error"
+
+        # Test valid response
+
+        sim_proxy_patch.aircraft.set_ground_speed.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.OK

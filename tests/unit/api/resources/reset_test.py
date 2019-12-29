@@ -4,32 +4,33 @@ Tests for the RESET endpoint
 
 from http import HTTPStatus
 
-from tests.unit import API_PREFIX
+import mock
+
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
-class MockSimulatorControls:
-    def __init__(self):
-        self._reset_flag = False
-
-    def reset(self):
-        if not self._reset_flag:
-            self._reset_flag = True
-            return "Error: Couldn't reset sim"
-        return None
+_ENDPOINT = "reset"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_reset_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+def test_reset_post(test_flask_client):
+    """Tests the POST method"""
 
-    endpoint = f"{API_PREFIX}/reset"
+    with mock.patch(patch_utils_path(_ENDPOINT)) as utils_patch:
 
-    # Test mode check
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.post(endpoint)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't reset sim"
+        # Test error from simulation reset
 
-    resp = test_flask_client.post(endpoint)
-    assert resp.status_code == HTTPStatus.OK
+        sim_proxy_mock.simulation.reset.return_value = "Error"
+
+        resp = test_flask_client.post(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Error"
+
+        sim_proxy_mock.simulation.reset.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.OK

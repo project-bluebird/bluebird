@@ -88,9 +88,7 @@ def parse_lines(lines: list, target_time: int = 0) -> Union[str, dict]:
 
 
 class LoadLog(Resource):
-    """
-    Contains logic for the Load Log endpoint
-    """
+    """Contains logic for the Load Log endpoint"""
 
     @staticmethod
     @timeit("LoadLog")

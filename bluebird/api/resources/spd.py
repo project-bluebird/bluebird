@@ -20,16 +20,13 @@ _PARSER.add_argument("spd", type=GroundSpeed, location="json", required=True)
 
 
 class Spd(Resource):
-    """
-    Contains logic for the SPD endpoint
-    """
+    """Contains logic for the SPD endpoint"""
 
     @staticmethod
     def post():
         """
         Logic for POST events. If the request contains an existing aircraft ID, then a
         request is sent to alter its horizontal speed
-        :return:
         """
 
         req_args = utils.parse_args(_PARSER)

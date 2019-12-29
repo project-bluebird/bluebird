@@ -4,45 +4,36 @@ Tests for the SHUTDOWN endpoint
 
 from http import HTTPStatus
 
-import bluebird.api.resources.utils.utils as api_utils
+import mock
 
-from tests.unit import API_PREFIX
+import bluebird.api.resources.utils.utils as utils
 
-
-class MockSimulatorControls:
-    def __init__(self):
-        self.last_seed = None
-
-    def set_seed(self, seed: int):
-        assert isinstance(seed, int)
-        if not self.last_seed:
-            self.last_seed = 1
-            return "Error: Couldn't set the seed"
-        self.last_seed = seed
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
-def test_seed_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+_ENDPOINT = "seed"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
-    endpoint = f"{API_PREFIX}/seed"
+
+def test_seed_post(test_flask_client):
+    """Tests the POST method """
 
     # Test arg parsing
 
-    resp = test_flask_client.post(endpoint)
+    resp = test_flask_client.post(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "value" in resp.json["message"]
 
     data = {"value": ""}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "value" in resp.json["message"]
 
     # Test seed range checking
 
     data = {"value": -1}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert (
         resp.data.decode()
@@ -50,22 +41,31 @@ def test_seed_post(test_flask_client, _set_bb_app):
     )
 
     data = {"value": 2 ** 32}  # Max value allowed by np.random.seed()
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert (
         resp.data.decode()
         == "Invalid seed specified. Must be a positive integer less than 2^32"
     )
 
-    # Test set_seed
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    data = {"value": 123}
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't set the seed"
+        # Test error from set_seed
 
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.OK
+        sim_proxy_mock.simulation.set_seed.return_value = "Error"
 
-    assert api_utils.sim_proxy().simulation.last_seed == 123
+        data = {"value": 123}
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Error"
+
+        # Test valid response
+
+        sim_proxy_mock.simulation.set_seed.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.OK

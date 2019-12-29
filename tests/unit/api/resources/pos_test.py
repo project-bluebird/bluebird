@@ -2,153 +2,119 @@
 Tests for the POS endpoint
 """
 
-import datetime
 from http import HTTPStatus
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.utils.types as types
-from bluebird.utils.properties import SimProperties, SimState, AircraftProperties
+import mock
 
-from tests.unit import API_PREFIX
+import bluebird.api as api
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import bad_request_resp
 
-_ENDPOINT = f"{API_PREFIX}/pos"
-
-
-class MockAircraftControls:
-    @property
-    def all_properties(self):
-        if not self._get_properties_called:
-            self._get_properties_called = True
-            return "Error"
-        all_props = {}
-        for i in range(2):
-            props = self.properties(types.Callsign(f"TEST{i}"))
-            all_props[str(props.callsign)] = props
-        return all_props
-
-    def __init__(self):
-        self._get_properties_called = False
-
-    def exists(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        # "TEST*" aircraft exist, all others do not
-        return str(callsign).upper().startswith("TEST")
-
-    def properties(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        if not self._get_properties_called:
-            self._get_properties_called = True
-            return "Invalid callsign"
-        return AircraftProperties(
-            "A380",
-            types.Altitude(18_500),
-            callsign,
-            types.Altitude(22_000),
-            types.GroundSpeed(53),
-            types.Heading(74),
-            types.LatLon(51.529761, -0.127531),
-            types.Altitude(25_300),
-            types.VerticalSpeed(73),
-        )
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
+from tests.unit.api.resources import TEST_AIRCRAFT_PROPS
+from tests.unit.api.resources import TEST_SIM_PROPS
 
 
-class MockSimulatorControls:
-    @property
-    def properties(self):
-        if not self._props_called:
-            self._props_called = True
-            return "Error: Couldn't get the sim properties"
-        return SimProperties(
-            scenario_name="TEST",
-            scenario_time=123.45,
-            seed=0,
-            speed=0,
-            state=SimState.INIT,
-            step_size=1.0,
-            utc_time=datetime.datetime.now(),
-        )
-
-    def __init__(self):
-        self._props_called = False
+_ENDPOINT = "pos"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_pos_get_single(test_flask_client, _set_bb_app):
+def test_pos_get_single(test_flask_client):
     """Tests the GET method with a single aircraft"""
 
-    arg_str = f"{_ENDPOINT}?{api_utils.CALLSIGN_LABEL}"
+    # Test arg parsing
+
+    endpoint_str = f"{_ENDPOINT_PATH}?{utils.CALLSIGN_LABEL}"
 
     callsign = ""
-    resp = test_flask_client.get(f"{arg_str}={callsign}")
+    resp = test_flask_client.get(f"{endpoint_str}={callsign}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert api_utils.CALLSIGN_LABEL in resp.json["message"]
+    assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    callsign = "FAKE"
-    resp = test_flask_client.get(f"{arg_str}={callsign}")
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't get the sim properties"
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    resp = test_flask_client.get(f"{arg_str}={callsign}")
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == 'Aircraft "FAKE" does not exist'
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    callsign = "TEST"
-    resp = test_flask_client.get(f"{arg_str}={callsign}")
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Invalid callsign"
+        # Test error from simulation properties
 
-    resp = test_flask_client.get(f"{arg_str}={callsign}")
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {
-        "TEST": {
-            "actype": "A380",
-            "cleared_fl": 22000,
-            "current_fl": 18500,
-            "gs": 53,
-            "hdg": 74,
-            "lat": 51.529761,
-            "lon": -0.127531,
-            "requested_fl": 25300,
-            "vs": 73,
-        },
-        "scenario_time": 123.45,
-    }
+        sim_proxy_mock.simulation.properties = "Error"
+
+        endpoint_str = f"{endpoint_str}=TEST"
+
+        resp = test_flask_client.get(endpoint_str)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Error"
+
+        # Test aircraft existence check
+
+        sim_proxy_mock.simulation.properties = TEST_SIM_PROPS
+
+        with api.FLASK_APP.test_request_context():
+            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
+
+        resp = test_flask_client.get(endpoint_str)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Missing aircraft"
+
+        # Test error from aircraft properties
+
+        utils_patch.check_exists.return_value = None
+        sim_proxy_mock.aircraft.properties.return_value = "Missing properties"
+
+        resp = test_flask_client.get(endpoint_str)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Missing properties"
+
+        # Test valid response
+
+        sim_proxy_mock.aircraft.properties.return_value = TEST_AIRCRAFT_PROPS
+
+        resp = test_flask_client.get(endpoint_str)
+        assert resp.status_code == HTTPStatus.OK
+        assert resp.json == {
+            **utils.convert_aircraft_props(TEST_AIRCRAFT_PROPS),
+            "scenario_time": TEST_SIM_PROPS.scenario_time,
+        }
 
 
-def test_pos_get_all(test_flask_client, _set_bb_app):
+def test_pos_get_all(test_flask_client):
     """Tests the GET method with all aircraft"""
 
-    resp = test_flask_client.get(_ENDPOINT)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't get the sim properties"
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    resp = test_flask_client.get(_ENDPOINT)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Couldn't get all the aircraft properties: Error"
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.get(_ENDPOINT)
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {
-        "TEST0": {
-            "actype": "A380",
-            "cleared_fl": 22000,
-            "current_fl": 18500,
-            "gs": 53,
-            "hdg": 74,
-            "lat": 51.529761,
-            "lon": -0.127531,
-            "requested_fl": 25300,
-            "vs": 73,
-        },
-        "TEST1": {
-            "actype": "A380",
-            "cleared_fl": 22000,
-            "current_fl": 18500,
-            "gs": 53,
-            "hdg": 74,
-            "lat": 51.529761,
-            "lon": -0.127531,
-            "requested_fl": 25300,
-            "vs": 73,
-        },
-        "scenario_time": 123.45,
-    }
+        # Test error from all_properties
+
+        sim_proxy_mock.simulation.properties = TEST_SIM_PROPS
+        sim_proxy_mock.aircraft.all_properties = "Error"
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't get the aircraft properties: Error"
+
+        # Test error when no aircraft
+
+        sim_proxy_mock.aircraft.all_properties = None
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "No aircraft in the simulation"
+
+        # Test valid response
+
+        sim_proxy_mock.aircraft.all_properties = {
+            str(TEST_AIRCRAFT_PROPS.callsign): TEST_AIRCRAFT_PROPS,
+        }
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.OK
+        assert resp.json == {
+            **utils.convert_aircraft_props(TEST_AIRCRAFT_PROPS),
+            **{"scenario_time": TEST_SIM_PROPS.scenario_time},
+        }

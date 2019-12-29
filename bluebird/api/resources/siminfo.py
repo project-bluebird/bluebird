@@ -4,8 +4,8 @@ SimInfo endpoint
 
 from flask_restful import Resource
 
-from bluebird.api.resources.utils.responses import ok_resp, internal_err_resp
-from bluebird.api.resources.utils.utils import sim_proxy
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
 from bluebird.utils.properties import SimProperties
 from bluebird.settings import Settings
 
@@ -14,13 +14,17 @@ class SimInfo(Resource):
     @staticmethod
     def get():
 
-        sim_props = sim_proxy().simulation.properties
+        sim_props = utils.sim_proxy().simulation.properties
         if not isinstance(sim_props, SimProperties):
-            return internal_err_resp(f"Couldn't get the sim properties: {sim_props}")
+            return responses.internal_err_resp(
+                f"Couldn't get the sim properties: {sim_props}"
+            )
 
-        callsigns = sim_proxy().aircraft.callsigns
+        callsigns = utils.sim_proxy().aircraft.callsigns
         if not isinstance(callsigns, list):
-            return internal_err_resp(f"Couldn't get the callsigns: {callsigns}")
+            return responses.internal_err_resp(
+                f"Couldn't get the callsigns: {callsigns}"
+            )
 
         data = {
             "callsigns": [str(x) for x in callsigns],
@@ -35,4 +39,4 @@ class SimInfo(Resource):
             "utc_time": str(sim_props.utc_time)[:-7],
         }
 
-        return ok_resp(data)
+        return responses.ok_resp(data)

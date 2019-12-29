@@ -4,22 +4,17 @@ Provides logic for the RESET API endpoint
 
 from flask_restful import Resource
 
-from bluebird.api.resources.utils.responses import checked_resp
-from bluebird.api.resources.utils.utils import sim_proxy
+import bluebird.api.resources.utils.responses as properties
+import bluebird.api.resources.utils.utils as utils
 
 
 class Reset(Resource):
-    """
-    RESET command
-    """
+    """RESET command"""
 
     @staticmethod
     def post():
-        """
-        Logic for POST events. Resets and clears the simulation
-        :return:
-        """
+        """Logic for POST events. Resets and clears the simulation"""
 
-        err = sim_proxy().simulation.reset()
+        err = utils.sim_proxy().simulation.reset()
 
-        return checked_resp(err)
+        return properties.checked_resp(err)
