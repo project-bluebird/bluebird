@@ -227,4 +227,4 @@ class ProxyAircraftControls(AbstractAircraftControls):
         self, data: Dict[types.Callsign, props.AircraftProperties]
     ) -> Dict[types.Callsign, props.AircraftProperties]:
         # TODO(RKM 2019-11-24) Need to fill in from our knowledge of the flight levels
-        return data
+        raise NotImplementedError()
