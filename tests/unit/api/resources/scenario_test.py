@@ -9,6 +9,7 @@ import mock
 
 import bluebird.api.resources.utils.utils as original_utils
 
+from tests.data import TEST_SCENARIO
 from tests.unit import API_PREFIX
 
 
@@ -65,7 +66,7 @@ def test_scenario_post(test_flask_client):
             "Couldn't upload scenario"
         )
 
-        with open("tests/data/test_scenario.json", "r") as f:
+        with open(TEST_SCENARIO, "r") as f:
             data = {"name": "test", "content": json.load(f)}
 
         resp = test_flask_client.post(endpoint, json=data)

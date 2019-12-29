@@ -10,12 +10,11 @@ import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.responses import bad_request_resp
 
-from tests.unit import API_PREFIX
-from tests.unit.api.resources import patch_path
+from tests.unit.api.resources import endpoint_path, patch_utils_path
 
 
 _ENDPOINT = "addwpt"
-_ENDPOINT_PATH = f"{API_PREFIX}/{_ENDPOINT}"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
 def test_addwpt_post(test_flask_client):
@@ -39,7 +38,7 @@ def test_addwpt_post(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "A waypoint name must be provided"
 
-    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         mock_sim_proxy = mock.MagicMock()
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL

@@ -17,9 +17,7 @@ _PARSER.add_argument("hdg", type=Heading, location="json", required=True)
 
 
 class Hdg(Resource):
-    """
-    Contains logic for the HDG endpoint
-    """
+    """Contains logic for the HDG endpoint"""
 
     @staticmethod
     def post():
@@ -37,9 +35,6 @@ class Hdg(Resource):
 
         heading = req_args["hdg"]
 
-        try:
-            err = utils.sim_proxy().aircraft.set_heading(callsign, heading)
-        except NotImplementedError:
-            return responses.not_implemented_resp("HDG")
+        err = utils.sim_proxy().aircraft.set_heading(callsign, heading)
 
         return responses.checked_resp(err)

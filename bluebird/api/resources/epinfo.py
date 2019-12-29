@@ -6,29 +6,26 @@ import os
 
 from flask_restful import Resource
 
+import bluebird.api.resources.utils.responses as responses
 import bluebird.logging as bb_logging
-from bluebird.api.resources.utils.responses import bad_request_resp, ok_resp
 from bluebird.settings import in_agent_mode
 
 
 class EpInfo(Resource):
-    """
-    Contains logic for the epinfo endpoint
-    """
+    """Contains logic for the epinfo endpoint"""
 
     @staticmethod
     def get():
-        """
-        Logic for GET events
-        :return:
-        """
+        """Logic for GET events"""
 
         if not in_agent_mode():
-            return bad_request_resp("Episode data only recorded when in Agent mode")
+            return responses.bad_request_resp(
+                "Episode data only recorded when in Agent mode"
+            )
 
         current_ep_file = bb_logging.EP_FILE
         if not current_ep_file:
-            return bad_request_resp("No episode being recorded")
+            return responses.bad_request_resp("No episode being recorded")
 
         cwd = os.getcwd()
         full_log_dir = os.path.join(cwd, bb_logging.INST_LOG_DIR)
@@ -41,4 +38,4 @@ class EpInfo(Resource):
             "log_dir": full_log_dir,
         }
 
-        return ok_resp(data)
+        return responses.ok_resp(data)

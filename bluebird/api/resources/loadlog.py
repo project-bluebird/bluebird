@@ -18,7 +18,6 @@ from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
 from bluebird.api.resources.utils.utils import parse_args, sim_proxy
-from bluebird.logging import store_local_scn
 from bluebird.utils.timeutils import timeit
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimType, SimMode
@@ -185,7 +184,7 @@ class LoadLog(Resource):
         scn_name = f"reloads/{str(uuid.uuid4())[:8]}.scn"
 
         _LOGGER.debug("Uploading the new scenario")
-        store_local_scn(scn_name, parsed_scn["lines"])
+        # store_local_scn(scn_name, parsed_scn["lines"])
         err = sim_proxy().simulation.upload_new_scenario(scn_name, parsed_scn["lines"])
 
         if err:

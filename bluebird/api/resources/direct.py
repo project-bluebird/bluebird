@@ -19,9 +19,7 @@ _PARSER.add_argument("waypoint", type=str, location="json", required=True)
 
 
 class Direct(Resource):
-    """
-    Contains logic for the DIRECT endpoint
-    """
+    """Contains logic for the DIRECT endpoint"""
 
     @staticmethod
     def post():
@@ -49,4 +47,4 @@ class Direct(Resource):
 
         err = utils.sim_proxy().aircraft.direct_to_waypoint(callsign, waypoint)
 
-        return responses.bad_request_resp(err) if err else responses.ok_resp()
+        return responses.checked_resp(err)

@@ -2,83 +2,57 @@
 Tests for the IC endpoint
 """
 
-import datetime
 from http import HTTPStatus
 
+import mock
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.settings as settings
-from bluebird.utils.properties import SimMode, SimProperties, SimState
+import bluebird.api.resources.utils.utils as utils
 
-from tests.unit import API_PREFIX
-
-
-_ENDPOINT = f"{API_PREFIX}/ic"
+from tests.unit.api.resources import endpoint_path, patch_utils_path, TEST_SIM_PROPS
 
 
-class MockSimulatorControls:
-    @property
-    def properties(self):
-        if not self._props_called:
-            self._props_called = True
-            return "Error: Couldn't get the sim properties"
-        return SimProperties(
-            scenario_name="test_scn",
-            scenario_time=0,
-            seed=0,
-            speed=1.0,
-            state=SimState.INIT,
-            step_size=1.0,
-            utc_time=datetime.datetime.now(),
-        )
-
-    def __init__(self):
-        self._props_called = False
-        self.last_scn = None
-
-    def load_scenario(self, scenario_name: str, speed: float, start_paused: bool):
-        assert isinstance(scenario_name, str)
-        assert isinstance(speed, float)
-        assert isinstance(start_paused, bool)
-        if not self.last_scn:
-            self.last_scn = 1
-            return "Error: Couldn't load scenario"
-        self.last_scn = {
-            "scenario_name": scenario_name,
-            "speed": speed,
-            "start_paused": start_paused,
-        }
+_ENDPOINT = "ic"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_ic_get(test_flask_client, _set_bb_app):
-    """
-    Tests the GET method
-    """
+def test_ic_get(test_flask_client):
+    """Tests the GET method"""
 
-    # Test error handling
+    with mock.patch(patch_utils_path(_ENDPOINT)) as utils_patch:
 
-    resp = test_flask_client.get(_ENDPOINT)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    # Test valid response
+        # Test error from simulation properties
 
-    resp = test_flask_client.get(_ENDPOINT)
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {"scenario_name": "test_scn"}
+        sim_proxy_mock.simulation.properties = "Error"
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't get sim properties: Error"
+
+        # Test valid response
+
+        sim_proxy_mock.simulation.properties = TEST_SIM_PROPS
+
+        resp = test_flask_client.get(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.OK
+        assert resp.json == {"scenario_name": TEST_SIM_PROPS.scenario_name}
 
 
-def test_ic_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
+def test_ic_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test arg parsing
 
-    resp = test_flask_client.post(_ENDPOINT)
+    resp = test_flask_client.post(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
+    # Test filename check
+
     data = {"filename": "", "multiplier": -1.0}
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "No filename specified"
 
@@ -86,37 +60,29 @@ def test_ic_post(test_flask_client, _set_bb_app):
 
     test_scenario = "new_scenario.json"
     data["filename"] = test_scenario
-    resp = test_flask_client.post(_ENDPOINT, json=data)
+
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == f"Invalid speed {data['multiplier']}"
 
-    data["multiplier"] = 1.5
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    # Test error handling
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.post(_ENDPOINT, json=data)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't load scenario"
+        # Test error handling
 
-    # Test load_scenario - Sandbox mode
+        sim_proxy_mock.simulation.load_scenario.return_value = "Couldn't load scenario"
 
-    resp = test_flask_client.post(_ENDPOINT, json=data)
-    assert resp.status_code == HTTPStatus.OK
+        data["multiplier"] = 1.5
 
-    load_scn_args = api_utils.sim_proxy().simulation.last_scn
-    expected_args = {
-        "scenario_name": test_scenario,
-        "speed": 1.5,
-        "start_paused": False,
-    }
-    assert load_scn_args == expected_args
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't load scenario"
 
-    # Test load_scenario - Agent mode
+        # Test valid response
 
-    settings.Settings.SIM_MODE = SimMode.Agent
-    resp = test_flask_client.post(_ENDPOINT, json=data)
-    assert resp.status_code == HTTPStatus.OK
+        sim_proxy_mock.simulation.load_scenario.return_value = None
 
-    load_scn_args = api_utils.sim_proxy().simulation.last_scn
-    expected_args["start_paused"] = True
-    assert load_scn_args == expected_args
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.OK

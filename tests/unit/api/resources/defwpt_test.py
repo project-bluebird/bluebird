@@ -4,61 +4,54 @@ Tests for the DEFWPT endpoint
 
 from http import HTTPStatus
 
-import bluebird.utils.types as types
+import mock
 
-from tests.unit import API_PREFIX
+import bluebird.api.resources.utils.utils as utils
 
+from tests.unit.api.resources import endpoint_path, patch_utils_path
 
-class MockWaypointControls:
-    """Mock WaypointControls for the DEFWPT tests"""
-
-    def __init__(self):
-        self.last_wpt = None
-
-    def define(self, name: str, position: types.LatLon, **kwargs):
-        assert isinstance(name, str)
-        assert isinstance(position, types.LatLon)
-        assert "type" in kwargs
-        self.last_wpt = None
-        if kwargs["type"] and kwargs["type"] != "FIX":
-            return "Invalid waypoint type"
-        self.last_wpt = {"name": name, "position": position, **kwargs}
+_ENDPOINT = "defwpt"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_defwpt_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
-
-    endpoint = f"{API_PREFIX}/defwpt"
+def test_defwpt_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test arg parsing
 
-    resp = test_flask_client.post(endpoint)
+    resp = test_flask_client.post(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
     data = {"wpname": "", "lat": 91, "lon": "1.23"}
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "Waypoint name must be provided"
 
     # Test LatLon created
 
     data["wpname"] = "WPT1"
-    resp = test_flask_client.post(endpoint, json=data)
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode().startswith("Invalid LatLon")
 
-    # Test define_waypoint
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    data["lat"] = "1.23"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.CREATED
+        mock_sim_proxy = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = mock_sim_proxy
 
-    data["type"] = "AAA"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
+        # Test error from waypoint define
 
-    data["type"] = "FIX"
-    resp = test_flask_client.post(endpoint, json=data)
-    assert resp.status_code == HTTPStatus.CREATED
+        mock_sim_proxy.waypoints.define.return_value = "Couldn't define waypoint"
+
+        data["lat"] = 0
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't define waypoint"
+
+        # Test valid response
+
+        mock_sim_proxy.waypoints.define.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+        assert resp.status_code == HTTPStatus.CREATED

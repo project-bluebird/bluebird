@@ -59,11 +59,7 @@ class Metric(Resource):
                 f"Metric function returned an error: {msg}\n{traceback.format_exc()}"
             )
 
-        return (
-            responses.ok_resp({metric_name: result})
-            if not isinstance(result, str)
-            else responses.internal_err_resp(result)
-        )
+        return responses.ok_resp({metric_name: result})
 
 
 class MetricProviders(Resource):

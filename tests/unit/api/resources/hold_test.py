@@ -4,44 +4,47 @@ Tests for the HOLD endpoint
 
 from http import HTTPStatus
 
+import mock
 
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimMode
 
-from tests.unit import API_PREFIX
+from tests.unit.api.resources import endpoint_path, patch_utils_path
 
 
-class MockSimulatorControls:
-    def __init__(self):
-        self._pause_flag = False
-
-    def pause(self):
-        if not self._pause_flag:
-            self._pause_flag = True
-            return "Error: Couldn't pause sim"
-        return None
+_ENDPOINT = "hold"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_hold_post(test_flask_client, _set_bb_app):
-    """
-    Tests the POST method
-    """
-
-    endpoint = f"{API_PREFIX}/hold"
+def test_hold_post(test_flask_client):
+    """Tests the POST method"""
 
     # Test mode check
 
     Settings.SIM_MODE = SimMode.Agent
 
-    resp = test_flask_client.post(endpoint)
+    resp = test_flask_client.post(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "Can't pause while in agent mode"
 
-    Settings.SIM_MODE = SimMode.Sandbox
+    with mock.patch(patch_utils_path(_ENDPOINT)) as utils_patch:
 
-    resp = test_flask_client.post(endpoint)
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't pause sim"
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    resp = test_flask_client.post(endpoint)
-    assert resp.status_code == HTTPStatus.OK
+        # Test error from simulation pause
+
+        sim_proxy_mock.simulation.pause.return_value = "Couldn't pause sim"
+
+        Settings.SIM_MODE = SimMode.Sandbox
+
+        resp = test_flask_client.post(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't pause sim"
+
+        # Test valid response
+
+        sim_proxy_mock.simulation.pause.return_value = None
+
+        resp = test_flask_client.post(_ENDPOINT_PATH)
+        assert resp.status_code == HTTPStatus.OK

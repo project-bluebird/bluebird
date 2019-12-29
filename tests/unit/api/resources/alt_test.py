@@ -10,12 +10,13 @@ import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.responses import bad_request_resp
 
-from tests.unit import API_PREFIX
-from tests.unit.api.resources import patch_path, TEST_AIRCRAFT_PROPS
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
+from tests.unit.api.resources import TEST_AIRCRAFT_PROPS
 
 
 _ENDPOINT = "alt"
-_ENDPOINT_PATH = f"{API_PREFIX}/{_ENDPOINT}"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
 def test_alt_post(test_flask_client):
@@ -44,7 +45,7 @@ def test_alt_post(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "vspd" in resp.json["message"]
 
-    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         mock_sim_proxy = mock.MagicMock()
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
@@ -80,7 +81,7 @@ def test_alt_get(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    with mock.patch(patch_path(_ENDPOINT), wraps=utils) as utils_patch:
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         mock_sim_proxy = mock.MagicMock()
         utils_patch.sim_proxy.return_value = mock_sim_proxy

@@ -2,13 +2,13 @@
 Provides logic for the DEFWPT (define waypoint) API endpoint
 """
 
-from http import HTTPStatus
 import logging
+from http import HTTPStatus
 
 from flask_restful import Resource, reqparse
 
-from bluebird.api.resources.utils.responses import bad_request_resp, checked_resp
-from bluebird.api.resources.utils.utils import parse_args, try_parse_lat_lon, sim_proxy
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
 from bluebird.utils.types import LatLon
 
 
@@ -35,16 +35,18 @@ class DefWpt(Resource):
         :return:
         """
 
-        req_args = parse_args(_PARSER)
+        req_args = utils.parse_args(_PARSER)
 
         wp_name = req_args["wpname"]
         if not wp_name:
-            return bad_request_resp("Waypoint name must be provided")
+            return responses.bad_request_resp("Waypoint name must be provided")
 
-        position = try_parse_lat_lon(req_args)
+        position = utils.try_parse_lat_lon(req_args)
         if not isinstance(position, LatLon):
             return position
 
-        err = sim_proxy().waypoints.define(wp_name, position, type=req_args["type"])
+        err = utils.sim_proxy().waypoints.define(
+            wp_name, position, type=req_args["type"]
+        )
 
-        return bad_request_resp(err) if err else checked_resp(err, HTTPStatus.CREATED)
+        return responses.checked_resp(err, HTTPStatus.CREATED)

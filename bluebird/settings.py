@@ -6,6 +6,7 @@ Default settings for the BlueBird app
 
 import logging
 import os
+from pathlib import Path
 
 from semver import VersionInfo
 
@@ -33,13 +34,14 @@ class Settings:
         PORT:               BlueBird (Flask) server port
         SIM_LOG_RATE:       Rate (in sim-seconds) at which aircraft data is logged to
                             the episode file
-        LOGS_ROOT:          Root directory for log files
+        LOGS_ROOT:          Root directory for log files. Defaults to ./logs
         CONSOLE_LOG_LEVEL:  The min. log level for console messages
         SIM_HOST:           Hostname of the simulation server
         SIM_MODE:           Mode for interacting with the simulator
         SIM_TYPE:           The simulator type
         BS_EVENT_PORT:      BlueSky event port
         BS_STREAM_PORT:     BlueSky stream port
+        MC_PORT:            MachineCollege port
     """
 
     VERSION: VersionInfo = _VERSION
@@ -48,7 +50,7 @@ class Settings:
     PORT: int = 5010
 
     SIM_LOG_RATE: float = 0.2
-    LOGS_ROOT: str = os.getenv("BB_LOGS_ROOT", "logs")
+    LOGS_ROOT: str = Path(os.getenv("BB_LOGS_ROOT", "logs"))
     CONSOLE_LOG_LEVEL: int = logging.DEBUG
 
     SIM_HOST: str = "localhost"

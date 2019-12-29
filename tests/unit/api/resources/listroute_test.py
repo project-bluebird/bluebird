@@ -4,79 +4,63 @@ Tests for the LISTROUTE endpoint
 
 from http import HTTPStatus
 
+import mock
 
-import bluebird.api.resources.utils.utils as api_utils
-import bluebird.utils.types as types
-from bluebird.utils.properties import AircraftRoute, RouteItem
+import bluebird.api as api
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import bad_request_resp
 
-from tests.unit import API_PREFIX
-
-
-class MockAircraftControls:
-    def __init__(self):
-        self._get_route_called = False
-
-    def exists(self, callsign: types.Callsign):
-        assert isinstance(callsign, types.Callsign)
-        # "TEST*" aircraft exist, all others do not
-        return str(callsign).upper().startswith("TEST")
-
-    def route(self, callsign: types.Callsign):  # -> Union[AircraftRoute, str]:
-        assert isinstance(callsign, types.Callsign)
-        if not self._get_route_called:
-            self._get_route_called = True
-            return "Error: Couldn't get route"
-        segments = [
-            RouteItem(types.Waypoint("FIX1", types.LatLon(45, 90), None), None),
-            RouteItem(
-                types.Waypoint("FIX2", types.LatLon(50, 95), types.Altitude(321)),
-                types.GroundSpeed(123),
-            ),
-        ]
-        return AircraftRoute(callsign, segments, 1)
+from tests.unit.api.resources import endpoint_path, patch_utils_path, TEST_ROUTE
 
 
-def test_listroute_get(test_flask_client, _set_bb_app):
-    """
-    Tests the GET method
-    """
+_ENDPOINT = "listroute"
+_ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
-    endpoint = f"{API_PREFIX}/listroute"
-    callsign_label = api_utils.CALLSIGN_LABEL
+
+def test_listroute_get(test_flask_client):
+    """Tests the GET method"""
+
+    endpoint_path = f"{_ENDPOINT_PATH}?{utils.CALLSIGN_LABEL}="
 
     # Test arg parsing
 
-    resp = test_flask_client.get(endpoint)
+    resp = test_flask_client.get(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
 
     callsign_str = "A"
-    resp = test_flask_client.get(f"{endpoint}?{callsign_label}={callsign_str}")
+    resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert callsign_label in resp.json["message"]
+    assert utils.CALLSIGN_LABEL in resp.json["message"]
 
-    # Test aircraft exists check
+    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-    callsign_str = "AAA"
-    resp = test_flask_client.get(f"{endpoint}?{callsign_label}={callsign_str}")
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == f'Aircraft "{callsign_str}" does not exist'
+        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
+        sim_proxy_mock = mock.MagicMock()
+        utils_patch.sim_proxy.return_value = sim_proxy_mock
 
-    # Test get_route
+        # Test aircraft exists check
 
-    callsign_str = "TEST"
-    resp = test_flask_client.get(f"{endpoint}?{callsign_label}={callsign_str}")
-    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert resp.data.decode() == "Error: Couldn't get route"
+        with api.FLASK_APP.test_request_context():
+            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
 
-    resp = test_flask_client.get(f"{endpoint}?{callsign_label}={callsign_str}")
-    assert resp.status_code == HTTPStatus.OK
+        callsign_str = "TEST"
+        resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Missing aircraft"
 
-    assert resp.json == {
-        "TEST": {
-            "route": [
-                {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
-                {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
-            ],
-            "current_segment_index": 1,
-        }
-    }
+        # Test error from aircraft route
+
+        utils_patch.check_exists.return_value = None
+        sim_proxy_mock.aircraft.route.return_value = "Couldn't get route"
+
+        resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
+        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert resp.data.decode() == "Couldn't get route"
+
+        # Test valid response
+
+        sim_proxy_mock.aircraft.route.return_value = TEST_ROUTE
+
+        resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
+        assert resp.status_code == HTTPStatus.OK
+        assert resp.json == utils.convert_aircraft_route(TEST_ROUTE)

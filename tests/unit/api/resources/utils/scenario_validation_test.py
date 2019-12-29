@@ -6,7 +6,9 @@ import json
 
 from bluebird.api.resources.utils.scenario_validation import validate_json_scenario
 
+from tests.data import TEST_SCENARIO
+
 
 def test_scenario_validation():
-    with open("tests/data/test_scenario.json", "r") as f:
+    with open(TEST_SCENARIO, "r") as f:
         assert not validate_json_scenario(json.load(f))

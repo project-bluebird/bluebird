@@ -5,7 +5,7 @@ Provides logic for the IC (initial condition) API endpoint
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import parse_args, sim_proxy
+import bluebird.api.resources.utils.utils as utils
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimProperties, SimMode
 
@@ -16,31 +16,24 @@ _PARSER.add_argument("multiplier", type=float, location="json", required=False)
 
 
 class Ic(Resource):
-    """
-    IC (initial condition) command
-    """
+    """IC (initial condition) command"""
 
     @staticmethod
     def get():
-        """
-        Gets the current scenario (file)name
-        """
+        """Gets the current scenario name"""
 
-        props = sim_proxy().simulation.properties
+        props = utils.sim_proxy().simulation.properties
         if not isinstance(props, SimProperties):
-            return responses.internal_err_resp("Could not get sim properties")
+            return responses.internal_err_resp(f"Couldn't get sim properties: {props}")
 
         data = {"scenario_name": props.scenario_name}
         return responses.ok_resp(data)
 
     @staticmethod
     def post():
-        """
-        Logic for POST events. Loads the scenario contained in the given file
-        :return:
-        """
+        """Logic for POST events. Loads the scenario contained in the given file"""
 
-        req_args = parse_args(_PARSER)
+        req_args = utils.parse_args(_PARSER)
         filename = req_args["filename"]
 
         if not filename:
@@ -52,7 +45,7 @@ class Ic(Resource):
         if speed <= 0.0:
             return responses.bad_request_resp(f"Invalid speed {speed}")
 
-        err = sim_proxy().simulation.load_scenario(
+        err = utils.sim_proxy().simulation.load_scenario(
             filename, speed=speed, start_paused=(Settings.SIM_MODE == SimMode.Agent)
         )
 

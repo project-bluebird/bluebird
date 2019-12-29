@@ -24,15 +24,22 @@ def not_found_resp(err: str):
     return make_response(err, HTTPStatus.NOT_FOUND)
 
 
-def ok_resp(data: Optional[Union[str, Dict]] = None):
-    """
-    Generates a standard response
-    """
+def _make_response_from_data(data: Optional[Union[str, Dict]], status: HTTPStatus):
     if isinstance(data, dict):
         data = jsonify(data)
     elif not data:
         data = ""
-    return make_response(data, HTTPStatus.OK)
+    return make_response(data, status)
+
+
+def ok_resp(data: Optional[Union[str, Dict]] = None):
+    """Generates a standard OK response"""
+    return _make_response_from_data(data, HTTPStatus.OK)
+
+
+def created_resp(data: Optional[Union[str, Dict]] = None):
+    """Generates a standard CREATED response"""
+    return _make_response_from_data(data, HTTPStatus.CREATED)
 
 
 def bad_request_resp(msg: str):
