@@ -11,7 +11,6 @@ from .hdg import Hdg
 from .listroute import ListRoute
 from .pos import Pos
 from .spd import Spd
-from .vs import Vs
 
 # Simulation control
 from .defwpt import DefWpt
@@ -25,7 +24,6 @@ from .scenario import Scenario
 from .sector import Sector
 from .seed import Seed
 from .step import Step
-from .time import Time
 
 # BlueBird control
 from .epinfo import EpInfo
@@ -47,7 +45,6 @@ __all__ = [
     "ListRoute",
     "Pos",
     "Spd",
-    "Vs",
     "DefWpt",
     "DtMult",
     "Hold",
@@ -59,7 +56,6 @@ __all__ = [
     "Sector",
     "Seed",
     "Step",
-    "Time",
     "EpInfo",
     "EpLog",
     "SimInfo",

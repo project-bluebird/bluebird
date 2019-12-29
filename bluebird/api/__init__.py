@@ -87,7 +87,6 @@ FLASK_API.add_resource(res.Hdg, "/hdg")
 FLASK_API.add_resource(res.ListRoute, "/listroute")
 FLASK_API.add_resource(res.Pos, "/pos")
 FLASK_API.add_resource(res.Spd, "/spd")
-FLASK_API.add_resource(res.Vs, "/vs")
 
 # Simulation control
 FLASK_API.add_resource(res.DefWpt, "/defwpt")
@@ -101,7 +100,6 @@ FLASK_API.add_resource(res.Scenario, "/scenario")
 FLASK_API.add_resource(res.Sector, "/sector")
 FLASK_API.add_resource(res.Seed, "/seed")
 FLASK_API.add_resource(res.Step, "/step")
-FLASK_API.add_resource(res.Time, "/time")
 
 # Application control
 # FLASK_API.add_resource(res.EpInfo, '/epinfo')
