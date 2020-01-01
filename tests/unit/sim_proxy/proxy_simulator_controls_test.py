@@ -22,7 +22,7 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
     seed=0,
     speed=1.0,
     state=props.SimState.INIT,
-    step_size=1.0,
+    dt=1.0,
     utc_datetime=datetime.datetime.now(),
 )
 
