@@ -93,6 +93,8 @@ class BlueBird:
             )
             return False
 
+        self._logger.info("Client connected")
+
         if self.sim_proxy.sim_version < self._min_sim_version:
             self._logger.error(
                 f"Server of version {self.sim_proxy.sim_version} does not meet the "

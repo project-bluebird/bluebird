@@ -74,12 +74,24 @@ class BlueSkyClient(Client):
         # self.seed = None
         # self.step_dt = 1
 
+        self._have_connection = False
         self._reset_flag = False
         self._step_flag = False
         self._echo_data = []
         self._scn_response = None
         self._awaiting_exit_resp = False
         self._last_stream_time = None
+
+    def connect(self, *args, **kwargs):
+        super().connect(*args, **kwargs)
+        timeout = time.time() + 5
+        while True:
+            self.receive()
+            if self._have_connection:
+                break
+            time.sleep(0.1)
+            if time.time() >= timeout:
+                raise TimeoutError("No data received from BlueSky")
 
     def start_timer(self):
         """
@@ -141,6 +153,8 @@ class BlueSkyClient(Client):
         try:
             socks = dict(self.poller.poll(timeout))
             if socks.get(self.event_io) == zmq.POLLIN:
+
+                self._have_connection = True
 
                 msg = self.event_io.recv_multipart()
 
