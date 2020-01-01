@@ -12,7 +12,7 @@ import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.types as types
 import bluebird.utils.properties as properties
 
-from tests.unit import API_PREFIX
+from tests.unit.api.resources import endpoint_path
 
 
 def test_parse_args_from_query_string(test_flask_client):
@@ -29,7 +29,7 @@ def test_parse_args_from_query_string(test_flask_client):
 
     api.FLASK_API.add_resource(Test, "/test")
 
-    endpoint = f"{API_PREFIX}/test"
+    endpoint = endpoint_path("test")
 
     resp = test_flask_client.get(endpoint)
     assert resp.status_code == HTTPStatus.BAD_REQUEST

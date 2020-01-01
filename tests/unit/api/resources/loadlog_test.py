@@ -11,7 +11,9 @@ from bluebird.api.resources.loadlog import parse_lines
 import bluebird.api.resources.utils.utils as api_utils
 
 from tests.data import TEST_EPISODE_LOG
-from tests.unit import API_PREFIX
+
+
+API_PREFIX = "FIXME"
 
 
 def test_parse_lines():

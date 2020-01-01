@@ -1,15 +1,15 @@
-
-version: '3.7'
+---
+version: "3.7"
 
 services:
   bluesky:
-    container_name: bluesky
+    container_name: bluesky_integration
     image: turinginst/bluesky:${BS_MIN_VERSION}
     expose:
       - 9000
       - 9001
   bluebird:
-    container_name: bluebird
+    container_name: bluebird_integration
     depends_on:
       - bluesky
     build:

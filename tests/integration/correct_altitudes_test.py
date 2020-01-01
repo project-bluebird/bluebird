@@ -11,10 +11,7 @@ from tests.integration import API_URL_BASE
 
 
 def test_get_flight_levels():
-    """
-    Tests that the correct units are used for setting altitudes
-    :return:
-    """
+    """Tests that the correct units are used for setting altitudes"""
 
     pytest.xfail()
 

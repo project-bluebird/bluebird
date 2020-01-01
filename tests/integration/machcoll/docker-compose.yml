@@ -1,0 +1,11 @@
+---
+version: "3.7"
+
+services:
+  machcoll:
+    container_name: machcoll
+    # TODO
+    # image: turinginst/bluesky:${BS_MIN_VERSION}
+    # expose:
+    #   - 9000
+    #   - 9001

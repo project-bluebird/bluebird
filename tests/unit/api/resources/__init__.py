@@ -7,7 +7,7 @@ import datetime
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
 
-from tests.unit import API_PREFIX
+from tests import API_PREFIX
 
 
 TEST_SIM_PROPS = props.SimProperties(

@@ -47,7 +47,7 @@ class Settings:
     VERSION: VersionInfo = _VERSION
     API_VERSION: int = _VERSION.major
     FLASK_DEBUG: bool = True
-    PORT: int = 5010
+    PORT: int = 5001
 
     SIM_LOG_RATE: float = 0.2
     LOGS_ROOT: str = Path(os.getenv("BB_LOGS_ROOT", "logs"))

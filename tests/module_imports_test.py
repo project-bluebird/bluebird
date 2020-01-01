@@ -8,19 +8,13 @@ import pytest
 
 
 def test_module_import():
-    """
-    Tests that the given module can be imported without errors
-    :return:
-    """
+    """Tests that the given module can be imported without errors"""
 
     importlib.import_module("bluebird")
 
 
 def test_run_script_import():
-    """
-    Tests that the top-level run.py script can be imported without errors
-    :return:
-    """
+    """Tests that the top-level run.py script can be imported without errors"""
 
     try:
         import run  # noqa: F401

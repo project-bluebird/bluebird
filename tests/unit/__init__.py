@@ -2,10 +2,6 @@
 BlueBird unit test package
 """
 
-from bluebird.settings import Settings
-
-API_PREFIX = "/api/v" + str(Settings.API_VERSION)
-
 TEST_ACIDS = ["TST1001", "TST1002"]
 
 # This is the same format as what BlueSky returns
