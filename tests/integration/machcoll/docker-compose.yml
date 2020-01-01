@@ -9,3 +9,14 @@ services:
     # expose:
     #   - 9000
     #   - 9001
+  bluebird:
+    container_name: bluebird_integration
+    depends_on:
+      - machcoll
+    build:
+      context: ../../../
+    volumes:
+      - /usr/src/app/logs/ # Prevents any local logs being copied to the container
+    ports:
+      - 5001:5001
+    command: python ./run.py --sim-type=machcoll --sim-host=machcoll
