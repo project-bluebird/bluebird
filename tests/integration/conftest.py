@@ -81,7 +81,7 @@ def pre_integration_setup(request):
         project_dir=str(compose_file.parent),
         options={
             "--file": [compose_file.name],
-            "--host": api_host or None,
+            "--host": docker_host or None,
             "--project-name": "bluebird",
         },
     )
