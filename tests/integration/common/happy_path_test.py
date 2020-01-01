@@ -2,38 +2,47 @@
 Basic "happy path" test for any simulator
 """
 
+# NOTE(RKM 2020-01-01) Note that this test isn't run directly, but is imported and
+# called by the tests for each simulator
+
+from dataclasses import dataclass
+from datetime import datetime
 import requests
 
-from tests.integration import API_URL_BASE
+import tests.integration
 
 
-def happy_path():
+@dataclass
+class SimUniqueProps:
+    sim_type: str
+    dt: float
+    initial_utc_datetime: datetime
 
-    resp = requests.post(f"{API_URL_BASE}/reset")
+
+def run_happy_path(props: SimUniqueProps):
+    """Runs though a basic scenario covering all the main API functionality"""
+
+    api_base = tests.integration.API_BASE
+
+    resp = requests.post(f"{api_base}/reset")
     assert resp.status_code == 200
 
-    # TODO(RKM 2019-11-23) Replace with GeoJSON scenario upload
-    # Load a scenario
-    data = {"filename": "8.SCN"}
-    resp = requests.post(f"{API_URL_BASE}/ic", json=data)
+    resp = requests.get(f"{api_base}/siminfo")
     assert resp.status_code == 200
 
-    # Get the status
-    resp = requests.get(f"{API_URL_BASE}/siminfo")
-    assert resp.status_code == 200
-    assert resp.json() == {
-        "callsigns": ["SCN1003", "SCN1005", "SCN1002", "SCN1001", "SCN1004", "SCN1008"],
-        "mode": "Agent",
-        "scenario_name": "8",
-        "scenario_time": 0.55,
-        "seed": 0,
-        "sim_type": "BlueSky",
-        "speed": 0.65,
-        "state": "HOLD",
-        "step_size": 1,
-        "utc_time": "2019-11-24 0",
-    }
+    resp_json = resp.json()
+    assert resp_json["callsigns"] == []
+    assert resp_json["mode"] == "Agent"
+    assert resp_json["scenario_name"] == ""
+    assert resp_json["scenario_time"] == 0
+    assert resp_json["seed"] is None
+    assert resp_json["sim_type"].lower() == props.sim_type
+    assert resp_json["speed"] == 1  # NOTE This is the DTMULT value in agent mode
+    assert resp_json["state"] == "INIT"
+    assert resp_json["dt"] == props.dt
+    assert resp_json["utc_datetime"] == str(props.initial_utc_datetime)
 
+    # TODO
     # Set the step size
     # Perform a step
     # Get the positions

@@ -15,6 +15,7 @@ from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
 
+# TODO(RKM 2020-01-01) Refactor this
 _TEST_SIM_PROPERTIES = props.SimProperties(
     scenario_name="TEST",
     scenario_time=0,
@@ -22,7 +23,7 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
     speed=1.0,
     state=props.SimState.INIT,
     step_size=1.0,
-    utc_time=datetime.datetime.now(),
+    utc_datetime=datetime.datetime.now(),
 )
 
 _MOCK_AIRCRAFT_CONTROLS = mock.create_autospec(spec=AbstractAircraftControls)
@@ -275,7 +276,7 @@ def test_step():
 
     # Checks that the properties are logged
     _mock_logger.info.assert_called_once_with(
-        f"{str(_TEST_SIM_PROPERTIES.utc_time)} [   0]  1.0x INIT"
+        f"{str(_TEST_SIM_PROPERTIES.utc_datetime)} [   0]  1.0x INIT"
     )
 
 

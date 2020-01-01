@@ -4,9 +4,13 @@ Contains the AbstractSimulatorControls implementation for BlueSky
 
 import logging
 import traceback
-from typing import Iterable, Optional, Union
+from datetime import datetime
+from typing import Iterable
+from typing import Optional
+from typing import Union
 
 import bluebird.utils.properties as props
+from bluebird.settings import in_agent_mode
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 
 
@@ -37,6 +41,8 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def __init__(self, bluesky_client):
         self._bluesky_client = bluesky_client
         self._logger = logging.getLogger(__name__)
+        self._seed = None
+        self._dt_mult: float = 1.0
 
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
@@ -48,6 +54,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return self._bluesky_client.send_stack_cmd("OP")
 
     def reset(self) -> Optional[str]:
+        self._dt_mult = 1
         return self._bluesky_client.reset_sim()
 
     def pause(self) -> Optional[str]:
@@ -63,7 +70,16 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return self._bluesky_client.step()
 
     def set_speed(self, speed: float) -> Optional[str]:
-        return self._bluesky_client.send_stack_cmd(f"DTMULT {speed}")
+        if not in_agent_mode():
+            return self._bluesky_client.send_stack_cmd(f"DT {speed}")
+        resp = self._bluesky_client.send_stack_cmd(
+            f"DTMULT {speed}", response_expected=True
+        )
+        err = self._check_expected_resp(resp)
+        if err:
+            return err
+        self._dt_mult = speed
+        return None
 
     def upload_new_scenario(
         self, scn_name: str, content: Iterable[str]
@@ -71,22 +87,31 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return self._bluesky_client.upload_new_scenario(scn_name, content)
 
     def set_seed(self, seed: int) -> Optional[str]:
-        return self._bluesky_client.send_stack_cmd(f"SEED {seed}")
+        resp = self._bluesky_client.send_stack_cmd(
+            f"SEED {seed}", response_expected=True
+        )
+        err = self._check_expected_resp(resp)
+        if err:
+            return err
+        self._seed = int(resp[0].split(" ")[-1])
+        return None
+
+    def _check_expected_resp(self, resp) -> Optional[str]:
+        if not isinstance(resp, list) and len(resp) == 1 and "set to" not in resp[0]:
+            return f'No confirmation received from BlueSky. Received: "{resp}"'
+        return None
 
     def _convert_to_sim_props(self, data: tuple) -> Union[props.SimProperties, str]:
         try:
-            sim_props = props.SimProperties(
+            return props.SimProperties(
                 scenario_name=data[6],
                 scenario_time=round(data[2], 2),
-                seed=None,  # TODO
-                speed=round(data[0], 2),
+                seed=self._seed,
+                speed=self._dt_mult if in_agent_mode() else round(data[0], 2),
                 state=self._parse_sim_state(data[5]),
-                step_size=data[1],
-                utc_time=data[3],  # TODO
+                dt=data[1],
+                utc_datetime=datetime.strptime(data[3], "%Y-%m-%d %H:%M:%S"),
             )
-            self._logger.info(f"Given UTC: {data[3]}")
-            self._logger.info(f"Parsed UTC: {sim_props.utc_time}")
-            return sim_props
         except Exception:
             return (
                 f"Error converting stream data to sim properties: "

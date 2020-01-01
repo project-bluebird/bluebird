@@ -16,8 +16,8 @@ TEST_SIM_PROPS = props.SimProperties(
     seed=0,
     speed=1.0,
     state=props.SimState.INIT,
-    step_size=1.0,
-    utc_time=datetime.datetime.now(),
+    dt=0.01,
+    utc_datetime=datetime.datetime.now(),
 )
 
 TEST_AIRCRAFT_PROPS = props.AircraftProperties(

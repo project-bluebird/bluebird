@@ -35,8 +35,8 @@ class SimInfo(Resource):
             "sim_type": Settings.SIM_TYPE.name,
             "speed": sim_props.speed,
             "state": sim_props.state.name,
-            "step_size": sim_props.step_size,
-            "utc_time": str(sim_props.utc_time)[:-7],
+            "dt": sim_props.dt,
+            "utc_datetime": str(sim_props.utc_datetime),
         }
 
         return responses.ok_resp(data)

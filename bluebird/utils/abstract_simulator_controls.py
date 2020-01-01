@@ -78,7 +78,8 @@ class AbstractSimulatorControls(ABC):
     @abstractmethod
     def step(self) -> Optional[str]:
         """
-        Step the simulation forward one increment (specified by the step_size)
+        Step the simulation forward one increment when in agent mode (specified by the
+        speed property)
         :returns None: If simulation was stepped
         :returns str: To indicate an error
         """

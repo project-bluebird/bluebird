@@ -71,3 +71,10 @@ data['wpalt']   = route.wpalt
 data['wpspd']   = route.wpspd
 data['wpname']  = route.wpname
 ```
+
+## BlueSky sim_dt and dt_mult
+
+The `SimProperties.speed` value is overloaded, and has a different meaning depending on the mode:
+
+- In Sandbox mode, `speed` refers to the speed multiplier when the simulation is running (i.e. a setting of `1.5` means the simulation is running at 1.5x normal speed)
+- In Agent mode, `speed` refers to the step size in seconds when a step command is issued (i.e. a setting of `10` means that the simulation will progress 10 seconds after the next step command)

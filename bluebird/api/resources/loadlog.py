@@ -123,7 +123,7 @@ class LoadLog(Resource):
                 f"Could not get the sim properties: {props}"
             )
 
-        prev_dt = props.step_size
+        prev_dt = props.dt
 
         _LOGGER.debug("Starting log reload")
 

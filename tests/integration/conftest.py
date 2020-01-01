@@ -123,7 +123,7 @@ def integration_test_wrapper(pre_integration_setup, request):
 
     # Print the container logs if the test failed
     if request.node.rep_call.failed:
-        for container in sorted(project.containers(), key=lambda c: c.name):
+        for container in reversed(project.containers()):
             header = f"\nLogs from {container.service}:"
             spacer = "\n" + "=" * len(header)
             logs = (

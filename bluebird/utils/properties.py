@@ -116,14 +116,14 @@ class SimProperties:
     scenario_name: str
     scenario_time: float  # The number of seconds since the start of the scenario
     seed: int
-    speed: float
+    speed: float  # In agent mode, this is the step size
     state: SimState
-    step_size: float
-    utc_time: datetime
+    dt: float
+    utc_datetime: datetime
 
     def __post_init__(self):
         assert self.scenario_time >= 0, "Scanrio time must be positive"
         if self.seed is not None:
             assert types.is_valid_seed(self.seed), "Invalid seed"
         assert self.speed >= 0, "Speed must be positive"
-        assert self.step_size >= 0, "Step size must be positive"
+        assert self.dt >= 0, "Step size must be positive"

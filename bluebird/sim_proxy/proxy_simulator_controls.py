@@ -117,7 +117,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             self._logger.error(f"Could not get sim properties: {props}")
             return
         data = (
-            f"{props.utc_time} [{props.scenario_time:4}] "
+            f"{props.utc_datetime} [{props.scenario_time:4}] "
             f"{props.speed:4}x {props.state.name}"
         )
         self._logger.info(data)

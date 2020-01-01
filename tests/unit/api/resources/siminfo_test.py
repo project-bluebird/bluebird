@@ -58,6 +58,6 @@ def test_siminfo_get(test_flask_client):
             "sim_type": "BlueSky",
             "speed": 1.0,
             "state": "INIT",
-            "step_size": 1.0,
-            "utc_time": str(TEST_SIM_PROPS.utc_time)[:-7],
+            "dt": TEST_SIM_PROPS.dt,
+            "utc_datetime": str(TEST_SIM_PROPS.utc_datetime),
         }
