@@ -61,10 +61,7 @@ def _parse_args() -> Dict[str, Any]:
 
 
 def main():
-    """
-    Main app entry point
-    :return:
-    """
+    """Main app entry point"""
 
     args = _parse_args()
     load_dotenv(verbose=True, override=True)

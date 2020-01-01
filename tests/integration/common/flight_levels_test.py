@@ -5,18 +5,17 @@ Tests for the flight level commands
 import pytest
 import requests
 
-from tests.integration import API_URL_BASE
+import tests.integration
 
 
 def test_get_flight_levels():
-    """
-    Tests that the correct flight levels are returned
-    :return:
-    """
+    """Tests that the correct flight levels are returned"""
+
+    api_base = tests.integration.API_BASE
 
     pytest.xfail()
 
-    resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
+    resp = requests.post(f"{api_base}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"
 
     scn_data = {
@@ -32,18 +31,18 @@ def test_get_flight_levels():
         "start_new": True,
     }
 
-    resp = requests.post(f"{API_URL_BASE}/scenario", json=scn_data)
+    resp = requests.post(f"{api_base}/scenario", json=scn_data)
     assert resp.status_code == 200, "Expected the scenario to be uploaded"
 
     test_acid = "AC0006"
 
-    resp = requests.get(f"{API_URL_BASE}/pos?acid={test_acid}")
+    resp = requests.get(f"{api_base}/pos?acid={test_acid}")
     assert resp.status_code == 200, "Expected to get the aircraft position"
     assert (
         resp.json()[test_acid]["alt"] == 7620
     ), "Expected the initial flight level to be FL250"
 
-    resp = requests.get(f"{API_URL_BASE}/listroute?acid=AC0006")
+    resp = requests.get(f"{api_base}/listroute?acid=AC0006")
     assert resp.status_code == 200, "Expected to get the aircraft route"
 
     fl_requested = None
@@ -53,14 +52,12 @@ def test_get_flight_levels():
 
     assert fl_requested == "FL95", "Expected the requested flight level to be set"
 
-    resp = requests.post(
-        f"{API_URL_BASE}/alt", json={"acid": test_acid, "alt": "FL150"}
-    )
+    resp = requests.post(f"{api_base}/alt", json={"acid": test_acid, "alt": "FL150"})
     assert resp.status_code == 200, "Expected to set the cleared altitude"
 
     # Check we get the correct flight levels back
 
-    resp = requests.get(f"{API_URL_BASE}/alt?acid={test_acid}")
+    resp = requests.get(f"{api_base}/alt?acid={test_acid}")
     assert resp.status_code == 200, "Expected to get the flight levels"
 
     assert (
@@ -82,7 +79,9 @@ def test_initial_cleared_flight_level():
 
     pytest.xfail()
 
-    resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
+    api_base = tests.integration.API_BASE
+
+    resp = requests.post(f"{api_base}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"
 
     scn_data = {
@@ -98,18 +97,18 @@ def test_initial_cleared_flight_level():
         "start_new": True,
     }
 
-    resp = requests.post(f"{API_URL_BASE}/scenario", json=scn_data)
+    resp = requests.post(f"{api_base}/scenario", json=scn_data)
     assert resp.status_code == 200, "Expected the scenario to be uploaded"
 
     test_acid = "AC0006"
 
-    resp = requests.get(f"{API_URL_BASE}/pos?acid={test_acid}")
+    resp = requests.get(f"{api_base}/pos?acid={test_acid}")
     assert resp.status_code == 200, "Expected to get the aircraft position"
     assert (
         resp.json()[test_acid]["alt"] == 7620
     ), "Expected the initial flight level to be FL250"
 
-    resp = requests.get(f"{API_URL_BASE}/alt?acid={test_acid}")
+    resp = requests.get(f"{api_base}/alt?acid={test_acid}")
     assert resp.status_code == 200, "Expected "
     assert (
         resp.json()["fl_cleared"] == 7620

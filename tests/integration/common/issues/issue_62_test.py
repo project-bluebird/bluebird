@@ -5,22 +5,23 @@ Test for https://github.com/alan-turing-institute/bluebird/issues/62
 import pytest
 import requests
 
-from tests.integration import API_URL_BASE
+import tests.integration
 
 
 def test_issue_62():
     """
     Tests that we properly log the contents of a scenario file when the 'scenario/'
     prefix is not specified
-    :return:
     """
 
     pytest.xfail()
 
-    resp = requests.post(f"{API_URL_BASE}/ic", json={"filename": "8.SCN"})
+    api_base = tests.integration.API_BASE
+
+    resp = requests.post(f"{api_base}/ic", json={"filename": "8.SCN"})
     assert resp.status_code == 200, "Expected the scenario to be loaded"
 
-    resp = requests.get(f"{API_URL_BASE}/eplog")
+    resp = requests.get(f"{api_base}/eplog")
     assert resp.status_code == 200, "Expected the episode log to be returned"
 
     assert not any(

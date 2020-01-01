@@ -7,7 +7,7 @@ import re
 import pytest
 import requests
 
-from tests.integration import API_URL_BASE
+import tests.integration
 
 
 def test_episode_logging_agent_mode():
@@ -17,16 +17,18 @@ def test_episode_logging_agent_mode():
 
     pytest.xfail()
 
-    resp = requests.post(f"{API_URL_BASE}/simmode", json={"mode": "agent"})
+    api_base = tests.integration.API_BASE
+
+    resp = requests.post(f"{api_base}/simmode", json={"mode": "agent"})
     assert resp.status_code == 200, "Expected the mode to be set"
 
-    resp = requests.post(f"{API_URL_BASE}/ic", json={"filename": "TEST.scn"})
+    resp = requests.post(f"{api_base}/ic", json={"filename": "TEST.scn"})
     assert resp.status_code == 200, "Expected the scenario to be loaded"
 
-    resp = requests.post(f"{API_URL_BASE}/dtmult", json={"multiplier": 10})
+    resp = requests.post(f"{api_base}/dtmult", json={"multiplier": 10})
     assert resp.status_code == 200, "Expected DTMULT to be set"
 
-    resp = requests.get(f"{API_URL_BASE}/eplog")
+    resp = requests.get(f"{api_base}/eplog")
     assert resp.status_code == 200, "Expected the episode log to be returned"
 
     initial_log = resp.json()["lines"]
@@ -36,10 +38,10 @@ def test_episode_logging_agent_mode():
 
     assert initial_log, "Expected the log to contain data"
 
-    resp = requests.post(f"{API_URL_BASE}/step")
+    resp = requests.post(f"{api_base}/step")
     assert resp.status_code == 200, "Expected the simulation was stepped"
 
-    resp = requests.get(f"{API_URL_BASE}/eplog")
+    resp = requests.get(f"{api_base}/eplog")
     assert resp.status_code == 200, "Expected the episode log to be returned"
 
     updated_log = resp.json()["lines"]
