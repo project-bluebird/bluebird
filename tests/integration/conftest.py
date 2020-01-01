@@ -67,7 +67,8 @@ def pre_integration_setup(request):
     api_base = f"http://{host.split(':')[0]}:{Settings.PORT}{API_PREFIX}"
     tests.integration.API_BASE = api_base
 
-    # Bind the base API URL to the function so we don't have to pass it around
+    # Bind the base API URL to the wait_for_containers function so we don't have to pass
+    # it around
     wait_for_containers = functools.partial(wait_for_containers, api_base)
 
     compose_file = Path("tests", "integration", integration_sim, "docker-compose.yml",)
@@ -123,7 +124,7 @@ def integration_test_wrapper(pre_integration_setup, request):
     # Print the container logs if the test failed
     if request.node.rep_call.failed:
         for container in sorted(project.containers(), key=lambda c: c.name):
-            header = "\nLogs from {name}:".format(name=container.name)
+            header = f"\nLogs from {container.service}:"
             spacer = "\n" + "=" * len(header)
             logs = (
                 container.logs(since=restart_t).decode("utf-8", errors="replace")
