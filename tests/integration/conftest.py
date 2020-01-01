@@ -40,9 +40,9 @@ def pre_integration_setup(request):
 
     command = ["docker", "system", "info"]
 
-    host = request.config.getoption("--docker-host")
-    if host:
-        command.insert(1, f"-H {host}")
+    docker_host = request.config.getoption("--docker-host")
+    if docker_host:
+        command.insert(1, f"-H {docker_host}")
 
     docker_available = not subprocess.call(
         command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True,
@@ -64,7 +64,8 @@ def pre_integration_setup(request):
             1,
         )
 
-    api_base = f"http://{host.split(':')[0]}:{Settings.PORT}{API_PREFIX}"
+    api_host = docker_host.split(":")[0] if docker_host else "localhost"
+    api_base = f"http://{api_host}:{Settings.PORT}{API_PREFIX}"
     tests.integration.API_BASE = api_base
 
     # Bind the base API URL to the wait_for_containers function so we don't have to pass
@@ -80,7 +81,7 @@ def pre_integration_setup(request):
         project_dir=str(compose_file.parent),
         options={
             "--file": [compose_file.name],
-            "--host": host,
+            "--host": api_host or None,
             "--project-name": "bluebird",
         },
     )
