@@ -6,7 +6,7 @@ language: python
 python:
   - "3.7"
 
-# cache: pip
+cache: pip
 
 before_install:
   - pip install -r requirements-dev.txt
@@ -16,13 +16,13 @@ before_install:
 
 install:
   - pip install -r requirements.txt
+  - pip install --upgrade git+https://github.com/alan-turing-institute/aviary.git@feature/deserialise-sector#egg=aviary
 
 script:
   - pytest -rs --ignore=./tests/integration ./tests
   # Pre-build the BlueBird docker image
   - docker build .
   - pytest -rs ./tests/integration
-
 # TODO(RKM 2019-11-23) Re-enable after integration tests passing
 # after_success:
 #   - bash $BLUEBIRD_HOME/.travis-build.sh
