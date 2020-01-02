@@ -45,7 +45,7 @@ def test_direct_post(test_flask_client):
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
-        mock_sim_proxy = mock.MagicMock()
+        mock_sim_proxy = mock.Mock()
         utils_patch.sim_proxy.return_value = mock_sim_proxy
 
         # Test waypoint exists check

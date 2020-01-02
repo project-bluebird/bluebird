@@ -27,14 +27,14 @@ _TEST_SIMINFO = [
 def test_abstract_class_implemented():
     """Tests that BlueSkyAircraftControls implements the abstract base class"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     BlueSkySimulatorControls(bs_client_mock)
 
 
 def test_properties():
     """Test the properties property"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_client_mock.sim_info_stream_data = _TEST_SIMINFO
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
@@ -60,7 +60,7 @@ def test_properties():
 def test_load_scenario():
     """Test load_scenario"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.load_scenario.return_value = "Error"
@@ -77,7 +77,7 @@ def test_load_scenario():
 def test_start():
     """Test start"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -94,7 +94,7 @@ def test_start():
 def test_reset():
     """Test reset"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.reset_sim.return_value = "Error"
@@ -111,7 +111,7 @@ def test_reset():
 def test_pause():
     """Test pause"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -128,7 +128,7 @@ def test_pause():
 def test_resume():
     """Test resume"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -145,7 +145,7 @@ def test_resume():
 def test_stop():
     """Test stop"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -162,7 +162,7 @@ def test_stop():
 def test_step():
     """Test step"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.step.return_value = "Error"
@@ -179,7 +179,7 @@ def test_step():
 def test_set_speed():
     """Test set_speed"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -199,7 +199,7 @@ def test_set_speed():
 def test_upload_new_scenario():
     """Test upload_new_scenario"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.upload_new_scenario.return_value = "Error"
@@ -216,7 +216,7 @@ def test_upload_new_scenario():
 def test_set_seed():
     """Test set_seed"""
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     bs_client_mock.send_stack_cmd.return_value = "Error"
@@ -239,7 +239,7 @@ def test_dt_mult_handling():
     a reset. We can't query for the current value however, so have to track it ourselves
     """
 
-    bs_client_mock = mock.MagicMock()
+    bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
     dt_mult = 4

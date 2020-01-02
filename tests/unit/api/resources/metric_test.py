@@ -23,7 +23,7 @@ def test_metric_get(test_flask_client):
 
     with mock.patch("bluebird.api.resources.metrics.utils", wraps=utils) as utils_patch:
 
-        sim_proxy_mock = mock.MagicMock()
+        sim_proxy_mock = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_mock
 
         # Test no providers available
@@ -48,7 +48,7 @@ def test_metric_get(test_flask_client):
 
         # Test invalid provider
 
-        sim_proxy_mock.metrics_providers = mock.MagicMock()
+        sim_proxy_mock.metrics_providers = mock.Mock()
         sim_proxy_mock.metrics_providers.get.return_value = None
 
         arg_str = f"provider=TestProvider&name=TEST&"
@@ -99,7 +99,7 @@ def test_metricproviders_get(test_flask_client):
 
     with mock.patch("bluebird.api.resources.metrics.utils") as utils_patch:
 
-        sim_proxy_mock = mock.MagicMock()
+        sim_proxy_mock = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_mock
 
         # Test valid response

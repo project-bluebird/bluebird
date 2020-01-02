@@ -124,7 +124,7 @@ def test_cre_post(test_flask_client):
 
         # Test error response from aircraft creation
 
-        mock_sim_proxy = mock.MagicMock()
+        mock_sim_proxy = mock.Mock()
         utils_patch.sim_proxy.return_value = mock_sim_proxy
 
         mock_sim_proxy.aircraft.create.return_value = "Couldn't create aircraft"

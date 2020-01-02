@@ -29,7 +29,7 @@ def test_op_post_agent_mode(test_flask_client):
 
     with mock.patch(patch_utils_path(_ENDPOINT)) as utils_patch:
 
-        sim_proxy_mock = mock.MagicMock()
+        sim_proxy_mock = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_mock
 
         # Test error from simulation resume

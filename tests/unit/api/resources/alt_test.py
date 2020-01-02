@@ -47,7 +47,7 @@ def test_alt_post(test_flask_client):
 
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-        mock_sim_proxy = mock.MagicMock()
+        mock_sim_proxy = mock.Mock()
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
         utils_patch.sim_proxy.return_value = mock_sim_proxy
 
@@ -83,7 +83,7 @@ def test_alt_get(test_flask_client):
 
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-        mock_sim_proxy = mock.MagicMock()
+        mock_sim_proxy = mock.Mock()
         utils_patch.sim_proxy.return_value = mock_sim_proxy
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
 

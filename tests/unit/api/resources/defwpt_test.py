@@ -36,7 +36,7 @@ def test_defwpt_post(test_flask_client):
 
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
-        mock_sim_proxy = mock.MagicMock()
+        mock_sim_proxy = mock.Mock()
         utils_patch.sim_proxy.return_value = mock_sim_proxy
 
         # Test error from waypoint define

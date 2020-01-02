@@ -35,7 +35,7 @@ def test_pos_get_single(test_flask_client):
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
-        sim_proxy_mock = mock.MagicMock()
+        sim_proxy_mock = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_mock
 
         # Test error from simulation properties
@@ -86,7 +86,7 @@ def test_pos_get_all(test_flask_client):
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
-        sim_proxy_mock = mock.MagicMock()
+        sim_proxy_mock = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_mock
 
         # Test error from all_properties

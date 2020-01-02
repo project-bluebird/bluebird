@@ -35,7 +35,7 @@ def test_spd_post(test_flask_client):
     with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
 
         utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
-        sim_proxy_patch = mock.MagicMock()
+        sim_proxy_patch = mock.Mock()
         utils_patch.sim_proxy.return_value = sim_proxy_patch
 
         # Test callsign exists check
