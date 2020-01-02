@@ -24,7 +24,7 @@ class Scenario(Resource):
 
         req_args = utils.parse_args(_PARSER)
 
-        if not utils.sim_proxy().sector:
+        if not utils.sim_proxy().simulation.sector:
             return responses.bad_request_resp(
                 "A sector definition is required before uploading a scenario"
             )

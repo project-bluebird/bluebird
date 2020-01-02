@@ -10,7 +10,7 @@ import pytest
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.api.resources.utils.utils as utils
-from bluebird.sim_proxy.sim_proxy import Sector
+from bluebird.sim_proxy.proxy_simulator_controls import Sector
 
 from tests.data import TEST_SECTOR
 from tests.unit.api.resources import endpoint_path
@@ -97,7 +97,7 @@ def test_sector_post(test_flask_client):
 
         # Test error from set_sector
 
-        sim_proxy_mock.set_sector.return_value = "Error setting sector"
+        sim_proxy_mock.simulation.set_sector.return_value = "Error setting sector"
 
         resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
         assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
@@ -105,7 +105,7 @@ def test_sector_post(test_flask_client):
 
         # Test CREATED response
 
-        sim_proxy_mock.set_sector.return_value = None
+        sim_proxy_mock.simulation.set_sector.return_value = None
 
         resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
         assert resp.status_code == HTTPStatus.CREATED

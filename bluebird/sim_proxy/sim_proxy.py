@@ -11,11 +11,8 @@ Contains the SimProxy class
 # aware that some properties may change without their knowledge
 
 import logging
-from dataclasses import dataclass
 from typing import Iterable
-from typing import Optional
 
-from aviary.sector.sector_element import SectorElement
 from semver import VersionInfo
 
 from bluebird.metrics import MetricsProviders
@@ -27,12 +24,6 @@ from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
 
 
-@dataclass
-class Sector:
-    name: str
-    element: SectorElement
-
-
 class SimProxy(AbstractSimClient):
     """
     Class which intercepts any requests before forwarding them to the sim client. Allows
@@ -42,10 +33,6 @@ class SimProxy(AbstractSimClient):
     @property
     def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
-
-    @property
-    def sector(self) -> Sector:
-        return self._sector
 
     @property
     def simulation(self) -> ProxySimulatorControls:
@@ -75,19 +62,17 @@ class SimProxy(AbstractSimClient):
             self._sim_client.waypoints
         )
         self._proxy_simulator_controls = ProxySimulatorControls(
-            self._sim_client.simulation,
-            self._proxy_aircraft_controls,
-            self._proxy_waypoint_controls,
+            self._sim_client.simulation, [self._proxy_aircraft_controls.clear_caches]
         )
-
-        self._sector: Sector = None
 
     def connect(self, timeout: int = 1) -> None:
         self._sim_client.connect(timeout)
 
     def start_timers(self) -> Iterable[Timer]:
-        # TODO(RKM 2019-11-18) Start own timers
-        return self._sim_client.start_timers()
+        return (
+            self._sim_client.start_timers()
+            + self._proxy_simulator_controls.start_timers()
+        )
 
     def pre_fetch_data(self):
         _ = self._sim_client.aircraft.all_properties
@@ -110,8 +95,3 @@ class SimProxy(AbstractSimClient):
     ):
         """Calls the metric specified"""
         return provider(metric_name, *args, aircraft_controls=self.aircraft)
-
-    def set_sector(self, sector: Sector) -> Optional[str]:
-        """Updates the current sector and sends it to the sim"""
-        self._sector = sector
-        # TODO(RKM 2019-12-20) Update the sim

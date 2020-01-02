@@ -41,7 +41,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def __init__(self, bluesky_client):
         self._bluesky_client = bluesky_client
         self._logger = logging.getLogger(__name__)
-        self._seed = None
         self._dt_mult: float = 1.0
 
     def load_scenario(
@@ -90,7 +89,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         err = self._check_expected_resp(resp)
         if err:
             return err
-        self._seed = int(resp[0].split(" ")[-1])
         return None
 
     def _check_expected_resp(self, resp) -> Optional[str]:
@@ -104,7 +102,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
                 sector_name=None,
                 scenario_name=data[6],
                 scenario_time=round(data[2], 2),
-                seed=self._seed,
+                seed=None,
                 speed=self._dt_mult if in_agent_mode() else round(data[0], 2),
                 state=self._parse_sim_state(data[5]),
                 dt=data[1],

@@ -109,14 +109,14 @@ class SimState(IntEnum):
     END = 4
 
 
-@dataclass(frozen=True)
+@dataclass
 class SimProperties:
     """Encapsulates the properties of the current simulation state"""
 
-    sector_name: str
+    sector_name: Optional[str]
     scenario_name: str
     scenario_time: float  # The number of seconds since the start of the scenario
-    seed: int
+    seed: Optional[int]
     speed: float  # In agent mode, this is the step size
     state: SimState
     dt: float

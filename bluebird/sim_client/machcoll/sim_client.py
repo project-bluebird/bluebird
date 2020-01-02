@@ -13,7 +13,7 @@ Stepping    -> Paused, Stopped
 
 import logging
 import os
-from typing import Iterable
+from typing import List
 
 from semver import VersionInfo
 
@@ -82,7 +82,7 @@ class SimClient(AbstractSimClient):
         self._mc_metrics_provider.set_version(self._client_version)
         self._logger.info(f"MCClientMetrics connected. Version: {self._client_version}")
 
-    def start_timers(self) -> Iterable[Timer]:
+    def start_timers(self) -> List[Timer]:
         # NOTE(RKM 2019-11-18) MCClientMetrics is passive for now - we don't have any
         # stream data
         return []

@@ -39,7 +39,7 @@ def test_scenario_post(test_flask_client):
 
         # Test no sector set
 
-        sim_proxy_mock.sector = None
+        sim_proxy_mock.simulation.sector = None
 
         data["content"] = ""
         resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
@@ -48,7 +48,7 @@ def test_scenario_post(test_flask_client):
 
         # Test name check
 
-        sim_proxy_mock.sector = True
+        sim_proxy_mock.simulation.sector = True
 
         resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
         assert resp.status_code == HTTPStatus.BAD_REQUEST

@@ -1,5 +1,5 @@
 """
-Basic test configuration
+Test configuration for all unit tests
 """
 
 import mock

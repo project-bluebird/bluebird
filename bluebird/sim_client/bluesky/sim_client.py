@@ -5,7 +5,7 @@ BlueSky simulation client class
 # TODO: Need to re-add the tests for string parsing/units from the old API tests
 
 import os
-from typing import Iterable
+from typing import List
 
 from semver import VersionInfo
 
@@ -63,7 +63,7 @@ class SimClient(AbstractSimClient):
         self._sim_controls = BlueSkySimulatorControls(self._client)
         self._waypoint_controls = BlueSkyWaypointControls(self._client)
 
-    def start_timers(self) -> Iterable[Timer]:
+    def start_timers(self) -> List[Timer]:
         return [self._client.start_timer()]
 
     def connect(self, timeout=1) -> None:

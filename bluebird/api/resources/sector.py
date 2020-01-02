@@ -12,7 +12,7 @@ import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.sector_validation import validate_geojson_sector
 
 # Note (RKM 2019-12-20) Have to avoid the name collision with the class below
-from bluebird.sim_proxy.sim_proxy import Sector as Proxy_Sector
+from bluebird.sim_proxy.proxy_simulator_controls import Sector as Proxy_Sector
 
 
 _PARSER = reqparse.RequestParser()
@@ -57,5 +57,5 @@ class Sector(Resource):
         if not isinstance(sector, SectorElement):
             return responses.bad_request_resp(f"Invalid scenario content: {sector}")
 
-        err = utils.sim_proxy().set_sector(Proxy_Sector(sector_name, sector))
+        err = utils.sim_proxy().simulation.set_sector(Proxy_Sector(sector_name, sector))
         return responses.checked_resp(err, HTTPStatus.CREATED)

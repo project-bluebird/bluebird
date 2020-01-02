@@ -3,7 +3,7 @@ Contains the AbstractSimClient class
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import List
 
 from semver import VersionInfo
 
@@ -61,7 +61,7 @@ class AbstractSimClient(ABC):
         """
 
     @abstractmethod
-    def start_timers(self) -> Iterable[Timer]:
+    def start_timers(self) -> List[Timer]:
         """
         Start any timed functions, and return all the Timer instances
         :return:

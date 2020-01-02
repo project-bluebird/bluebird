@@ -233,32 +233,6 @@ def test_set_seed():
     )
 
 
-def test_seed_handling():
-    """
-    Tests that we properly track the seed. The seed value is never changed by BlueSky,
-    but we can't query for the current seed so have to record it when we change it
-    """
-
-    bs_client_mock = mock.MagicMock()
-    bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
-
-    seed = 9999
-    bs_client_mock.send_stack_cmd.return_value = [f"Seed set to {seed}"]
-    err = bs_sim_controls.set_seed(seed)
-    assert not err
-
-    bs_client_mock.sim_info_stream_data = _TEST_SIMINFO
-
-    props = bs_sim_controls.properties
-    assert isinstance(props, SimProperties)
-    assert props.seed == seed
-
-    bs_client_mock.reset_sim.return_value = None
-    props = bs_sim_controls.properties
-    assert isinstance(props, SimProperties)
-    assert props.seed == seed
-
-
 def test_dt_mult_handling():
     """
     Tests that we properly track the dtmult value. BlueSky resets this value to 1 after
