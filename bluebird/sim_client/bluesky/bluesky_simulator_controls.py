@@ -5,7 +5,9 @@ Contains the AbstractSimulatorControls implementation for BlueSky
 import logging
 import traceback
 from datetime import datetime
+from typing import Any
 from typing import Iterable
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -24,9 +26,7 @@ _BS_STATE_MAP = [
 
 
 class BlueSkySimulatorControls(AbstractSimulatorControls):
-    """
-    AbstractSimulatorControls implementation for BlueSky
-    """
+    """AbstractSimulatorControls implementation for BlueSky"""
 
     @staticmethod
     def _parse_sim_state(val: int) -> props.SimState:
@@ -47,7 +47,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def load_scenario(
         self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
     ) -> Optional[str]:
-        assert scenario_name
         return self._bluesky_client.load_scenario(scenario_name, speed, start_paused)
 
     def start(self) -> Optional[str]:
@@ -70,8 +69,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return self._bluesky_client.step()
 
     def set_speed(self, speed: float) -> Optional[str]:
-        if not in_agent_mode():
-            return self._bluesky_client.send_stack_cmd(f"DT {speed}")
         resp = self._bluesky_client.send_stack_cmd(
             f"DTMULT {speed}", response_expected=True
         )
@@ -97,11 +94,11 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         return None
 
     def _check_expected_resp(self, resp) -> Optional[str]:
-        if not isinstance(resp, list) and len(resp) == 1 and "set to" not in resp[0]:
-            return f'No confirmation received from BlueSky. Received: "{resp}"'
-        return None
+        if isinstance(resp, list) and len(resp) == 1 and "set to" in resp[0]:
+            return None
+        return f'No confirmation received from BlueSky. Received: "{resp}"'
 
-    def _convert_to_sim_props(self, data: tuple) -> Union[props.SimProperties, str]:
+    def _convert_to_sim_props(self, data: List[Any]) -> Union[props.SimProperties, str]:
         try:
             return props.SimProperties(
                 sector_name=None,

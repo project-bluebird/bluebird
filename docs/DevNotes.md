@@ -13,8 +13,9 @@ Should only need updated when the file `bluesky/network/client.py` changes.
 Sim speed
 Sim DT
 Sim time (seconds elapsed)
-Sim time (UTC timestamp)
+Sim time (UTC datetime)
 Number of aircraft
+Sim state
 Current scenario name
 ```
 

@@ -6,7 +6,9 @@ import mock
 import pytest
 
 from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
-from bluebird.sim_client.bluesky.sim_client import BlueSkyAircraftControls
+from bluebird.sim_client.bluesky.bluesky_aircraft_controls import (
+    BlueSkyAircraftControls,
+)
 
 
 def test_abstract_class_implemented():

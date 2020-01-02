@@ -11,6 +11,9 @@ import sys
 import time
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
 from typing import Optional
 
 import msgpack
@@ -49,9 +52,7 @@ IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
 
 class BlueSkyClient(Client):
-    """
-    Client class for the BlueSky simulator
-    """
+    """Client class for the BlueSky simulator"""
 
     @property
     def aircraft_stream_data(self):
@@ -65,8 +66,8 @@ class BlueSkyClient(Client):
         super().__init__(ACTIVE_NODE_TOPICS)
         self._logger = logging.getLogger(__name__)
         self._aircraft_stream_data = {}
-        self._sim_info_data = {}
-        self._route_data = {}
+        self._sim_info_data: List = []
+        self._route_data: Dict[str, Any] = {}
 
         # Continually poll for the sim state
         self.timer = Timer(self.receive, POLL_RATE)
