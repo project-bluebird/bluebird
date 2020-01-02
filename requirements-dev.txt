@@ -1,10 +1,11 @@
 
 # In addition to requirements.txt, the following are required for development and testing
 
-pre-commit
 black
 flake8
+pre-commit
 
-pytest
-mock
 docker-compose
+mock
+pytest
+requests
