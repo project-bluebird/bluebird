@@ -17,7 +17,8 @@ from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
 
 # TODO(RKM 2020-01-01) Refactor this
 _TEST_SIM_PROPERTIES = props.SimProperties(
-    scenario_name="TEST",
+    sector_name="test-sector",
+    scenario_name="test-scenario",
     scenario_time=0,
     seed=0,
     speed=1.0,

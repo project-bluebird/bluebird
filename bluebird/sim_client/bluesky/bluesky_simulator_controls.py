@@ -104,6 +104,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def _convert_to_sim_props(self, data: tuple) -> Union[props.SimProperties, str]:
         try:
             return props.SimProperties(
+                sector_name=None,
                 scenario_name=data[6],
                 scenario_time=round(data[2], 2),
                 seed=self._seed,

@@ -11,7 +11,8 @@ from tests import API_PREFIX
 
 
 TEST_SIM_PROPS = props.SimProperties(
-    scenario_name="TEST",
+    sector_name="test-sector",
+    scenario_name="test-scenario",
     scenario_time=0,
     seed=0,
     speed=1.0,

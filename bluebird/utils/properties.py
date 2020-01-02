@@ -113,6 +113,7 @@ class SimState(IntEnum):
 class SimProperties:
     """Encapsulates the properties of the current simulation state"""
 
+    sector_name: str
     scenario_name: str
     scenario_time: float  # The number of seconds since the start of the scenario
     seed: int

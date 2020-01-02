@@ -29,6 +29,7 @@ class SimInfo(Resource):
         data = {
             "callsigns": [str(x) for x in callsigns],
             "mode": Settings.SIM_MODE.name,
+            "sector_name": sim_props.sector_name,
             "scenario_name": sim_props.scenario_name,
             "scenario_time": sim_props.scenario_time,
             "seed": sim_props.seed,

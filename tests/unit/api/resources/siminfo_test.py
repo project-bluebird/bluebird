@@ -52,7 +52,8 @@ def test_siminfo_get(test_flask_client):
         assert resp.json == {
             "callsigns": ["AAA", "BBB"],
             "mode": Settings.SIM_MODE.name,
-            "scenario_name": "TEST",
+            "sector_name": TEST_SIM_PROPS.sector_name,
+            "scenario_name": TEST_SIM_PROPS.scenario_name,
             "scenario_time": 0,
             "seed": 0,
             "sim_type": "BlueSky",
