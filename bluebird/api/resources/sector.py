@@ -9,27 +9,23 @@ from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.api.resources.utils.sector_validation import validate_geojson_sector
-
-# Note (RKM 2019-12-20) Have to avoid the name collision with the class below
-from bluebird.sim_proxy.proxy_simulator_controls import Sector as Proxy_Sector
+from bluebird.utils.properties import Sector as SectorWrapper
+from bluebird.utils.sector_validation import validate_geojson_sector
 
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("name", type=str, location="json", required=True)
-_PARSER.add_argument("content", type=dict, location="json", required=True)
+_PARSER.add_argument("content", type=dict, location="json", required=False)
 
 
 class Sector(Resource):
-    """
-    Contains logic for the SECTOR endpoint
-    """
+    """Contains logic for the SECTOR endpoint"""
 
     @staticmethod
     def get():
         """Returns the sector defined in the current simulation"""
 
-        sector: Proxy_Sector = utils.sim_proxy().sector
+        sector: SectorWrapper = utils.sim_proxy().sector
 
         if not sector:
             return responses.bad_request_resp("No sector has been set")
@@ -44,7 +40,7 @@ class Sector(Resource):
 
     @staticmethod
     def post():
-        """Logic for POST events"""
+        """Upload a new sector definition"""
 
         req_args = utils.parse_args(_PARSER)
 
@@ -53,9 +49,18 @@ class Sector(Resource):
         if not sector_name:
             return responses.bad_request_resp("Sector name must be provided")
 
-        sector = validate_geojson_sector(req_args["content"])
-        if not isinstance(sector, SectorElement):
-            return responses.bad_request_resp(f"Invalid scenario content: {sector}")
+        sector = req_args["content"]
 
-        err = utils.sim_proxy().simulation.set_sector(Proxy_Sector(sector_name, sector))
+        if sector:
+            sector = validate_geojson_sector(req_args["content"])
+            if not isinstance(sector, SectorElement):
+                return responses.bad_request_resp(f"Invalid scenario content: {sector}")
+        else:
+            # NOTE(rkm 2020-01-03) Have to set this to none, since an empty dict may
+            # have been passed, which doesn't match the type of Optional[SectorElement]
+            sector = None
+
+        sector = SectorWrapper(sector_name, sector)
+        err = utils.sim_proxy().simulation.set_sector(sector)
+
         return responses.checked_resp(err, HTTPStatus.CREATED)

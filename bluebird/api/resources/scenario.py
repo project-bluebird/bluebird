@@ -7,8 +7,8 @@ from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.api.resources.utils.scenario_validation import validate_json_scenario
 from bluebird.utils.properties import Scenario as ScenarioWrapper
+from bluebird.utils.scenario_validation import validate_json_scenario
 
 _PARSER = reqparse.RequestParser()
 _PARSER.add_argument("name", type=str, location="json", required=True)
