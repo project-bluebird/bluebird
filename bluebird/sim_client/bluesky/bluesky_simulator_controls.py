@@ -6,7 +6,6 @@ import logging
 import traceback
 from datetime import datetime
 from typing import Any
-from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Union
@@ -14,6 +13,7 @@ from typing import Union
 import bluebird.utils.properties as props
 from bluebird.settings import in_agent_mode
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
+from bluebird.utils.properties import Scenario
 
 
 # From bluesky/bluesky/__init__.py
@@ -43,10 +43,10 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         self._logger = logging.getLogger(__name__)
         self._dt_mult: float = 1.0
 
-    def load_scenario(
-        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
-    ) -> Optional[str]:
-        return self._bluesky_client.load_scenario(scenario_name, speed, start_paused)
+    def load_scenario_(self, scenario: Scenario) -> Optional[str]:
+        # return self._bluesky_client.load_scenario(scenario)
+        # return self._bluesky_client.upload_new_scenario(scn_name, content)
+        raise NotImplementedError()
 
     def start(self) -> Optional[str]:
         return self._bluesky_client.send_stack_cmd("OP")
@@ -76,11 +76,6 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
             return err
         self._dt_mult = speed
         return None
-
-    def upload_new_scenario(
-        self, scn_name: str, content: Iterable[str]
-    ) -> Optional[str]:
-        return self._bluesky_client.upload_new_scenario(scn_name, content)
 
     def set_seed(self, seed: int) -> Optional[str]:
         resp = self._bluesky_client.send_stack_cmd(

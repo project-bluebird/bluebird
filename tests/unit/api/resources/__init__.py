@@ -48,11 +48,11 @@ TEST_ROUTE = props.AircraftRoute(
 )
 
 
-def endpoint_path(endpoint):
+def endpoint_path(endpoint: str) -> str:
     """Returns the endpoint path"""
     return f"{API_PREFIX}/{endpoint}"
 
 
-def patch_utils_path(endpoint):
+def patch_utils_path(endpoint: str) -> str:
     """Returns the utils module to be patched for the given endpoint"""
     return f"bluebird.api.resources.{endpoint}.utils"

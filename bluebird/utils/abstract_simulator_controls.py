@@ -2,37 +2,30 @@
 Contains the AbstractSimulatorControls class
 """
 
-from abc import ABC, abstractmethod
-from typing import Optional, Union, Iterable
+from abc import ABC
+from abc import abstractmethod
+from typing import Optional
+from typing import Union
 
+from bluebird.utils.properties import Scenario
 from bluebird.utils.properties import SimProperties
 
 
 class AbstractSimulatorControls(ABC):
-    """
-    Abstract class defining simulator control functions
-    """
+    """Abstract class defining simulator control functions"""
 
     @property
     @abstractmethod
     def properties(self) -> Union[SimProperties, str]:
         """
-        :return: Returns the simulator's current properties, or a string to indicate an
-        error
+        Returns the simulator's current properties, or a string to indicate an error
         """
 
     @abstractmethod
-    def load_scenario(
-        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
-    ) -> Optional[str]:
+    def load_scenario_(self, scenario: Scenario) -> Optional[str]:
         """
-        Load the specified scenario
-        :param scenario_name:
-        :param speed: Initial speed
-        :param start_paused: If specified, will pause the simulator after loading the
-        scenario
-        :returns None: If the scenario was loaded
-        :returns str: To indicate an error
+        Load the specified scenario. Returns None if the scenario was loaded, or a str
+        with an error description
         """
 
     @abstractmethod
@@ -91,18 +84,6 @@ class AbstractSimulatorControls(ABC):
         this is overloaded and depends on the mode of operation)
         :param speed:
         :returns None: If the speed is set
-        :returns str: To indicate an error
-        """
-
-    @abstractmethod
-    def upload_new_scenario(
-        self, scn_name: str, content: Iterable[str]
-    ) -> Optional[str]:
-        """
-        Upload a new scenario to the simulation server
-        :param scn_name:
-        :param content:
-        :returns None: If the scenario was uploaded
         :returns str: To indicate an error
         """
 

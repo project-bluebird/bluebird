@@ -2,9 +2,12 @@
 Contains the AbstractSimulatorControls implementation for MachColl
 """
 
+import json
 import logging
+import tempfile
 import traceback
-from typing import Optional, Union, Iterable
+from typing import Optional
+from typing import Union
 
 import bluebird.utils.properties as props
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
@@ -21,9 +24,7 @@ def _raise_for_no_data(data):
 
 
 class MachCollSimulatorControls(AbstractSimulatorControls):
-    """
-    AbstractSimulatorControls implementation for MachColl
-    """
+    """AbstractSimulatorControls implementation for MachColl"""
 
     @property
     def properties(self) -> Union[props.SimProperties, str]:
@@ -63,14 +64,16 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self._mc_metrics_provider = mc_metrics_provider
         self._logger = logging.getLogger(__name__)
 
-    def load_scenario(
-        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
-    ) -> Optional[str]:
-        self._logger.warning(f"Unhandled arguments: speed, start_paused")
-        resp = self._mc_client().set_scenario_filename(scenario_name)
-        if not resp:
-            return "Error: No confirmation received from MachColl"
-        return None if resp == scenario_name else resp
+    def load_scenario(self, scenario: props.Scenario) -> Optional[str]:
+        if not scenario.content:
+            file_name = scenario.name
+            resp = self._mc_client().set_scenario_filename(file_name)
+        else:
+            file_name = f"{scenario.name}.json"
+            with tempfile.NamedTemporaryFile() as tf:
+                json.dump(scenario.content, tf)
+                resp = self._mc_client().upload_scenario_file(tf, file_name)
+        return None if resp == file_name else f'Unsuccessful request: "{resp}"'
 
     # TODO Assert state is as expected after all of these methods (should be in the
     # response)
@@ -150,11 +153,6 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         _raise_for_no_data(resp)
         self._logger.warning(f"Unhandled data: {resp}")
         return None if (resp == speed) else f"Unknown response: {resp}"
-
-    def upload_new_scenario(
-        self, scn_name: str, content: Iterable[str]
-    ) -> Optional[str]:
-        return "Not implemented"
 
     def set_seed(self, seed: int) -> Optional[str]:
         return "Not implemented"

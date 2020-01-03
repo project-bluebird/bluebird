@@ -14,6 +14,7 @@ from aviary.sector.sector_element import SectorElement
 from bluebird.settings import in_agent_mode
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import SimProperties
+from bluebird.utils.properties import Scenario
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 from bluebird.utils.types import is_valid_seed
@@ -53,7 +54,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         sim_controls: AbstractSimulatorControls,
         clear_cache_functions: List[Callable],
     ):
-
         self._logger = logging.getLogger(__name__)
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
@@ -65,12 +65,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if in_agent_mode():
             self._sim_props: Optional[SimProperties] = None
 
-    def load_scenario(
-        self, scenario_name: str, speed: float = 1.0, start_paused: bool = False
-    ) -> Optional[str]:
-        assert scenario_name, "Must provide a scenario name"
-        assert speed >= 0, "Speed must be positive"
-        err = self._sim_controls.load_scenario(scenario_name, speed, start_paused)
+    def load_scenario(self, scenario: Scenario) -> Optional[str]:
+        err = self._sim_controls.load_scenario(scenario)
         if err:
             return err
         self._clear_caches()
@@ -114,13 +110,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     def set_seed(self, seed: int) -> Optional[str]:
         assert is_valid_seed(seed), "Invalid seed"
         err = self._sim_controls.set_seed(seed)
-        if err:
-            return err
-        self._clear_caches()
-        return None
-
-    def upload_new_scenario(self, scn_name: str, content: List[str]) -> Optional[str]:
-        err = self._sim_controls.upload_new_scenario(scn_name, content)
         if err:
             return err
         self._clear_caches()

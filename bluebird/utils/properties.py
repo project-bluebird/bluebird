@@ -2,10 +2,15 @@
 Contains property class definitions
 """
 
+# TODO(RKM 2020-01-02) Split this / move SimProxy.Sector here
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
-from typing import Optional, List
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 import bluebird.utils.types as types
 
@@ -128,3 +133,9 @@ class SimProperties:
             assert types.is_valid_seed(self.seed), "Invalid seed"
         assert self.speed >= 0, "Speed must be positive"
         assert self.dt >= 0, "Step size must be positive"
+
+
+@dataclass
+class Scenario:
+    name: str
+    content: Optional[Dict[str, Any]]

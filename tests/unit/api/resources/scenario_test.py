@@ -8,6 +8,8 @@ from http import HTTPStatus
 import mock
 
 import bluebird.api.resources.utils.utils as utils
+from bluebird.sim_proxy.sim_proxy import SimProxy
+from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 
 from tests.data import TEST_SCENARIO
 from tests.unit.api.resources import endpoint_path
@@ -18,8 +20,16 @@ _ENDPOINT = "scenario"
 _ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_scenario_post(test_flask_client):
+@mock.patch(patch_utils_path(_ENDPOINT), wraps=utils, spec_set=True)
+def test_scenario_post(utils_patch, test_flask_client):
     """Tests the POST method"""
+
+    sim_proxy_mock = mock.create_autospec(SimProxy, spec_set=True)
+    utils_patch.sim_proxy.return_value = sim_proxy_mock
+    simulation_mock = mock.create_autospec(ProxySimulatorControls, spec_set=True)
+    type(sim_proxy_mock).simulation = mock.PropertyMock(return_value=simulation_mock)
+    sector_mock = mock.PropertyMock(return_value=None)
+    type(simulation_mock).sector = sector_mock
 
     # Test arg parsing
 
@@ -27,55 +37,48 @@ def test_scenario_post(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert "name" in resp.json["message"]
 
+    # Test no sector set
+
     data = {"name": ""}
     resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert "content" in resp.json["message"]
+    assert resp.data.decode().startswith("A sector definition is required")
 
-    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
+    # Test name check
 
-        sim_proxy_mock = mock.Mock()
-        utils_patch.sim_proxy.return_value = sim_proxy_mock
+    sector_mock.return_value = True
 
-        # Test no sector set
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode() == "Scenario name must be provided"
 
-        sim_proxy_mock.simulation.sector = None
+    # Test validate_json_scenario
 
-        data["content"] = ""
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.BAD_REQUEST
-        assert resp.data.decode().startswith("A sector definition is required")
+    data = {"name": "test-scenario", "content": {"wrong": "format"}}
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode().startswith("Invalid scenario content")
 
-        # Test name check
+    # Test error from load_scenario
 
-        sim_proxy_mock.simulation.sector = True
+    simulation_mock.load_scenario.return_value = "Couldn't load scenario"
 
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.BAD_REQUEST
-        assert resp.data.decode() == "Scenario name must be provided"
+    with open(TEST_SCENARIO, "r") as f:
+        data["content"] = json.load(f)
 
-        # Test validate_json_scenario
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert resp.data.decode().startswith("Couldn't load scenario")
 
-        data["name"] = "TEST"
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.BAD_REQUEST
-        assert resp.data.decode().startswith("Invalid scenario content")
+    # Test valid response - new scenario provided
 
-        # Test error from upload_new_scenario
+    simulation_mock.load_scenario.return_value = None
 
-        sim_proxy_mock.simulation.upload_new_scenario.return_value = (
-            "Couldn't upload scenario"
-        )
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.CREATED
 
-        with open(TEST_SCENARIO, "r") as f:
-            data = {"name": "test", "content": json.load(f)}
+    # Test valid response - load existing scenario by name
 
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert resp.data.decode().startswith("Couldn't upload scenario")
-
-        # Test valid response
-
-        sim_proxy_mock.simulation.upload_new_scenario.return_value = None
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.CREATED
+    data["content"] = {}
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.CREATED
