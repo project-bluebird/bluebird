@@ -62,10 +62,7 @@ class AbstractSimClient(ABC):
 
     @abstractmethod
     def start_timers(self) -> List[Timer]:
-        """
-        Start any timed functions, and return all the Timer instances
-        :return:
-        """
+        """Start any timed functions, and return all the Timer instances"""
 
     @abstractmethod
     def shutdown(self, shutdown_sim: bool = False) -> bool:

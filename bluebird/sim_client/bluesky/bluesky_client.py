@@ -94,13 +94,10 @@ class BlueSkyClient(Client):
             if time.time() >= timeout:
                 raise TimeoutError("No data received from BlueSky")
 
-    def start_timer(self):
-        """
-        Start the client timer
-        :return:
-        """
+    def start_timers(self) -> List[Timer]:
+        """Start the client timer"""
         self.timer.start()
-        return self.timer
+        return [self.timer]
 
     def stop(self):
         """Stop polling for the stream data"""

@@ -93,7 +93,9 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         return None
 
     def start_timers(self) -> List[Timer]:
-        return [self._timer.start()]
+        """Start any timed functions, and return all the Timer instances"""
+        self._timer.start()
+        return [self._timer]
 
     def start(self) -> Optional[str]:
         return self._sim_controls.start()
