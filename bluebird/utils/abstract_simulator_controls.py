@@ -8,6 +8,7 @@ from typing import Optional
 from typing import Union
 
 from bluebird.utils.properties import Scenario
+from bluebird.utils.properties import Sector
 from bluebird.utils.properties import SimProperties
 
 
@@ -22,7 +23,14 @@ class AbstractSimulatorControls(ABC):
         """
 
     @abstractmethod
-    def load_scenario_(self, scenario: Scenario) -> Optional[str]:
+    def load_sector(self, sector: Sector) -> Optional[str]:
+        """
+        Load the specified sector. Returns None if the sector was loaded, or a str
+        with an error description
+        """
+
+    @abstractmethod
+    def load_scenario(self, scenario: Scenario) -> Optional[str]:
         """
         Load the specified scenario. Returns None if the scenario was loaded, or a str
         with an error description

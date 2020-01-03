@@ -12,6 +12,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from aviary.sector.sector_element import SectorElement
+
 import bluebird.utils.types as types
 
 
@@ -139,3 +141,9 @@ class SimProperties:
 class Scenario:
     name: str
     content: Optional[Dict[str, Any]]
+
+
+@dataclass
+class Sector:
+    name: str
+    element: Optional[SectorElement]

@@ -2,40 +2,35 @@
 Contains the ProxySimulatorControls class
 """
 
+import json
 import logging
-from dataclasses import dataclass
 from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
 
-from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import in_agent_mode
+from bluebird.settings import Settings
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
-from bluebird.utils.properties import SimProperties
 from bluebird.utils.properties import Scenario
+from bluebird.utils.properties import Sector
+from bluebird.utils.properties import SimProperties
+from bluebird.utils.sector_validation import validate_geojson_sector
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 from bluebird.utils.types import is_valid_seed
-
 
 # The rate at which the current sim info is logged to the console (regardless of mode or
 # sim speed)
 SIM_LOG_RATE = 0.2
 
 
-@dataclass
-class Sector:
-    name: str
-    element: SectorElement
-
-
 class ProxySimulatorControls(AbstractSimulatorControls):
     """Proxy implementation of AbstractSimulatorControls"""
 
     @property
-    def sector(self) -> Sector:
+    def sector(self) -> Optional[Sector]:
         return self._sector
 
     @property
@@ -64,6 +59,31 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # Only store a cache of the sim properties if we are in agent mode
         if in_agent_mode():
             self._sim_props: Optional[SimProperties] = None
+
+    def load_sector(self, sector: Sector) -> Optional[str]:
+        """
+        Loads the specified sector. If the sector contains an element definition then a
+        new sector is created and stored, then uploaded to the simulation. If no sector
+        element is defined, then the sector name must refer to an existing sector which
+        BlueBird can find (i.e. locally on disk)
+        """
+
+        # NOTE(rkm 2020-01-03) We can't currently read the current sector definition
+        # from either simulator, so we can only check if we have it locally
+        if not sector.element:
+            sector_element = self._load_sector_from_file()
+            if isinstance(sector_element, str):
+                return f"Error loading sector from file: {sector_element}"
+            sector.element = sector_element
+
+        err = self._sim_controls.load_sector(sector)
+        if err:
+            return err
+
+        self._save_sector_to_file(sector)
+        self._sector = sector
+        self._clear_caches()
+        return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
         err = self._sim_controls.load_scenario(scenario)
@@ -115,13 +135,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._clear_caches()
         return None
 
-    def set_sector(self, sector: Sector) -> Optional[str]:
-        """Updates the current sector and sends it to the sim"""
-        self._sector = sector
-        # TODO(RKM 2019-12-20) Update the sim
-        # TODO(RKM 2019-12-28) Write to disk / touch on exit
-        self._clear_caches()
-
     def _log_sim_props(self):
         """Logs the current SimProperties to the console"""
         props = self.properties
@@ -148,3 +161,18 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             sim_props.sector_name = self._sector.name
         sim_props.seed = self._seed
         return sim_props
+
+    @staticmethod
+    def _load_sector_from_file(sector: Sector):
+        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.json"
+        if not sector_file.exists():
+            return f"No sector file at {sector_file}"
+        with open(sector_file, "r") as f:
+            return validate_geojson_sector(json.load(f))
+
+    def _save_sector_to_file(self, sector: Sector):
+        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.json"
+        if sector_file.exists():
+            self._logger.warning("overwrite..")
+        with open(sector_file, "w") as f:
+            json.dump(sector.element.sector_geojson(), f)

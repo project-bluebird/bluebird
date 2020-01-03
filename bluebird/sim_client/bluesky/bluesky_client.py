@@ -246,7 +246,7 @@ class BlueSkyClient(Client):
             return False
 
     @timeit("BlueSkyClient")
-    def upload_new_scenario(self, name, lines):
+    def upload_new_scenario(self, name: str, lines: List[str]):
         """Uploads a new scenario file to the BlueSky simulation"""
 
         self._scn_response = None
@@ -259,14 +259,8 @@ class BlueSkyClient(Client):
 
         return resp if resp else "No response received" if not resp == "Ok" else None
 
-    def load_scenario(self, filename, speed=1.0, start_paused=False) -> Optional[str]:
-        """
-        Load a scenario from a file
-        :param speed:
-        :param filename:
-        :param start_paused:
-        :return:
-        """
+    def load_scenario(self, filename, start_paused=False) -> Optional[str]:
+        """Load a scenario from a file"""
 
         # TODO(RKM 2019-11-21) Proxy layer should handle this
         # episode_id = bluebird.logging.restart_episode_log(self.seed)
@@ -283,17 +277,12 @@ class BlueSkyClient(Client):
         if err:
             return err
 
+        # NOTE(rkm 2020-01-03) BlueSky auto-starts if there are aircraft in a newly
+        # loaded scenario. We could disable this "feature", however it seems linked to
+        # other vital parts of BlueSky, so best leave it alone. This method gives
+        # roughly the same result
         if start_paused:
             err = self.send_stack_cmd("HOLD")
-            if err:
-                return err
-
-        # TODO(RKM 2019-11-21) Proxy layer should handle this
-        # bluebird.logging.bodge_file_content(filename)
-
-        if speed != 1.0:
-            cmd = f"DTMULT {speed}"
-            err = self.send_stack_cmd(cmd)
             if err:
                 return err
 
@@ -330,10 +319,7 @@ class BlueSkyClient(Client):
                 )
 
     def reset_sim(self) -> Optional[str]:
-        """
-        Resets the BlueSky sim and handles the response
-        :return:
-        """
+        """Resets the BlueSky sim and handles the response"""
 
         # TODO(RKM 2019-11-21) Proxy layer should handle this
         # self._ac_data.timer.disabled = True
@@ -353,10 +339,7 @@ class BlueSkyClient(Client):
         )
 
     def quit(self):
-        """
-        Sends a shutdown message to the simulation server
-        :return:
-        """
+        """Sends a shutdown message to the simulation server"""
 
         self._awaiting_exit_resp = True
         self.send_event(b"QUIT", target=b"*")

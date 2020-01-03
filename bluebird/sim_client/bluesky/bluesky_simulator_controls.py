@@ -10,6 +10,8 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from aviary.parser.bluesky_parser import BlueskyParser
+
 import bluebird.utils.properties as props
 from bluebird.settings import in_agent_mode
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
@@ -42,11 +44,33 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         self._bluesky_client = bluesky_client
         self._logger = logging.getLogger(__name__)
         self._dt_mult: float = 1.0
+        self._sector: Optional[props.Sector] = None
 
-    def load_scenario_(self, scenario: Scenario) -> Optional[str]:
-        # return self._bluesky_client.load_scenario(scenario)
-        # return self._bluesky_client.upload_new_scenario(scn_name, content)
-        raise NotImplementedError()
+    def load_sector(self, sector: props.Sector) -> Optional[str]:
+        # NOTE(rkm 2020-01-03) This function is a no-op for BlueSky, since it doesn't
+        # have separate concepts of sectors and scenarios. We only store the sector so
+        # we can use it in load_scenario
+        assert sector.element
+        self._sector = sector
+
+    def load_scenario(self, scenario: Scenario) -> Optional[str]:
+        file_name = f"{scenario.name}.scn".lower()
+        if not scenario.content:
+            return self._bluesky_client.load_scenario(file_name, in_agent_mode())
+
+        assert self._sector
+        try:
+            # TODO(rkm 2020-01-03) What exceptions can this raise?
+            # NOTE Errors here (aviary parsing) may be caused by error in the previously
+            # stored sector definition
+            parser = BlueskyParser(self._sector.element, scenario.content)
+            scenario_lines = parser.all_lines()
+        except Exception as e:
+            return f"Could not parse a BlueSky scenario: {e}"
+        err = self._bluesky_client.upload_new_scenario(file_name, scenario_lines)
+        if err:
+            return err
+        return self._bluesky_client.load_scenario(file_name)
 
     def start(self) -> Optional[str]:
         return self._bluesky_client.send_stack_cmd("OP")

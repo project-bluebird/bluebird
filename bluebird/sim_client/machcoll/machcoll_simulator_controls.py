@@ -64,15 +64,23 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self._mc_metrics_provider = mc_metrics_provider
         self._logger = logging.getLogger(__name__)
 
+    def load_sector(self, sector: props.Sector) -> Optional[str]:
+        assert sector.element
+        file_name = f"{sector.name}.geojon"
+        with tempfile.NamedTemporaryFile() as tf:
+            json.dump(sector.element.sector_geojson(), tf)
+            resp = self._mc_client().upload_airspace_file(tf, file_name)
+        return None if resp == file_name else f'Unsuccessful upload: "{resp}"'
+
     def load_scenario(self, scenario: props.Scenario) -> Optional[str]:
-        if not scenario.content:
-            file_name = scenario.name
-            resp = self._mc_client().set_scenario_filename(file_name)
-        else:
-            file_name = f"{scenario.name}.json"
+        file_name = f"{scenario.name}.json"
+        if scenario.content:
             with tempfile.NamedTemporaryFile() as tf:
                 json.dump(scenario.content, tf)
                 resp = self._mc_client().upload_scenario_file(tf, file_name)
+            if not resp == file_name:
+                return f'Unsuccessful upload: "{resp}"'
+        resp = self._mc_client().set_scenario_filename(file_name)
         return None if resp == file_name else f'Unsuccessful request: "{resp}"'
 
     # TODO Assert state is as expected after all of these methods (should be in the

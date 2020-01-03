@@ -49,6 +49,8 @@ class Settings:
     FLASK_DEBUG: bool = True
     PORT: int = 5001
 
+    DATA_DIR = Path("data")
+
     SIM_LOG_RATE: float = 0.2
     LOGS_ROOT: str = Path(os.getenv("BB_LOGS_ROOT", "logs"))
     CONSOLE_LOG_LEVEL: int = logging.DEBUG
