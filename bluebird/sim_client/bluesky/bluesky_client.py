@@ -170,7 +170,7 @@ class BlueSkyClient(Client):
                     else None
                 )
 
-                self._logger.debug("EVT :: {} :: {}".format(eventname, pydata))
+                self._logger.debug(f"EVT :: {eventname} :: {pydata}")
 
                 if eventname in IGNORED_EVENTS:
                     self._logger.debug(f"Ignored event {eventname}")

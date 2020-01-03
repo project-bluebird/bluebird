@@ -26,8 +26,7 @@ class MetricsProviders:
         return next((x for x in self.providers if str(x) == name), None)
 
     def __iter__(self):
-        for p in self.providers:
-            yield p
+        yield from self.providers
 
     def __bool__(self):
         return bool(self.providers)

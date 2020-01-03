@@ -20,7 +20,7 @@ class BlueBirdApi(Api):
     """
 
     def __init__(self, *args, **kwargs):
-        super(BlueBirdApi, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 # Create the Flask app & API, with the given prefix
