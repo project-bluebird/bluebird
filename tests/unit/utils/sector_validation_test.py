@@ -5,7 +5,7 @@ import json
 
 from aviary.sector.sector_element import SectorElement
 
-from bluebird.api.resources.utils.sector_validation import validate_geojson_sector
+from bluebird.utils.sector_validation import validate_geojson_sector
 
 from tests.data import TEST_SECTOR
 

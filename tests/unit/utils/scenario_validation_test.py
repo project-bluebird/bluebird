@@ -4,7 +4,7 @@ Tests for the scenario validation
 
 import json
 
-from bluebird.api.resources.utils.scenario_validation import validate_json_scenario
+from bluebird.utils.scenario_validation import validate_json_scenario
 
 from tests.data import TEST_SCENARIO
 
