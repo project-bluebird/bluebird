@@ -38,6 +38,8 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     @property
     def properties(self) -> Union[props.SimProperties, str]:
         data = self._bluesky_client.sim_info_stream_data
+        if not data:
+            return "No data SIMINFO data received from BlueSky"
         return self._convert_to_sim_props(data)
 
     def __init__(self, bluesky_client):
