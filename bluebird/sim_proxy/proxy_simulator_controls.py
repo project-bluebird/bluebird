@@ -9,7 +9,6 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-
 from bluebird.settings import in_agent_mode
 from bluebird.settings import Settings
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
@@ -20,6 +19,7 @@ from bluebird.utils.sector_validation import validate_geojson_sector
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 from bluebird.utils.types import is_valid_seed
+
 
 # The rate at which the current sim info is logged to the console (regardless of mode or
 # sim speed)
@@ -164,17 +164,19 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         sim_props.seed = self._seed
         return sim_props
 
-    @staticmethod
-    def _load_sector_from_file(sector: Sector):
-        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.json"
+    def _load_sector_from_file(self, sector: Sector):
+        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.geojson"
+        self._logger.debug(f"Loading sector from {sector_file}")
         if not sector_file.exists():
             return f"No sector file at {sector_file}"
         with open(sector_file, "r") as f:
             return validate_geojson_sector(json.load(f))
 
     def _save_sector_to_file(self, sector: Sector):
-        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.json"
+        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.geojson"
+        self._logger.debug(f"Saving sector to {sector_file}")
         if sector_file.exists():
-            self._logger.warning("overwrite..")
-        with open(sector_file, "w") as f:
+            self._logger.warning("Overwriting existing file")
+        sector_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(sector_file, "w+") as f:
             json.dump(sector.element.sector_geojson(), f)

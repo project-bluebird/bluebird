@@ -3,17 +3,24 @@ Tests for the ProxySimulatorControls class
 """
 
 import datetime
+import json
 import logging
 
 import mock
 import pytest
+from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 
 # TODO(RKM 2020-01-02) We should be able to remove this import
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
+from bluebird.utils.properties import Scenario
+from bluebird.utils.properties import Sector
 from bluebird.utils.properties import SimProperties
+
+from tests.data import TEST_SCENARIO
+from tests.data import TEST_SECTOR
 
 
 _TEST_SIM_PROPERTIES = props.SimProperties(
@@ -26,6 +33,15 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
     dt=1.0,
     utc_datetime=datetime.datetime.now(),
 )
+
+with open(TEST_SECTOR, "r") as f:
+    geojson = json.load(f)
+    del geojson["_source"]
+    sector_element = SectorElement.deserialise(json.dumps(geojson))
+    _TEST_SECTOR = Sector(name="test-sector", element=sector_element)
+
+with open(TEST_SCENARIO, "r") as f:
+    _TEST_SCENARIO = Scenario("test-scenario", content=json.load(f))
 
 
 def test_abstract_class_implemented():
@@ -76,32 +92,21 @@ def test_load_scenario():
     mock_sim_controls = mock.Mock()
     proxy_simulator_controls = ProxySimulatorControls(mock_sim_controls, [])
 
-    # Test arg parsing
-
-    with pytest.raises(AssertionError, match="Must provide a scenario name"):
-        proxy_simulator_controls.load_scenario(None)
-    with pytest.raises(AssertionError, match="Must provide a scenario name"):
-        proxy_simulator_controls.load_scenario("")
-    with pytest.raises(AssertionError, match="Speed must be positive"):
-        proxy_simulator_controls.load_scenario("TEST", -1)
-
     # Test error handling from load_scenario
 
-    mock_sim_controls.load_scenario = mock.Mock(
-        sepc=AbstractSimulatorControls.load_scenario, return_value="Error"
-    )
-    res = proxy_simulator_controls.load_scenario("TEST")
+    mock_sim_controls.load_scenario.return_value = "Error"
+
+    res = proxy_simulator_controls.load_scenario(None)
     assert res == "Error"
 
     # Test load_scenario
 
-    mock_sim_controls.properties = _TEST_SIM_PROPERTIES
-    mock_sim_controls.load_scenario = mock.Mock(
-        sepc=AbstractSimulatorControls.load_scenario, return_value=None
-    )
-    res = proxy_simulator_controls.load_scenario("TEST")
+    mock_sim_controls.reset_mock()
+    mock_sim_controls.load_scenario.return_value = None
+
+    res = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
     assert not res
-    mock_sim_controls.load_scenario.assert_called_once_with("TEST", 1.0, False)
+    mock_sim_controls.load_scenario.assert_called_once_with(_TEST_SCENARIO)
 
 
 def test_start():
@@ -348,15 +353,15 @@ def test_cache_used():
     # Test that the cache is cleared when load_scenario called
 
     mock_sim_controls.load_scenario.return_value = None
-    err = proxy_sim_controls.load_scenario("test-scenario", 1)
+    err = proxy_sim_controls.load_scenario(None)
     assert not err
 
     test_cache_used()
 
-    # Test that the cache is cleared when set_sector called
+    # Test that the cache is cleared when load_sector called
 
-    mock_sim_controls.load_scenario.return_value = None
-    err = proxy_sim_controls.set_sector(None)
+    mock_sim_controls.load_sector.return_value = None
+    err = proxy_sim_controls.load_sector(_TEST_SECTOR)
     assert not err
 
     test_cache_used()
