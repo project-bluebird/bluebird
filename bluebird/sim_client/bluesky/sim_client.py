@@ -64,7 +64,7 @@ class SimClient(AbstractSimClient):
         self._waypoint_controls = BlueSkyWaypointControls(self._client)
 
     def start_timers(self) -> List[Timer]:
-        return [self._client.start_timers()]
+        return self._client.start_timers()
 
     def connect(self, timeout=1) -> None:
         self._client.connect(

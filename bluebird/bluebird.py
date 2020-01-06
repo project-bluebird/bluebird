@@ -8,7 +8,10 @@ import signal
 import threading
 import time
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
@@ -36,7 +39,7 @@ class BlueBird:
 
         self._cli_args = args
         self._min_sim_version = None
-        self._timers = []
+        self._timers: List = []
 
         self.sim_proxy: Optional[SimProxy] = None
         self.sim_client: Optional[AbstractSimClient] = None
@@ -47,9 +50,7 @@ class BlueBird:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Stops the app and cleans up any threaded code
-        """
+        """Stops the app and cleans up any threaded code"""
 
         self._logger.info("BlueBird stopping")
 
@@ -111,6 +112,7 @@ class BlueBird:
             return False
 
         self._timers.extend(self.sim_proxy.start_timers())
+
         self.sim_proxy.pre_fetch_data()
 
         if self._cli_args["reset_sim"]:

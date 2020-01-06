@@ -11,7 +11,7 @@ Contains the SimProxy class
 # aware that some properties may change without their knowledge
 
 import logging
-from typing import Iterable
+from typing import List
 
 from semver import VersionInfo
 
@@ -68,11 +68,11 @@ class SimProxy(AbstractSimClient):
     def connect(self, timeout: int = 1) -> None:
         self._sim_client.connect(timeout)
 
-    def start_timers(self) -> Iterable[Timer]:
-        return (
-            self._sim_client.start_timers()
-            + self._proxy_simulator_controls.start_timers()
-        )
+    def start_timers(self) -> List[Timer]:
+        return [
+            *self._sim_client.start_timers(),
+            *self._proxy_simulator_controls.start_timers(),
+        ]
 
     def pre_fetch_data(self):
         _ = self._sim_client.aircraft.all_properties
