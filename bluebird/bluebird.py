@@ -135,6 +135,7 @@ class BlueBird:
             f"0.0.0.0:{Settings.PORT}"
         )
 
+        # Register the BlueBird app with Flask so the API thread can use it
         FLASK_APP.config[FLASK_CONFIG_LABEL] = self
 
         flask_thread = threading.Thread(
@@ -164,6 +165,10 @@ class BlueBird:
             raise exc_type(exc_value).with_traceback(exc_traceback)
 
     def _check_timers(self):
+        """
+        Checks if any threads have raised an exception. Returns the first found
+        exception, or None
+        """
         return next((x.exc_info for x in self._timers if x.exc_info), None)
 
 
