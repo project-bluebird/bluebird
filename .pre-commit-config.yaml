@@ -21,7 +21,7 @@ repos:
         args: [--autofix]
       - id: trailing-whitespace
   - repo: https://github.com/psf/black
-    rev: stable
+    rev: 19.10b0
     hooks:
       - id: black
         language_version: python3.7
@@ -31,7 +31,7 @@ repos:
       - id: flake8
         args: [--config=.flake8]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v1.25.2
+    rev: v1.25.3
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
