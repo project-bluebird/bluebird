@@ -20,7 +20,6 @@ def abstract_class_implementation(sim_name: str):
     )
     getattr(module, f"{sim_name}AircraftControls")(None)
     getattr(module, f"{sim_name}SimulatorControls")(None)
-    getattr(module, f"{sim_name}WaypointControls")(None)
 
 
 def sim_client_instantiation(sim_name: str):

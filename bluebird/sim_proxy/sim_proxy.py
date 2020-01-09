@@ -19,7 +19,6 @@ from bluebird.metrics import MetricsProviders
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
-from bluebird.sim_proxy.proxy_waypoint_controls import ProxyWaypointControls
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
 
@@ -42,10 +41,6 @@ class SimProxy(AbstractSimClient):
     def sim_version(self) -> VersionInfo:
         return self._sim_client.sim_version
 
-    @property
-    def waypoints(self) -> ProxyWaypointControls:
-        return self._proxy_waypoint_controls
-
     def __init__(
         self, sim_client: AbstractSimClient, metrics_providers: MetricsProviders
     ):
@@ -58,9 +53,6 @@ class SimProxy(AbstractSimClient):
 
         # The proxy implementations
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
-        self._proxy_waypoint_controls = ProxyWaypointControls(
-            self._sim_client.waypoints
-        )
         self._proxy_simulator_controls = ProxySimulatorControls(
             self._sim_client.simulation, [self._proxy_aircraft_controls.clear_caches]
         )
@@ -75,9 +67,11 @@ class SimProxy(AbstractSimClient):
         ]
 
     def pre_fetch_data(self):
+        """
+        Called on startup to fetch the initial state
+        """
         _ = self._sim_client.aircraft.all_properties
         _ = self._sim_client.simulation.properties
-        self.waypoints
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
         """

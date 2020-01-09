@@ -20,7 +20,6 @@ from semver import VersionInfo
 from .machcoll_client_imports import MCClientMetrics
 from .machcoll_aircraft_controls import MachCollAircraftControls
 from .machcoll_simulator_controls import MachCollSimulatorControls
-from .machcoll_waypoint_controls import MachCollWaypointControls
 from bluebird.metrics import MetricsProviders
 from bluebird.settings import Settings
 from bluebird.utils.abstract_sim_client import AbstractSimClient
@@ -55,10 +54,6 @@ class SimClient(AbstractSimClient):
     def sim_version(self) -> VersionInfo:
         return self._client_version
 
-    @property
-    def waypoints(self) -> MachCollWaypointControls:
-        return self._waypoint_controls
-
     def __init__(self, metrics_providers: MetricsProviders):
         self.mc_client = None
         self._client_version: VersionInfo = None
@@ -68,7 +63,6 @@ class SimClient(AbstractSimClient):
         self._sim_controls = MachCollSimulatorControls(
             self, self._aircraft_controls, self._mc_metrics_provider,
         )
-        self._waypoint_controls = MachCollWaypointControls(self)
 
     def connect(self, timeout: int = 1) -> None:
         self.mc_client = MCClientMetrics(host=Settings.SIM_HOST, port=Settings.MC_PORT)

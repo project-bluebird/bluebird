@@ -11,7 +11,6 @@ from semver import VersionInfo
 
 from .bluesky_aircraft_controls import BlueSkyAircraftControls
 from .bluesky_simulator_controls import BlueSkySimulatorControls
-from .bluesky_waypoint_controls import BlueSkyWaypointControls
 from bluebird.settings import Settings
 from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
 from bluebird.utils.abstract_sim_client import AbstractSimClient
@@ -53,15 +52,10 @@ class SimClient(AbstractSimClient):
     def sim_version(self) -> VersionInfo:
         return self._client.host_version
 
-    @property
-    def waypoints(self) -> BlueSkyWaypointControls:
-        return self._waypoint_controls
-
     def __init__(self, **kwargs):
         self._client = BlueSkyClient()
         self._aircraft_controls = BlueSkyAircraftControls(self._client)
         self._sim_controls = BlueSkySimulatorControls(self._client)
-        self._waypoint_controls = BlueSkyWaypointControls(self._client)
 
     def start_timers(self) -> List[Timer]:
         return self._client.start_timers()

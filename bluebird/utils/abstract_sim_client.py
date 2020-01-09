@@ -9,7 +9,6 @@ from semver import VersionInfo
 
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
-from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
 from bluebird.utils.timer import Timer
 
 
@@ -41,14 +40,6 @@ class AbstractSimClient(ABC):
         """
         Return the version of the connected simulation server
         :return:
-        """
-
-    @property
-    @abstractmethod
-    def waypoints(self) -> AbstractWaypointControls:
-        """
-        :return: Returns the client's waypoint controller instance
-        :rtype: AbstractWaypointControls
         """
 
     @abstractmethod
