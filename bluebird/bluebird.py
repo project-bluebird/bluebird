@@ -113,12 +113,14 @@ class BlueBird:
 
         self._timers.extend(self.sim_proxy.start_timers())
 
-        self.sim_proxy.pre_fetch_data()
-
+        # NOTE(rkm 2020-01-09) This has to be done after we start the timers since,
+        # for BlueSky at least, we need to actively poll for the reset confirmation
         if self._cli_args["reset_sim"]:
             err = self.sim_proxy.simulation.reset()
             if err:
                 raise RuntimeError(f"Could not reset sim on startup: {err}")
+
+        self.sim_proxy.pre_fetch_data()
 
         return True
 
