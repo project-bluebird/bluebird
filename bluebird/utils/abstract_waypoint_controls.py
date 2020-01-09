@@ -27,12 +27,3 @@ class AbstractWaypointControls(ABC):
         Returns the waypoint for the given name if it exists, otherwise None
         :param waypoint_name:
         """
-
-    @abstractmethod
-    def define(
-        self, name: Optional[str], position: types.LatLon, **kwargs
-    ) -> Union[types.Waypoint, str]:
-        """
-        Defines a waypoint and returns the Waypoint object
-        :param name: If not set, a name will automatically be generated
-        """

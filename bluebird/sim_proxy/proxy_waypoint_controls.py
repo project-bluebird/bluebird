@@ -2,8 +2,6 @@
 Contains the ProxyWaypointControls class
 """
 
-import random
-
 from typing import Optional, Union, Set
 from bluebird.utils.abstract_waypoint_controls import AbstractWaypointControls
 
@@ -40,24 +38,6 @@ class ProxyWaypointControls(AbstractWaypointControls):
             # return self._waypoint_controls.find(waypoint_name)
             return None
         return waypoint
-
-    def define(
-        self, name: Optional[str], position: types.LatLon, **kwargs
-    ) -> Union[types.Waypoint, str]:
-        assert position, "Must provide a position"
-        if not name:
-            if [x for x in self._waypoints if x.position == position]:
-                return f"A waypoint with LatLon {position} already exists"
-            name = str(random.randint(100, 999))
-
-        if self._find_by_name(name):
-            return f'A waypoint named "{name}" already exists'
-
-        res = self._waypoint_controls.define(name, position, **kwargs)
-        if not isinstance(res, types.Waypoint):
-            return res
-        self._waypoints.append(res)
-        return res
 
     def _find_by_name(self, name: str) -> Optional[types.Waypoint]:
         for waypoint in self._waypoints:

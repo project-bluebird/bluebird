@@ -29,10 +29,3 @@ class BlueSkyWaypointControls(AbstractWaypointControls):
         for wpt in self._waypoints:
             if wpt.name == waypoint_name:
                 return wpt
-
-    def define(
-        self, name: str, position: types.LatLon, **kwargs
-    ) -> Union[types.Waypoint, str]:
-        # TODO(RKM 2019-11-24) Ignoring the waypoint type here
-        cmd_str = f"DEFWPT {name} {position.latitude} {position.longitude}"
-        return self._bluesky_client.send_stack_cmd(cmd_str)

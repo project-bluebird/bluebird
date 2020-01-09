@@ -31,10 +31,5 @@ class MachCollWaypointControls(AbstractWaypointControls):
     def find(self, waypoint_name: str) -> Optional[types.Waypoint]:
         raise NotImplementedError
 
-    def define(
-        self, name: Optional[str], position: types.LatLon, **kwargs
-    ) -> Union[types.Waypoint, str]:
-        raise NotImplementedError
-
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
