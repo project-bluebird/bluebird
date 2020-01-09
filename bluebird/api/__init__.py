@@ -89,7 +89,6 @@ FLASK_API.add_resource(res.Pos, "/pos")
 FLASK_API.add_resource(res.Spd, "/spd")
 
 # Simulation control
-FLASK_API.add_resource(res.DefWpt, "/defwpt")
 FLASK_API.add_resource(res.DtMult, "/dtmult")
 FLASK_API.add_resource(res.Hold, "/hold")
 FLASK_API.add_resource(res.LoadLog, "/loadlog")

@@ -13,7 +13,6 @@ from .pos import Pos
 from .spd import Spd
 
 # Simulation control
-from .defwpt import DefWpt
 from .dtmult import DtMult
 from .hold import Hold
 from .loadlog import LoadLog
@@ -44,7 +43,6 @@ __all__ = [
     "ListRoute",
     "Pos",
     "Spd",
-    "DefWpt",
     "DtMult",
     "Hold",
     "LoadLog",
