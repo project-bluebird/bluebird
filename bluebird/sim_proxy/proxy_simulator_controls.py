@@ -50,6 +50,9 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         clear_cache_functions: List[Callable],
     ):
         self._logger = logging.getLogger(__name__)
+        self._props_logger = logging.getLogger(__name__)
+        self._props_logger.name = "Sim Info"
+
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._clear_cache_functions = clear_cache_functions
@@ -143,11 +146,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if isinstance(props, str):
             self._logger.error(f"Could not get sim properties: {props}")
             return
-        data = (
-            f"{props.utc_datetime} [{props.scenario_time:4}] "
-            f"{props.speed:4}x {props.state.name}"
+        self._props_logger.info(
+            f"UTC={props.utc_datetime}, "
+            f"scenario_time={int(props.scenario_time):4}, "
+            f"speed={props.speed:4}x, "
+            f"scenario={props.state.name}"
         )
-        self._logger.info(data)
 
     def _clear_caches(self):
         if in_agent_mode():
