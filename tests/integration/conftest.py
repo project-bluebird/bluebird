@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Callable
 
 import pytest
+import requests
 from compose.cli.command import project_from_options
 from compose.project import Project as ComposeProject
 from compose.service import BuildAction
@@ -103,6 +104,17 @@ def pytest_runtest_makereport(item, call):
     setattr(item, "rep_" + rep.when, rep)
 
 
+def _print_container_logs(project, restart_t):
+    for container in reversed(project.containers()):
+        header = f"\nLogs from {container.service}:"
+        spacer = "\n" + "=" * len(header)
+        logs = (
+            container.logs(since=restart_t).decode("utf-8", errors="replace")
+            or "(no logs)"
+        )
+        print(f"{header}{spacer}\n{logs}{spacer}")
+
+
 @pytest.fixture(scope="function", autouse=True)
 def integration_test_wrapper(pre_integration_setup, request):
     """Performs setup & teardown around each integration test"""
@@ -116,7 +128,12 @@ def integration_test_wrapper(pre_integration_setup, request):
     restart_t = datetime.utcnow()
 
     project.restart(timeout=0)
-    wait_for_containers()
+
+    try:
+        wait_for_containers()
+    except requests.exceptions.ConnectionError:
+        _print_container_logs(project, restart_t)
+        raise
 
     print(f"\n=== New test ===")
 
@@ -124,11 +141,4 @@ def integration_test_wrapper(pre_integration_setup, request):
 
     # Print the container logs if the test failed
     if request.node.rep_call.failed:
-        for container in reversed(project.containers()):
-            header = f"\nLogs from {container.service}:"
-            spacer = "\n" + "=" * len(header)
-            logs = (
-                container.logs(since=restart_t).decode("utf-8", errors="replace")
-                or "(no logs)"
-            )
-            print(f"{header}{spacer}\n{logs}{spacer}")
+        _print_container_logs(project, restart_t)
