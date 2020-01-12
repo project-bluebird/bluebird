@@ -1,8 +1,8 @@
 """
 Provides logic for the ADDWPT (add waypoint to route) API endpoint
-
-TODO: Consider renaming this since its meaning can be confusing
 """
+
+# TODO (rkm 2020-01-09) Determine if we still need this endpoint
 
 from flask_restful import Resource, reqparse
 
@@ -25,10 +25,7 @@ class AddWpt(Resource):
 
     @staticmethod
     def post():
-        """
-        Logic for POST events. If the request is valid, then the specified waypoint is
-        added to the aircraft's route
-        """
+        """Appends the specified waypoint to the aircraft's route"""
 
         req_args = utils.parse_args(_PARSER)
         callsign: types.Callsign = req_args[utils.CALLSIGN_LABEL]
@@ -41,7 +38,7 @@ class AddWpt(Resource):
         if resp:
             return resp
 
-        waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
+        waypoint = utils.sim_proxy().simulation.find_waypoint(waypoint_str)
         if not waypoint:
             return responses.bad_request_resp(
                 f'Could not find waypoint "{waypoint_str}"'

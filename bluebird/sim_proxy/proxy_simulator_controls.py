@@ -87,6 +87,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._save_sector_to_file(sector)
         self._sector = sector
         self._clear_caches()
+        # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
         return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
@@ -94,6 +95,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
         self._clear_caches()
+        # TODO(rkm 2020-01-12) Extract all the info we need - routes
         return None
 
     def start_timers(self) -> List[Timer]:
@@ -140,6 +142,18 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             return err
         self._clear_caches()
         return None
+
+    def find_waypoint(self, name: str):
+        raise NotImplementedError()
+
+    def shutdown(self) -> None:
+        # Saves the current sector filename to .last_sector so it can be easily reloaded
+        if not self.sector:
+            return None
+        last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
+        sector_filename = self._sector_filename(self.sector.name)
+        with open(last_sector_file, "w+") as f:
+            f.write(sector_filename)
 
     def _log_sim_props(self):
         """Logs the current SimProperties to the console"""

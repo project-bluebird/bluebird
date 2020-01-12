@@ -24,8 +24,7 @@ class Direct(Resource):
     @staticmethod
     def post():
         """
-        Logic for POST events. If the request contains an existing aircraft ID and valid
-        waypoint name, then a request is sent to the aircraft to head directly to the
+        Requests that the specified aircraft proceeds immediately to the specified
         waypoint
         """
 
@@ -35,7 +34,7 @@ class Direct(Resource):
         if not waypoint_str:
             return responses.bad_request_resp("Waypoint name must be specified")
 
-        waypoint = utils.sim_proxy().waypoints.find(waypoint_str)
+        waypoint = utils.sim_proxy().simulation.find_waypoint(waypoint_str)
         if not waypoint:
             return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
 
