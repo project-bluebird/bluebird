@@ -96,14 +96,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         raise NotImplementedError
 
-    def add_waypoint_to_route(
-        self,
-        callsign: types.Callsign,
-        waypoint: types.Waypoint,
-        gspd: types.GroundSpeed,
-    ) -> Optional[str]:
-        raise NotImplementedError
-
     def create(
         self,
         callsign: types.Callsign,

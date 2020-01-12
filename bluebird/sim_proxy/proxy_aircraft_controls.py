@@ -122,23 +122,6 @@ class ProxyAircraftControls(AbstractAircraftControls):
             return err
         return None
 
-    def add_waypoint_to_route(
-        self,
-        callsign: types.Callsign,
-        waypoint: types.Waypoint,
-        gspd: types.GroundSpeed,
-    ) -> Optional[str]:
-        self._assert_valid_args([callsign, waypoint, gspd])
-        assert all(callsign in d for d in (self.ac_props, self.ac_routes))
-        ac_route = self.ac_routes[callsign]
-        if waypoint in [x.waypoint for x in ac_route.segments]:
-            return "Waypoint already on route"
-        err = self._aircraft_controls.add_waypoint_to_route(callsign, waypoint, gspd)
-        if err:
-            return err
-        ac_route.segments.append(props.RouteItem(waypoint, gspd))
-        return None
-
     def create(
         self,
         callsign: types.Callsign,

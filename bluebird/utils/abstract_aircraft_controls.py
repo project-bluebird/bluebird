@@ -96,17 +96,6 @@ class AbstractAircraftControls(ABC):
         :return:
         """
 
-    @abstractmethod
-    def add_waypoint_to_route(
-        self,
-        callsign: types.Callsign,
-        waypoint: types.Waypoint,
-        gspd: types.GroundSpeed,
-    ) -> Optional[str]:
-        """
-        Append a waypoint to an aircraft's route. The waypoint must already be defined
-        """
-
     # TODO What are the supported aircraft types?
     @abstractmethod
     def create(

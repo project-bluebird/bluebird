@@ -394,66 +394,6 @@ def test_direct_to_waypoint():
     assert not err
 
 
-def test_add_waypoint_to_route():
-    """Tests that ProxyAircraftControls implements add_waypoint_to_route"""
-
-    mock_aircraft_controls = mock.create_autospec(spec=AbstractAircraftControls)
-    proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
-
-    # Test invalid args
-    with pytest.raises(AssertionError, match=f"{_INVALID_ARG}"):
-        proxy_aircraft_controls.add_waypoint_to_route(
-            None, None, None  # type: ignore
-        )
-        proxy_aircraft_controls.add_waypoint_to_route(
-            _TEST_CALLSIGN_1, None, None  # type: ignore
-        )
-        proxy_aircraft_controls.add_waypoint_to_route(
-            _TEST_CALLSIGN_1, _TEST_WAYPOINT_1, None  # type: ignore
-        )
-
-    test_ground_speed = types.GroundSpeed(150)
-
-    # Test missing aircraft
-    proxy_aircraft_controls.ac_props = copy.deepcopy(_TEST_PROPS)
-    with pytest.raises(AssertionError):
-        err = proxy_aircraft_controls.add_waypoint_to_route(
-            _TEST_CALLSIGN_1, _TEST_WAYPOINT_1, test_ground_speed
-        )
-
-    # Test waypoint already on route
-    proxy_aircraft_controls.ac_routes = copy.deepcopy(_TEST_ROUTES)
-    mock_aircraft_controls
-    err = proxy_aircraft_controls.add_waypoint_to_route(
-        _TEST_CALLSIGN_2, _TEST_WAYPOINT_1, test_ground_speed
-    )
-    assert err == "Waypoint already on route"
-
-    # Test error from add_waypoint_to_route
-    mock_add_waypoint_to_route = mock.Mock(
-        spec=AbstractAircraftControls.add_waypoint_to_route, return_value="Error"
-    )
-    mock_aircraft_controls.add_waypoint_to_route = mock_add_waypoint_to_route
-    err = proxy_aircraft_controls.add_waypoint_to_route(
-        _TEST_CALLSIGN_1, _TEST_WAYPOINT_1, test_ground_speed
-    )
-    assert err == "Error"
-
-    # Test valid call
-    mock_add_waypoint_to_route = mock.Mock(
-        spec=AbstractAircraftControls.add_waypoint_to_route, return_value=None
-    )
-    mock_aircraft_controls.add_waypoint_to_route = mock_add_waypoint_to_route
-    err = proxy_aircraft_controls.add_waypoint_to_route(
-        _TEST_CALLSIGN_1, _TEST_WAYPOINT_1, test_ground_speed
-    )
-    assert not err
-
-    # Test waypoint appended to route
-    last_segment = proxy_aircraft_controls.ac_routes[_TEST_CALLSIGN_1].segments[-1]
-    assert last_segment == props.RouteItem(_TEST_WAYPOINT_1, test_ground_speed)
-
-
 def test_create():
     """Tests that ProxyAircraftControls implements create"""
 
