@@ -8,14 +8,16 @@ import aviary.metrics as aviary_metrics
 
 import bluebird.utils.types as types
 import bluebird.utils.properties as props
-from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
+from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
+from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 
 
 # TODO Update metrics docs
 def pairwise_separation_metric(*args, **kwargs):
     """
-    The Aviary aircraft separation metric function. Expected *args are two aircraft
-    callsigns.
+    The Aviary aircraft separation metric function. Expected *args are:
+        callsign1: str,
+        callsign2: str
     See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/separation_metric.py # noqa: E501
     """
 
@@ -23,7 +25,7 @@ def pairwise_separation_metric(*args, **kwargs):
         isinstance(x, str) for x in args
     ), "Expected 2 string arguments"
 
-    aircraft_controls: AbstractAircraftControls = kwargs["aircraft_controls"]
+    aircraft_controls: ProxyAircraftControls = kwargs["aircraft_controls"]
 
     props1 = aircraft_controls.properties(types.Callsign(args[0]))
     if not isinstance(props1, props.AircraftProperties):
@@ -48,24 +50,32 @@ def pairwise_separation_metric(*args, **kwargs):
 def sector_exit_metric(*args, **kwargs):
     """
     The Aviary sector exit metric function. Expected *args are:
-    []
+        callsign: Callsign
     See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/sector_exit_metric.py # noqa: E501
     """
 
-    # TODO(RKM 2019-12-12) Args are;
-    # current_lon,
-    # current_lat,
-    # current_alt,
-    # previous_lon,
-    # previous_lat,
-    # previous_alt,
-    # requested_flight_level,
-    # sector,
-    # route,
-    # hor_warn_dist=HOR_WARN_DIST,
-    # hor_max_dist=HOR_MAX_DIST,
-    # vert_warn_dist=VERT_WARN_DIST,
-    # vert_max_dist=VERT_MAX_DIST
-    # return aviary_metrics.sector_exit_metric()
+    assert len(args) == 1 and isinstance(args[0], str), "Expected 1 string argument"
+    callsign = types.Callsign(args[0])
 
-    return aviary_metrics.sector_exit_metric()
+    aircraft_controls: ProxyAircraftControls = kwargs["aircraft_controls"]
+    simulator_controls: ProxySimulatorControls = kwargs["simulator_controls"]
+
+    assert simulator_controls.sector
+
+    prev_props = aircraft_controls.prev_step_props[callsign]
+    assert isinstance(prev_props, props.AircraftProperties)
+
+    current_props = aircraft_controls.properties[callsign]
+    assert isinstance(current_props, props.AircraftProperties)
+
+    return aviary_metrics.sector_exit_metric(
+        current_props.position.lon_degrees,
+        current_props.position.lat_degrees,
+        current_props.altitude.meters,
+        prev_props.position.lon_degrees,
+        prev_props.position.lat_degrees,
+        prev_props.altitude.meters,
+        prev_props.requested_flight_level,
+        simulator_controls.sector,
+        prev_props.route,
+    )

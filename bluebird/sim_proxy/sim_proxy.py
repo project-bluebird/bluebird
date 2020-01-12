@@ -67,9 +67,7 @@ class SimProxy(AbstractSimClient):
         ]
 
     def pre_fetch_data(self):
-        """
-        Called on startup to fetch the initial state
-        """
+        """Called on startup to fetch the initial state"""
         _ = self._sim_client.aircraft.all_properties
         _ = self._sim_client.simulation.properties
 
@@ -89,4 +87,11 @@ class SimProxy(AbstractSimClient):
         self, provider: AbstractMetricsProvider, metric_name: str, args: list
     ):
         """Calls the metric specified"""
-        return provider(metric_name, *args, aircraft_controls=self.aircraft)
+        # NOTE(rkm 2020-01-12) We pass the aircraft and simulator control objects to any
+        # metric which is called so that it can have access to any property it needs
+        return provider(
+            metric_name,
+            *args,
+            aircraft_controls=self._proxy_aircraft_controls,
+            simulator_controls=self._proxy_simulator_controls
+        )
