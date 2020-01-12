@@ -14,6 +14,9 @@ format
   - `500 Internal Server Error` - An error was encountered when processing the request.
   This can occur if the simulator rejects the command for some reason. An error message
   will usually be provided.
+- Altitudes can be specified in 2 formats:
+  - [Flight level](https://en.wikipedia.org/wiki/Flight_level) as a string, e.g. `"FL150"`
+  - Feet as an integer, e.g. `15000`
 
 ## Contents
 
