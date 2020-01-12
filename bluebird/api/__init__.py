@@ -79,7 +79,6 @@ def after_req(response):
 # NOTE(RKM 2019-11-26) This is where we introduce the API endpoints to the Flask app
 
 # Aircraft control
-FLASK_API.add_resource(res.AddWpt, "/addwpt")
 FLASK_API.add_resource(res.Alt, "/alt")
 FLASK_API.add_resource(res.Cre, "/cre")
 FLASK_API.add_resource(res.Direct, "/direct")

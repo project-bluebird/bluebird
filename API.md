@@ -34,7 +34,6 @@ format
 
 ### Aircraft endpoints
 
-- [Add Waypoint](#add-waypoint)
 - [Altitude](#altitude)
 - [Create Aircraft](#create-aircraft)
 - [Direct to Waypoint](#direct-to-waypoint)
@@ -220,26 +219,6 @@ Notes:
 seconds
 
 ---
-
-## Add Waypoint
-
-- [Definition](bluebird/api/resources/addwpt.py)
-
-Add a waypoint to the end of the aircraft's route:
-
-```javascript
-POST /api/v2/addwpt
-{
-    "callsign": "SCN1001",
-    "wpname": "FRED",
-    ["alt": "FL250"],
-    ["gspd": 250]
-}
-```
-
-Notes:
-
-- The `gspd` optional parameter may not be supported by some simulators
 
 ## Altitude
 
