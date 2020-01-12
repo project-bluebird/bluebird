@@ -49,13 +49,13 @@ class SimProxy(AbstractSimClient):
         # The actual sim_client
         self._sim_client: AbstractSimClient = sim_client
 
-        self.metrics_providers = metrics_providers
-
         # The proxy implementations
         self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
         self._proxy_simulator_controls = ProxySimulatorControls(
-            self._sim_client.simulation, [self._proxy_aircraft_controls.clear_caches]
+            self._sim_client.simulation, self._proxy_aircraft_controls
         )
+
+        self.metrics_providers = metrics_providers
 
     def connect(self, timeout: int = 1) -> None:
         self._sim_client.connect(timeout)

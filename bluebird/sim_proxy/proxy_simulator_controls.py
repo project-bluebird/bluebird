@@ -5,13 +5,13 @@ Contains the ProxySimulatorControls class
 import json
 import logging
 from pathlib import Path
-from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
 
 from bluebird.settings import in_agent_mode
 from bluebird.settings import Settings
+from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import Scenario
 from bluebird.utils.properties import Sector
@@ -31,12 +31,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     """Proxy implementation of AbstractSimulatorControls"""
 
     @property
-    def sector(self) -> Optional[Sector]:
-        return self._sector
-
-    @property
     def properties(self) -> Union[SimProperties, str]:
-        if not in_agent_mode():
+        if not self._using_caches():
             return self._sim_controls.properties
         if not self._sim_props:
             sim_props = self._sim_controls.properties
@@ -48,7 +44,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     def __init__(
         self,
         sim_controls: AbstractSimulatorControls,
-        clear_cache_functions: List[Callable],
+        proxy_aircraft_controls: ProxyAircraftControls,
     ):
         self._logger = logging.getLogger(__name__)
         self._props_logger = logging.getLogger(__name__)
@@ -56,9 +52,9 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
-        self._clear_cache_functions = clear_cache_functions
+        self._proxy_aircraft_controls = proxy_aircraft_controls
         self._seed: Optional[int] = None
-        self._sector: Optional[Sector] = None
+        self.sector: Optional[Sector] = None
 
         # Only store a cache of the sim properties if we are in agent mode
         if in_agent_mode():
@@ -85,7 +81,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             return err
 
         self._save_sector_to_file(sector)
-        self._sector = sector
+        self.sector = sector
         self._clear_caches()
         # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
         return None
@@ -124,15 +120,15 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     @timeit("ProxySimulatorControls")
     def step(self) -> Optional[str]:
+        assert in_agent_mode()
+        self._proxy_aircraft_controls.store_current_props()
         err = self._sim_controls.step()
         if err:
             return err
         self._clear_caches()
-        # TODO(RKM 2019-11-25) Update metrics here (i.e. sector check)
         return None
 
     def set_speed(self, speed: float) -> Optional[str]:
-        assert speed >= 0, "Speed must be positive"
         return self._sim_controls.set_speed(speed)
 
     def set_seed(self, seed: int) -> Optional[str]:
@@ -148,6 +144,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     def shutdown(self) -> None:
         # Saves the current sector filename to .last_sector so it can be easily reloaded
+        # Re-loading not currently implemented :^)
         if not self.sector:
             return None
         last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
@@ -168,18 +165,21 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             f"scenario={props.state.name}"
         )
 
+    def _using_caches(self) -> bool:
+        return hasattr(self, "_sim_props")
+
     def _clear_caches(self):
-        if in_agent_mode():
-            self._sim_props = None
-            for func in self._clear_cache_functions:
-                func()
+        if not self._using_caches():
+            return
+        self._proxy_aircraft_controls.clear_caches()
+        self._sim_props = None
 
     def _update_sim_props(self, sim_props: SimProperties) -> SimProperties:
         """Update sim_props with any properties which we manually keep track of"""
         # NOTE(RKM 2020-01-02) When anything we manually set here is changed,
         # _clear_cache needs to be called
-        if self._sector:
-            sim_props.sector_name = self._sector.name
+        if self.sector:
+            sim_props.sector_name = self.sector.name
         sim_props.seed = self._seed
         return sim_props
 

@@ -9,6 +9,7 @@ Contains the ProxyAircraftControls class
 # but not in ac_routes. We should refactor this to ensure this is always the case, and
 # add appropriate tests
 
+import copy
 import logging
 from typing import Optional, List, Union, Dict
 
@@ -197,6 +198,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
         assert args
         for (idx, arg) in enumerate(args):
             assert arg, f"Invalid argument at position {idx}"
+
+    def store_current_props(self):
+        assert self._using_caches()
+        self.prev_step_props = copy.deepcopy(self._ac_props)
 
     def _checked_response(
         self, callsign: types.Callsign, err: Optional[str]
