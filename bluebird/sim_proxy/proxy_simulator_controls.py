@@ -4,6 +4,7 @@ Contains the ProxySimulatorControls class
 
 import json
 import logging
+from pathlib import Path
 from typing import Callable
 from typing import List
 from typing import Optional
@@ -74,7 +75,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # NOTE(rkm 2020-01-03) We can't currently read the current sector definition
         # from either simulator, so we can only check if we have it locally
         if not sector.element:
-            sector_element = self._load_sector_from_file()
+            sector_element = self._load_sector_from_file(sector.name)
             if isinstance(sector_element, str):
                 return f"Error loading sector from file: {sector_element}"
             sector.element = sector_element
@@ -168,16 +169,20 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         sim_props.seed = self._seed
         return sim_props
 
-    def _load_sector_from_file(self, sector: Sector):
-        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.geojson"
+    @staticmethod
+    def _sector_filename(sector_name: str) -> Path:
+        return Settings.DATA_DIR / "sectors" / f"{sector_name.lower()}.geojson"
+
+    def _load_sector_from_file(self, sector_name: str):
+        sector_file = self._sector_filename(sector_name)
         self._logger.debug(f"Loading sector from {sector_file}")
         if not sector_file.exists():
             return f"No sector file at {sector_file}"
-        with open(sector_file, "r") as f:
+        with open(sector_file) as f:
             return validate_geojson_sector(json.load(f))
 
     def _save_sector_to_file(self, sector: Sector):
-        sector_file = Settings.DATA_DIR / "sectors" / f"{sector.name}.geojson"
+        sector_file = self._sector_filename(sector.name)
         self._logger.debug(f"Saving sector to {sector_file}")
         if sector_file.exists():
             self._logger.warning("Overwriting existing file")
