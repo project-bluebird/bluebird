@@ -24,8 +24,8 @@ format
 - [Reload from Log](#load-log)
 - [Resume Simulation](#resume-simulation)
 - [Reset Simulation](#reset-simulation)
-- [Set Scenario](#scenario)
-- [Set Sector](#sector)
+- [Scenario](#scenario)
+- [Sector](#sector)
 - [Set Seed](#set-seed)
 - [Simulation Step](#simulation-step)
 
@@ -56,7 +56,7 @@ format
 
 ## Set speed multiplier
 
-- [Definition](bluebird\api\resources\dtmult.py)
+- [Definition](bluebird/api/resources/dtmult.py)
 
 Changes the simulation speed multiplier. In agent mode, this corresponds to the number
 of seconds which are progressed during a `STEP` command.
@@ -70,7 +70,7 @@ POST /api/v2/dtmult
 
 ## Pause Simulation
 
-- [Definition](bluebird\api\resources\hold.py)
+- [Definition](bluebird/api/resources/hold.py)
 
 Pauses the simulation. Only valid when in sandbox mode.
 
@@ -82,7 +82,7 @@ POST /api/v2/hold
 
 _Currently disabled_
 
-- [Definition](bluebird\api\resources\loadlog.py)
+- [Definition](bluebird/api/resources/loadlog.py)
 
 Reload the simulation to a particular point in time from the provided episode log file:
 
@@ -104,7 +104,7 @@ Notes:
 
 ## Resume Simulation
 
-- [Definition](bluebird\api\resources\op.py)
+- [Definition](bluebird/api/resources/op.py)
 
 Resumes the simulation:
 
@@ -114,7 +114,7 @@ POST /api/v2/op
 
 ## Reset Simulation
 
-- [Definition](bluebird\api\resources\reset.py)
+- [Definition](bluebird/api/resources/reset.py)
 
 Resets the simulation and clears all aircraft data:
 
@@ -124,10 +124,10 @@ POST /api/v2/reset
 
 ## Scenario
 
-- [Definition](bluebird\api\resources\scenario.py)
+- [Definition](bluebird/api/resources/scenario.py)
 
 Upload a new scenario definition, or load an existing definition. The scenario data
-format is defined ...
+format is defined by [Aviary](https://github.com/alan-turing-institute/aviary/blob/master/README.md).
 
 ```javascript
 POST /api/v2/scenario
@@ -148,7 +148,7 @@ Returns:
 
 ## Sector
 
-- [Definition](bluebird\api\resources\sector.py)
+- [Definition](bluebird/api/resources/sector.py)
 
 ### `GET`
 
@@ -170,7 +170,7 @@ A valid response looks like:
 ### `POST`
 
 Upload a new sector definition, or load an existing definition. The sector data format
-is defined ...
+is defined by [Aviary](https://github.com/alan-turing-institute/aviary/blob/master/README.md).
 
 ```javascript
 POST /api/v2/sector
@@ -190,7 +190,7 @@ Returns:
 
 ## Seed
 
-- [Definition](bluebird\api\resources\seed.py)
+- [Definition](bluebird/api/resources/seed.py)
 
 Sets the random seed of the simulator. Must be an unsigned 32-bit integer:
 
@@ -203,7 +203,7 @@ POST /api/v2/seed
 
 ## Simulation Step
 
-- [Definition](bluebird\api\resources\step.py)
+- [Definition](bluebird/api/resources/step.py)
 
 Step the simulation forward. Only valid when in agent mode.
 
@@ -218,9 +218,9 @@ seconds
 
 ---
 
-## Add Waypoint (ADDWPT)
+## Add Waypoint
 
-- [Definition](bluebird\api\resources\addwpt.py)
+- [Definition](bluebird/api/resources/addwpt.py)
 
 Add a waypoint to the end of the aircraft's route:
 
@@ -240,7 +240,7 @@ Notes:
 
 ## Altitude
 
-- [Definition](bluebird\api\resources\alt.py)
+- [Definition](bluebird/api/resources/alt.py)
 
 Request that the aircraft alters its altitude:
 
@@ -255,7 +255,7 @@ POST /api/v2/alt
 
 ## Create Aircraft
 
-- [Definition](bluebird\api\resources\cre.py)
+- [Definition](bluebird/api/resources/cre.py)
 
 Creates an aircraft.
 
@@ -278,7 +278,7 @@ Returns:
 
 ## Direct to Waypoint
 
-- [Definition](bluebird\api\resources\direct.py)
+- [Definition](bluebird/api/resources/direct.py)
 
 Instructs an aircraft to go directly to the specified waypoint. The waypoint must exist
 on the aircraft's route.
@@ -293,7 +293,7 @@ POST /api/v2/direct
 
 ## Heading
 
-- [Definition](bluebird\api\resources\hdg.py)
+- [Definition](bluebird/api/resources/hdg.py)
 
 Request that the aircraft changes its heading:
 
@@ -307,7 +307,7 @@ POST /api/v2/hdg
 
 ## List Route
 
-- [Definition](bluebird\api\resources\listroute.py)
+- [Definition](bluebird/api/resources/listroute.py)
 
 Returns a list of the waypoints on an aircraft's route:
 
@@ -339,7 +339,7 @@ A valid response looks like:
 
 ## Position
 
-- [Definition](bluebird\api\resources\pos.py)
+- [Definition](bluebird/api/resources/pos.py)
 
 Request information on specific aircraft, or all:
 
@@ -373,7 +373,7 @@ Notes (check both of these):
 
 ## Ground Speed
 
-- [Definition](bluebird\api\resources\gspd.py)
+- [Definition](bluebird/api/resources/gspd.py)
 
 Request that the aircraft changes its ground speed:
 
@@ -389,7 +389,7 @@ POST /api/v2/gspd
 
 ## Episode Info
 
-- [Definition](bluebird\api\resources\epinfo.py)
+- [Definition](bluebird/api/resources/epinfo.py)
 
 Returns the current episode information. Only valid in agent mode.
 
@@ -410,7 +410,7 @@ A valid response looks like:
 
 ## Episode Logfile
 
-- [Definition](bluebird\api\resources\eplog.py)
+- [Definition](bluebird/api/resources/eplog.py)
 
 Returns the content of the current episode's logfile. Only valid in agent mode.
 
@@ -434,7 +434,7 @@ A valid response looks like:
 
 ## Sim Info
 
-- [Definition](bluebird\api\resources\siminfo.py)
+- [Definition](bluebird/api/resources/siminfo.py)
 
 Returns the current simulation info.
 
@@ -462,7 +462,7 @@ A valid response looks like:
 
 ## Shutdown
 
-- [Definition](bluebird\api\resources\shutdown.py)
+- [Definition](bluebird/api/resources/shutdown.py)
 
 Shuts down the BlueBird server:
 
