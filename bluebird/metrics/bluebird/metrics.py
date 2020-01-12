@@ -16,7 +16,7 @@ def pairwise_separation_metric(*args, **kwargs):
     """
     The Aviary aircraft separation metric function. Expected *args are two aircraft
     callsigns.
-    See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/separation_metric.py # noqa
+    See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/separation_metric.py # noqa: E501
     """
 
     assert len(args) == 2 and all(
@@ -49,7 +49,7 @@ def sector_exit_metric(*args, **kwargs):
     """
     The Aviary sector exit metric function. Expected *args are:
     []
-    See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/sector_exit_metric.py # noqa
+    See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/sector_exit_metric.py # noqa: E501
     """
 
     # TODO(RKM 2019-12-12) Args are;

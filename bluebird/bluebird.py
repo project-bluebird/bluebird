@@ -172,7 +172,7 @@ class BlueBird:
         return next((x.exc_info for x in self._timers if x.exc_info), None)
 
 
-# TODO(RKM 2019-12-12) Investigate simplifying this with https://stackoverflow.com/questions/49469978/properly-terminate-flask-web-app-running-in-a-thread/49482036#49482036 # noqa
+# TODO(RKM 2019-12-12) Investigate simplifying this with https://stackoverflow.com/questions/49469978/properly-terminate-flask-web-app-running-in-a-thread/49482036#49482036 # noqa: E501
 def _proc_killer():
     r"""
     Starts another thread which waits for BlueBird.exit_flag to be set, then sends
