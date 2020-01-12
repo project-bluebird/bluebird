@@ -29,6 +29,7 @@ class Scenario(Resource):
                 "A sector definition is required before uploading a scenario"
             )
 
+        # TODO(rkm 2020-01-12) Should never include the file extension
         name = req_args["name"]
         if not name:
             return responses.bad_request_resp("Scenario name must be provided")

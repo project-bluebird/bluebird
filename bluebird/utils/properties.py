@@ -134,7 +134,7 @@ class SimProperties:
         if self.seed is not None:
             assert types.is_valid_seed(self.seed), "Invalid seed"
         assert self.speed >= 0, "Speed must be positive"
-        assert self.dt >= 0, "Step size must be positive"
+        assert self.dt >= 0, "Dt must be positive"
 
 
 @dataclass

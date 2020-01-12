@@ -83,15 +83,17 @@ FLASK_API.add_resource(res.AddWpt, "/addwpt")
 FLASK_API.add_resource(res.Alt, "/alt")
 FLASK_API.add_resource(res.Cre, "/cre")
 FLASK_API.add_resource(res.Direct, "/direct")
+FLASK_API.add_resource(res.Spd, "/gspd")
 FLASK_API.add_resource(res.Hdg, "/hdg")
 FLASK_API.add_resource(res.ListRoute, "/listroute")
 FLASK_API.add_resource(res.Pos, "/pos")
-FLASK_API.add_resource(res.Spd, "/spd")
 
 # Simulation control
 FLASK_API.add_resource(res.DtMult, "/dtmult")
 FLASK_API.add_resource(res.Hold, "/hold")
-FLASK_API.add_resource(res.LoadLog, "/loadlog")
+# TODO(rkm 2020-01-12) Disabled until this is refactored to handle the new scenario &
+# sector definitions
+# FLASK_API.add_resource(res.LoadLog, "/loadlog")
 FLASK_API.add_resource(res.Op, "/op")
 FLASK_API.add_resource(res.Reset, "/reset")
 FLASK_API.add_resource(res.Scenario, "/scenario")

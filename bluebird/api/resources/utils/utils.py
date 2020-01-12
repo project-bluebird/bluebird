@@ -20,7 +20,7 @@ FLASK_CONFIG_LABEL = "bluebird_app"
 
 # API label for aircraft callsigns. Historically this was "acid" for the BlueSky
 # simulator
-CALLSIGN_LABEL = "acid"
+CALLSIGN_LABEL = "callsign"
 
 _SCN_RE = re.compile(r"\d{2}:\d{2}:\d{2}(\.\d{1,3})?\s?>\s?.*")
 _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")

@@ -2,7 +2,7 @@
 Logging configuration for BlueBird
 """
 
-# TODO Cli option - single episode log
+# TODO(rkm 2020-01-12) Refactor the episode logging code into SimProxy
 
 import json
 import logging
@@ -18,16 +18,13 @@ if not Settings.LOGS_ROOT.exists():
     Settings.LOGS_ROOT.mkdir()
 
 
-def log_name_time():
-    """
-    Returns the current formatted timestamp
-    :return:
-    """
+def time_for_logfile():
+    """Returns the current timestamp formatted for a logfile name"""
     return datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
 
 INSTANCE_ID = uuid.uuid1()
-INST_LOG_DIR = Path(Settings.LOGS_ROOT, f"{log_name_time()}_{INSTANCE_ID}")
+INST_LOG_DIR = Path(Settings.LOGS_ROOT, f"{time_for_logfile()}_{INSTANCE_ID}")
 INST_LOG_DIR.mkdir()
 
 with open("bluebird/logging_config.json") as f:
@@ -73,7 +70,7 @@ def _start_episode_log(sim_seed):
         )
 
     EP_ID = uuid.uuid4()
-    EP_FILE = INST_LOG_DIR / f"{log_name_time()}_{EP_ID}.log"
+    EP_FILE = INST_LOG_DIR / f"{time_for_logfile()}_{EP_ID}.log"
     file_handler = logging.FileHandler(EP_FILE)
     file_handler.name = "episode-file"
     file_handler.setLevel(logging.DEBUG)

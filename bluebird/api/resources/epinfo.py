@@ -2,6 +2,8 @@
 Provides logic for the epinfo (episode info) API endpoint
 """
 
+# TODO(rkm 2020-01-12) Replace os stuff here with Pathlib
+
 import os
 
 from flask_restful import Resource
