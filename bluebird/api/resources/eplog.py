@@ -2,6 +2,8 @@
 Provides logic for the 'eplog' (episode log file) API endpoint
 """
 
+# TODO(rkm 2020-01-12) Remove the close_ep arg - mixed concerns
+
 from flask_restful import Resource, reqparse
 
 import bluebird.api.resources.utils.responses as responses
@@ -47,7 +49,7 @@ class EpLog(Resource):
         data = {
             "cur_ep_id": bb_logging.EP_ID,
             "cur_ep_file": str(ep_file_path.absolute()),
-            "lines": lines,
+            "log": lines,
         }
 
         return responses.ok_resp(data)

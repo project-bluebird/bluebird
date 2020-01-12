@@ -16,6 +16,7 @@ class Provider(AbstractMetricsProvider):
         self._logger = logging.getLogger(__name__)
 
     def __call__(self, metric, *args, **kwargs):
+        # TODO (rkm 2020-01-12) Check _metric prefix
         return getattr(metrics, metric)(*args, **kwargs)
 
     def __str__(self):

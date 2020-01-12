@@ -10,7 +10,7 @@ from .direct import Direct
 from .hdg import Hdg
 from .listroute import ListRoute
 from .pos import Pos
-from .spd import Spd
+from .gspd import Gspd
 
 # Simulation control
 from .dtmult import DtMult
@@ -39,10 +39,10 @@ __all__ = [
     "Alt",
     "Cre",
     "Direct",
+    "Gspd",
     "Hdg",
     "ListRoute",
     "Pos",
-    "Spd",
     "DtMult",
     "Hold",
     "LoadLog",

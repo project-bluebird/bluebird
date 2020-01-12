@@ -24,9 +24,7 @@ _PARSER.add_argument("gspd", type=GroundSpeed, location="json", required=True)
 
 
 class Cre(Resource):
-    """
-    CRE (create aircraft) command
-    """
+    """CRE (create aircraft) command"""
 
     @staticmethod
     def post():
