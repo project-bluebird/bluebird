@@ -27,6 +27,7 @@ _TEST_PROPS = {
         position=types.LatLon(23, 45),
         requested_flight_level=types.Altitude("FL250"),
         vertical_speed=types.VerticalSpeed(120),
+        route=None,
     ),
     _TEST_CALLSIGN_2: props.AircraftProperties(
         aircraft_type="B737",
@@ -38,15 +39,15 @@ _TEST_PROPS = {
         position=types.LatLon(45, 32),
         requested_flight_level=types.Altitude("FL083"),
         vertical_speed=types.VerticalSpeed(-120),
+        route=None,
     ),
 }
 
 _TEST_WAYPOINT_1 = types.Waypoint("FIX1", types.LatLon(0, 0), altitude=None)
 
 _TEST_ROUTES = {
-    _TEST_CALLSIGN_1: props.AircraftRoute(_TEST_CALLSIGN_1, [], 0),
+    _TEST_CALLSIGN_1: props.AircraftRoute([], 0),
     _TEST_CALLSIGN_2: props.AircraftRoute(
-        callsign=_TEST_CALLSIGN_2,
         segments=[
             props.RouteItem(_TEST_WAYPOINT_1, required_gspd=None),
             props.RouteItem(

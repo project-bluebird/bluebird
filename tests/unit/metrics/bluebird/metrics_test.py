@@ -23,6 +23,7 @@ _TEST_PROPS = props.AircraftProperties(
     position=types.LatLon(23, 45),
     requested_flight_level=types.Altitude("FL250"),
     vertical_speed=types.VerticalSpeed(120),
+    route=None,
 )
 
 
