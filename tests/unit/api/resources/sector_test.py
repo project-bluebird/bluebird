@@ -11,16 +11,13 @@ from bluebird.sim_proxy.proxy_simulator_controls import Sector
 
 from tests.data import TEST_SECTOR
 from tests.unit.api.resources import endpoint_path
-from tests.unit.api.resources import get_app_mock
 
 
 _ENDPOINT = "sector"
 _ENDPOINT_PATH = endpoint_path(_ENDPOINT)
 
 
-def test_sector_get(test_flask_client):
-
-    app_mock = get_app_mock(test_flask_client)
+def test_sector_get(test_flask_client, app_mock):
 
     # Test error handling - no sector has been set
 
@@ -50,7 +47,7 @@ def test_sector_get(test_flask_client):
     assert resp.json == {"name": "test_sector", "content": geojson}
 
 
-def test_sector_post(test_flask_client):
+def test_sector_post(test_flask_client, app_mock):
 
     # Test error handling - invalid args
 
@@ -69,7 +66,6 @@ def test_sector_post(test_flask_client):
 
     # Test error handling - content did not pass validation check
 
-    # Missing type
     data = {"name": "test", "content": {"features": []}}
     resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
@@ -77,12 +73,13 @@ def test_sector_post(test_flask_client):
         "Invalid sector content: 'type' is a required property"
     )
 
+    app_mock.sim_proxy.simulation.load_sector.assert_not_called()
+
     with open(TEST_SECTOR, "r") as f:
         data = {"name": "test", "content": json.load(f)}
 
     # Test error from load_sector
 
-    app_mock = get_app_mock(test_flask_client)
     app_mock.sim_proxy.simulation.load_sector.return_value = "Error setting sector"
 
     resp = test_flask_client.post(_ENDPOINT_PATH, json=data)

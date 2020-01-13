@@ -43,21 +43,13 @@ def try_parse_lat_lon(args: dict) -> Union[types.LatLon, Response]:
         return bad_request_resp(f"Invalid LatLon: {exc}")
 
 
-def _bb_app():
-    """Gets the BlueBird app instance"""
-
-    if not hasattr(_bb_app, "_instance"):
-        _bb_app._instance = current_app.config.get(FLASK_CONFIG_LABEL)
-    return _bb_app._instance
-
-
 def sim_proxy() -> SimProxy:
     """
     Utility function to return the sim_proxy instance. This is the single point of
     entry from the API layer to the rest of the app
     """
 
-    return _bb_app().sim_proxy
+    return current_app.config.get(FLASK_CONFIG_LABEL).sim_proxy
 
 
 def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Response]:
