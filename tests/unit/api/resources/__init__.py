@@ -4,6 +4,9 @@ Package for API resource tests
 
 import datetime
 
+import mock
+
+import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
 
@@ -53,6 +56,14 @@ def endpoint_path(endpoint: str) -> str:
     return f"{API_PREFIX}/{endpoint}"
 
 
+# TODO(rkm 2020-01-12) Aiming to remove this since the tests can be simplified by using
+# get_app_mock
 def patch_utils_path(endpoint: str) -> str:
     """Returns the utils module to be patched for the given endpoint"""
     return f"bluebird.api.resources.{endpoint}.utils"
+
+
+def get_app_mock(test_flask_client):
+    app_mock = mock.Mock()
+    test_flask_client.application.config[utils.FLASK_CONFIG_LABEL] = app_mock
+    return app_mock

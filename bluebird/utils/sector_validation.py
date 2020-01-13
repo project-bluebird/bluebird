@@ -37,7 +37,10 @@ _SECTOR_SCHEMA = {
         "properties": {
             "type": "object",
             "properties": {
+                "airway_width_nm": {"type": "number"},
+                "length_nm": {"type": "number"},
                 "name": {"type": "string"},
+                "offset_nm": {"type": "number"},
                 "type": {"type": "string"},
                 "children": {
                     "type": "object",

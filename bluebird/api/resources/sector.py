@@ -25,7 +25,7 @@ class Sector(Resource):
     def get():
         """Returns the sector defined in the current simulation"""
 
-        sector: SectorWrapper = utils.sim_proxy().sector
+        sector: SectorWrapper = utils.sim_proxy().simulation.sector
 
         if not sector:
             return responses.bad_request_resp("No sector has been set")
