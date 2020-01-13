@@ -15,6 +15,8 @@ _SCENARIO_SCHEMA = {
     "properties": {
         "aircraft": {"type": "array", "items": {"$ref": "#/definitions/aircraft"}},
         "startTime": {"type": "string", "pattern": _START_TIME_RE},
+        # NOTE(rkm 2020-01-13) Only used for debugging
+        "_source": {"type": "string"},
     },
     "required": ["aircraft", "startTime"],
     "additionalProperties": False,
