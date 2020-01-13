@@ -62,7 +62,7 @@ def sector_exit_metric(*args, **kwargs):
 
     assert simulator_controls.sector
 
-    prev_props = aircraft_controls.prev_step_props[callsign]
+    prev_props = aircraft_controls.prev_ac_props()[callsign]
     assert isinstance(prev_props, props.AircraftProperties)
 
     current_props = aircraft_controls.properties[callsign]

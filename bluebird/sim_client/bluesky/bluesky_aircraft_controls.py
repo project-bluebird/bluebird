@@ -17,15 +17,12 @@ _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")
 
 
 class BlueSkyAircraftControls(AbstractAircraftControls):
-    """
-    AbstractAircraftControls implementation for BlueSky
-    """
+    """AbstractAircraftControls implementation for BlueSky"""
 
     @property
     def all_properties(
         self,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
-        self._logger.debug("BlueSkyAircraftControls.all_properties")
         data = self._bluesky_client.aircraft_stream_data
         return self._convert_to_ac_props(data)
 
@@ -116,7 +113,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         err = self._bluesky_client.send_stack_cmd(cmd_str)
         if err:
             return err
-        # NOTE(RKM 2019-11-21) BlueSky currently accepts any string as the aircraft type
+        # TODO(RKM 2019-11-21) BlueSky currently accepts any string as the aircraft type
         # and doesn't return an error (although it logs it to its own console). We could
         # better handle this by pre-fetching a list of supported aircraft types, then
         # checking against it during any CRE request

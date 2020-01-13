@@ -28,15 +28,15 @@ class SimInfo(Resource):
 
         data = {
             "callsigns": [str(x) for x in callsigns],
+            "dt": sim_props.dt,
             "mode": Settings.SIM_MODE.name,
-            "sector_name": sim_props.sector_name,
             "scenario_name": sim_props.scenario_name,
             "scenario_time": sim_props.scenario_time,
+            "sector_name": sim_props.sector_name,
             "seed": sim_props.seed,
             "sim_type": Settings.SIM_TYPE.name,
             "speed": sim_props.speed,
             "state": sim_props.state.name,
-            "dt": sim_props.dt,
             "utc_datetime": str(sim_props.utc_datetime),
         }
 

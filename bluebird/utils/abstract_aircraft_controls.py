@@ -8,11 +8,12 @@ from typing import Optional, Union, List, Dict
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
 
+# TODO(rkm 2020-01-12) Refactor the properties here into normal functions, since they
+# don't really have a trivial implementation
+
 
 class AbstractAircraftControls(ABC):
-    """
-    Abstract class defining aircraft control functions
-    """
+    """Abstract class defining aircraft control functions"""
 
     @property
     @abstractmethod

@@ -13,6 +13,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from semver import VersionInfo
+
 from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
@@ -23,9 +25,7 @@ from bluebird.sim_proxy.sim_proxy import SimProxy
 
 
 class BlueBird:
-    """
-    The BlueBird application
-    """
+    """The BlueBird application"""
 
     exit_flag: bool = False
 
@@ -38,7 +38,7 @@ class BlueBird:
         )
 
         self._cli_args = args
-        self._min_sim_version = None
+        self._min_sim_version: Optional[VersionInfo] = None
         self._timers: List = []
 
         self.sim_proxy: Optional[SimProxy] = None
@@ -172,7 +172,6 @@ class BlueBird:
         return next((x.exc_info for x in self._timers if x.exc_info), None)
 
 
-# TODO(RKM 2019-12-12) Investigate simplifying this with https://stackoverflow.com/questions/49469978/properly-terminate-flask-web-app-running-in-a-thread/49482036#49482036 # noqa: E501
 def _proc_killer():
     r"""
     Starts another thread which waits for BlueBird.exit_flag to be set, then sends
@@ -185,5 +184,4 @@ def _proc_killer():
             time.sleep(0.1)
         os.kill(os.getpid(), signal.SIGINT)
 
-    thread = threading.Thread(target=killer)
-    thread.start()
+    threading.Thread(target=killer).start()

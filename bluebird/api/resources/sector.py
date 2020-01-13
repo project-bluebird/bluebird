@@ -54,13 +54,13 @@ class Sector(Resource):
         if sector:
             sector = validate_geojson_sector(req_args["content"])
             if not isinstance(sector, SectorElement):
-                return responses.bad_request_resp(f"Invalid scenario content: {sector}")
+                return responses.bad_request_resp(f"Invalid sector content: {sector}")
         else:
             # NOTE(rkm 2020-01-03) Have to set this to none, since an empty dict may
             # have been passed, which doesn't match the type of Optional[SectorElement]
             sector = None
 
         sector = SectorWrapper(sector_name, sector)
-        err = utils.sim_proxy().simulation.set_sector(sector)
+        err = utils.sim_proxy().simulation.load_sector(sector)
 
         return responses.checked_resp(err, HTTPStatus.CREATED)
