@@ -1,14 +1,9 @@
 ---
 version: "3.7"
 
+# TODO(rkm 2020-01-13) Add services for MachColl, RabbitMQ, and any other dependencies
+
 services:
-  machcoll:
-    container_name: machcoll
-    # TODO
-    # image: turinginst/bluesky:${BS_MIN_VERSION}
-    # expose:
-    #   - 9000
-    #   - 9001
   bluebird:
     container_name: bluebird_integration
     depends_on:
