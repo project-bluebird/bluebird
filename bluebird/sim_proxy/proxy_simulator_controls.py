@@ -2,6 +2,7 @@
 Contains the ProxySimulatorControls class
 """
 
+import copy
 import json
 import logging
 from pathlib import Path
@@ -9,17 +10,16 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-from bluebird.settings import in_agent_mode
 from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import Scenario
 from bluebird.utils.properties import Sector
 from bluebird.utils.properties import SimProperties
+from bluebird.utils.scenario_validation import validate_json_scenario
 from bluebird.utils.sector_validation import validate_geojson_sector
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
-from bluebird.utils.types import is_valid_seed
 
 
 # The rate at which the current sim info is logged to the console (regardless of mode or
@@ -32,13 +32,13 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     @property
     def properties(self) -> Union[SimProperties, str]:
-        if not self._using_caches():
-            return self._sim_controls.properties
-        if not self._sim_props:
-            sim_props = self._sim_controls.properties
+        if not self._sim_props or not self._data_valid:
+            sim_props = copy.deepcopy(self._sim_controls.properties)
             if not isinstance(sim_props, SimProperties):
                 return sim_props
-            self._sim_props = self._update_sim_props(sim_props)
+            self._update_sim_props(sim_props)
+            self._sim_props = sim_props
+            self._data_valid = True
         return self._sim_props
 
     def __init__(
@@ -55,10 +55,9 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._proxy_aircraft_controls = proxy_aircraft_controls
         self._seed: Optional[int] = None
         self.sector: Optional[Sector] = None
-
-        # Only store a cache of the sim properties if we are in agent mode
-        if in_agent_mode():
-            self._sim_props: Optional[SimProperties] = None
+        self._scenario: Optional[Scenario] = None
+        self._sim_props: Optional[SimProperties] = None
+        self._data_valid: bool = False
 
     def load_sector(self, sector: Sector) -> Optional[str]:
         """
@@ -68,30 +67,51 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         BlueBird can find (i.e. locally on disk)
         """
 
-        # NOTE(rkm 2020-01-03) We can't currently read the current sector definition
-        # from either simulator, so we can only check if we have it locally
+        # NOTE(rkm 2020-01-03) We can't currently read the sector definition from either
+        # simulator, so we can only check if we have it locally
+        loaded_sector = False
         if not sector.element:
             sector_element = self._load_sector_from_file(sector.name)
             if isinstance(sector_element, str):
                 return f"Error loading sector from file: {sector_element}"
             sector.element = sector_element
+            loaded_sector = True
 
         err = self._sim_controls.load_sector(sector)
         if err:
             return err
 
-        self._save_sector_to_file(sector)
-        self.sector = sector
-        self._clear_caches()
         # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
+        if not loaded_sector:
+            self._save_sector_to_file(sector)
+        self.sector = sector
+        self._invalidate_data()
         return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
+        """
+        Loads the specified scenario. If the scenario contains content then a new
+        scenario is created and stored, then uploaded to the simulation. If the scenario
+        only contains a name, then the name must refer to an existing scenario which
+        BlueBird can find (i.e. locally on disk)
+        """
+
+        loaded_scenario = False
+        if not scenario.content:
+            scenario_content = self._load_scenario_from_file(scenario.name)
+            if isinstance(scenario_content, str):
+                return f"Error loading scenario from file: {scenario_content}"
+            scenario.content = scenario_content
+            loaded_scenario = True
+
         err = self._sim_controls.load_scenario(scenario)
         if err:
             return err
-        self._clear_caches()
+
         # TODO(rkm 2020-01-12) Extract all the info we need - routes
+        if not loaded_scenario:
+            self._save_scenario_to_file(scenario)
+        self._invalidate_data()
         return None
 
     def start_timers(self) -> List[Timer]:
@@ -100,57 +120,56 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         return [self._timer]
 
     def start(self) -> Optional[str]:
-        return self._sim_controls.start()
+        return self._invalidating_response(self._sim_controls.start())
 
+    @timeit("ProxySimulatorControls")
     def reset(self) -> Optional[str]:
-        err = self._sim_controls.reset()
-        if err:
-            return err
-        self._clear_caches()
-        return None
+        return self._invalidating_response(self._sim_controls.reset())
 
     def pause(self) -> Optional[str]:
-        return self._sim_controls.pause()
+        return self._invalidating_response(self._sim_controls.pause())
 
     def resume(self) -> Optional[str]:
-        return self._sim_controls.resume()
+        return self._invalidating_response(self._sim_controls.resume())
 
     def stop(self) -> Optional[str]:
-        return self._sim_controls.stop()
+        return self._invalidating_response(self._sim_controls.stop())
 
     @timeit("ProxySimulatorControls")
     def step(self) -> Optional[str]:
-        assert in_agent_mode()
         self._proxy_aircraft_controls.store_current_props()
-        err = self._sim_controls.step()
-        if err:
-            return err
-        self._clear_caches()
-        return None
+        return self._invalidating_response(self._sim_controls.step())
 
     def set_speed(self, speed: float) -> Optional[str]:
-        return self._sim_controls.set_speed(speed)
+        return self._invalidating_response(self._sim_controls.set_speed(speed))
 
     def set_seed(self, seed: int) -> Optional[str]:
-        assert is_valid_seed(seed), "Invalid seed"
-        err = self._sim_controls.set_seed(seed)
-        if err:
-            return err
-        self._clear_caches()
-        return None
+        return self._invalidating_response(self._sim_controls.set_seed(seed))
 
     def find_waypoint(self, name: str):
         raise NotImplementedError()
 
-    def shutdown(self) -> None:
-        # Saves the current sector filename to .last_sector so it can be easily reloaded
+    def store_data(self) -> None:
+        # Saves the current sector and scenario filenames so they can be easily reloaded
         # Re-loading not currently implemented :^)
+        # TODO(rkm 2020-01-12) Delete the .last_* files if we successfully load them
         if not self.sector:
             return None
         last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
-        sector_filename = self._sector_filename(self.sector.name)
         with open(last_sector_file, "w+") as f:
-            f.write(sector_filename)
+            f.write(self.sector.name)
+        if not self._scenario:
+            return None
+        last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
+        with open(last_scenario_file, "w+") as f:
+            f.write(self._scenario.name)
+
+    def _invalidating_response(self, err: Optional[str]) -> Optional[str]:
+        """Utility function which calls _invalidate_data if there is no error"""
+        if err:
+            return err
+        self._invalidate_data()
+        return None
 
     def _log_sim_props(self):
         """Logs the current SimProperties to the console"""
@@ -165,23 +184,17 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             f"scenario={props.state.name}"
         )
 
-    def _using_caches(self) -> bool:
-        return hasattr(self, "_sim_props")
+    def _invalidate_data(self):
+        self._proxy_aircraft_controls.invalidate_data()
+        self._data_valid = False
 
-    def _clear_caches(self):
-        if not self._using_caches():
-            return
-        self._proxy_aircraft_controls.clear_caches()
-        self._sim_props = None
-
-    def _update_sim_props(self, sim_props: SimProperties) -> SimProperties:
+    def _update_sim_props(self, sim_props: SimProperties) -> None:
         """Update sim_props with any properties which we manually keep track of"""
         # NOTE(RKM 2020-01-02) When anything we manually set here is changed,
-        # _clear_cache needs to be called
+        # _invalidate_data needs to be called
         if self.sector:
             sim_props.sector_name = self.sector.name
         sim_props.seed = self._seed
-        return sim_props
 
     @staticmethod
     def _sector_filename(sector_name: str) -> Path:
@@ -203,3 +216,24 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         sector_file.parent.mkdir(parents=True, exist_ok=True)
         with open(sector_file, "w+") as f:
             json.dump(sector.element.sector_geojson(), f)
+
+    @staticmethod
+    def _scenario_filename(scenario_name: str) -> Path:
+        return Settings.DATA_DIR / "scenarios" / f"{scenario_name.lower()}.json"
+
+    def _load_scenario_from_file(self, scenario_name: str):
+        scenario_file = self._scenario_filename(scenario_name)
+        self._logger.debug(f"Loading scenario from {scenario_file}")
+        if not scenario_file.exists():
+            return f"No scenario file at {scenario_file}"
+        with open(scenario_file) as f:
+            return validate_json_scenario(json.load(f))
+
+    def _save_scenario_to_file(self, scenario: Scenario):
+        scenario_file = self._scenario_filename(scenario.name)
+        self._logger.debug(f"Saving scenario to {scenario_file}")
+        if scenario_file.exists():
+            self._logger.warning("Overwriting existing file")
+        scenario_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(scenario_file, "w+") as f:
+            json.dump(scenario.element.scenario_geojson(), f)

@@ -31,12 +31,12 @@ TEST_AIRCRAFT_PROPS = props.AircraftProperties(
     types.LatLon(51.529761, -0.127531),
     types.Altitude(25_300),
     types.VerticalSpeed(73),
+    None,
 )
 
 TEST_WAYPOINT = types.Waypoint("FIX1", types.LatLon(45, 90), types.Altitude("FL225"))
 
 TEST_ROUTE = props.AircraftRoute(
-    types.Callsign("TEST"),
     [
         props.RouteItem(types.Waypoint("FIX1", types.LatLon(45, 90), None), None),
         props.RouteItem(

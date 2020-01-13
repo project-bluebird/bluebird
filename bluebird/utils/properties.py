@@ -64,51 +64,8 @@ class SimType(IntEnum):
         )
 
 
-@dataclass(eq=True)
-class AircraftProperties:
-    """Dataclass representing all the properties of an aircraft"""
-
-    aircraft_type: str
-    altitude: types.Altitude
-    callsign: types.Callsign
-    cleared_flight_level: types.Altitude
-    ground_speed: types.GroundSpeed
-    heading: types.Heading
-    position: types.LatLon
-    requested_flight_level: types.Altitude
-    vertical_speed: types.VerticalSpeed
-
-
-@dataclass
-class RouteItem:
-    waypoint: types.Waypoint
-    required_gspd: Optional[types.GroundSpeed]
-
-
-# NOTE(RKM 2019-11-20) Every aircraft should have an AircraftRoute property, even if it
-# has no actual segments (i.e. len(route.segments) == 0)
-@dataclass
-class AircraftRoute:
-
-    callsign: types.Callsign
-    segments: List[RouteItem]
-    current_segment_index: Optional[int]
-
-    def __post_init__(self):
-        if self.current_segment_index:
-            assert 0 < self.current_segment_index < len(self.segments)
-        # TODO(RKM 2019-11-19) Do we want to enforce that all waypoints have a specified
-        # target altitude when being included in an aircraft's route?
-        # for segment in self.segments:
-        #     assert (
-        #         segment.waypoint.altitude
-        #     ), "Waypoint altitude must be set to be included in a route"
-
-
 class SimState(IntEnum):
-    """
-    Simulator states
-    """
+    """Simulator states"""
 
     INIT = 1
     HOLD = 2
@@ -121,7 +78,7 @@ class SimProperties:
     """Encapsulates the properties of the current simulation state"""
 
     sector_name: Optional[str]
-    scenario_name: str
+    scenario_name: Optional[str]
     scenario_time: float  # The number of seconds since the start of the scenario
     seed: Optional[int]
     speed: float  # In agent mode, this is the step size
@@ -147,3 +104,45 @@ class Scenario:
 class Sector:
     name: str
     element: Optional[SectorElement]
+
+
+@dataclass
+class RouteItem:
+    waypoint: types.Waypoint
+    required_gspd: Optional[types.GroundSpeed]
+
+
+@dataclass
+class AircraftRoute:
+
+    segments: List[RouteItem]
+    current_segment_index: Optional[int]
+
+    def __post_init__(self):
+        if self.current_segment_index:
+            assert 0 < self.current_segment_index < len(self.segments)
+        # TODO(RKM 2019-11-19) Do we want to enforce that all waypoints have a specified
+        # target altitude when being included in an aircraft's route?
+        # for segment in self.segments:
+        #     assert (
+        #         segment.waypoint.altitude
+        #     ), "Waypoint altitude must be set to be included in a route"
+
+
+@dataclass(eq=True)
+class AircraftProperties:
+    """Dataclass representing all the properties of an aircraft"""
+
+    aircraft_type: str
+    altitude: types.Altitude
+    callsign: types.Callsign
+    cleared_flight_level: types.Altitude
+    ground_speed: types.GroundSpeed
+    heading: types.Heading
+    position: types.LatLon
+    requested_flight_level: types.Altitude
+    vertical_speed: types.VerticalSpeed
+    route: AircraftRoute
+
+    def __post_init__(self):
+        assert self.aircraft_type, "Aircraft type must be defined"
