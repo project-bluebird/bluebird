@@ -30,11 +30,6 @@ _BS_STATE_MAP = [
 class BlueSkySimulatorControls(AbstractSimulatorControls):
     """AbstractSimulatorControls implementation for BlueSky"""
 
-    @staticmethod
-    def _parse_sim_state(val: int) -> props.SimState:
-        assert 0 <= val < len(_BS_STATE_MAP)
-        return _BS_STATE_MAP[val]
-
     @property
     def properties(self) -> Union[props.SimProperties, str]:
         data = self._bluesky_client.sim_info_stream_data
@@ -52,19 +47,15 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         # NOTE(rkm 2020-01-03) This function is a no-op for BlueSky, since it doesn't
         # have separate concepts of sectors and scenarios. We only store the sector so
         # we can use it in load_scenario
-        assert sector.element
         self._sector = sector
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
         file_name = f"{scenario.name}.scn".lower()
-        if not scenario.content:
-            return self._bluesky_client.load_scenario(file_name, in_agent_mode())
-
-        assert self._sector
         try:
             # TODO(rkm 2020-01-03) What exceptions can this raise?
             # NOTE Errors here (aviary parsing) may be caused by error in the previously
             # stored sector definition
+            # TODO(rkm 2020-01-12) Check this
             parser = BlueskyParser(self._sector.element, scenario.content)
             scenario_lines = parser.all_lines()
         except Exception as e:
@@ -112,6 +103,11 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
             return err
         return None
 
+    @staticmethod
+    def _parse_sim_state(val: int) -> props.SimState:
+        assert 0 <= val < len(_BS_STATE_MAP)
+        return _BS_STATE_MAP[val]
+
     def _check_expected_resp(self, resp) -> Optional[str]:
         if isinstance(resp, list) and len(resp) == 1 and "set to" in resp[0]:
             return None
@@ -120,13 +116,13 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
     def _convert_to_sim_props(self, data: List[Any]) -> Union[props.SimProperties, str]:
         try:
             return props.SimProperties(
-                sector_name=None,
-                scenario_name=data[6],
+                dt=data[1],
+                scenario_name=data[6] or None,
                 scenario_time=round(data[2], 2),
+                sector_name=None,
                 seed=None,
                 speed=self._dt_mult if in_agent_mode() else round(data[0], 2),
                 state=self._parse_sim_state(data[5]),
-                dt=data[1],
                 utc_datetime=datetime.strptime(data[3], "%Y-%m-%d %H:%M:%S"),
             )
         except Exception:
