@@ -2,12 +2,22 @@
   "aircraft": [
     {
       "callsign": "VJ159",
-      "clearedFlightLevel": 360,
-      "currentFlightLevel": 360,
+      "clearedFlightLevel": 400,
+      "currentFlightLevel": 400,
       "departure": "DEP",
       "destination": "DEST",
-      "requestedFlightLevel": 360,
+      "requestedFlightLevel": 400,
       "route": [
+        {
+          "fixName": "FIYRE",
+          "geometry": {
+            "coordinates": [
+              -0.1275,
+              50.91735552314281
+            ],
+            "type": "Point"
+          }
+        },
         {
           "fixName": "EARTH",
           "geometry": {
@@ -51,7 +61,7 @@
       ],
       "startPosition": [
         -0.1275,
-        50.80104879383575
+        49.39138473926763
       ],
       "startTime": "00:00:00",
       "timedelta": 0,
@@ -59,8 +69,8 @@
     },
     {
       "callsign": "VJ405",
-      "clearedFlightLevel": 300,
-      "currentFlightLevel": 300,
+      "clearedFlightLevel": 200,
+      "currentFlightLevel": 200,
       "departure": "DEST",
       "destination": "DEP",
       "requestedFlightLevel": 400,
@@ -118,7 +128,7 @@
       ],
       "startPosition": [
         -0.1275,
-        52.27304310000724
+        53.57478111513239
       ],
       "startTime": "00:00:00",
       "timedelta": 0,
