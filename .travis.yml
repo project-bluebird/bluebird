@@ -15,7 +15,7 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  # - pip install --upgrade git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
+  - pip install --force-reinstall --no-cache-dir git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
 
 script:
   - pytest -vrs --ignore=./tests/integration ./tests
