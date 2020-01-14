@@ -3,6 +3,7 @@ Provides logic for the sector API endpoint
 """
 
 from http import HTTPStatus
+from geojson import dumps
 
 from aviary.sector.sector_element import SectorElement
 from flask_restful import Resource, reqparse
@@ -32,7 +33,7 @@ class Sector(Resource):
 
         # TODO (RKM 2019-12-20) Check what exceptions this can throw
         try:
-            geojson = sector.element.sector_geojson()
+            geojson = dumps(sector.element)
         except Exception as exc:
             return responses.internal_err_resp(f"Couldn't get sector geojson: {exc}")
 
