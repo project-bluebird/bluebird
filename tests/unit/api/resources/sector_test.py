@@ -4,6 +4,7 @@ Tests for the SECTOR endpoint
 
 import json
 from http import HTTPStatus
+from geojson import dumps
 
 from aviary.sector.sector_element import SectorElement
 
@@ -37,14 +38,15 @@ def test_sector_get(test_flask_client, app_mock):
     # Test OK response - sector has been set
 
     with open(TEST_SECTOR, "r") as f:
-        geojson = json.load(f)
-        sector = SectorElement.deserialise(json.dumps(geojson))
+        sector = SectorElement.deserialise(f)
 
     app_mock.sim_proxy.simulation.sector = Sector("test_sector", sector)
 
     resp = test_flask_client.get(_ENDPOINT_PATH)
     assert resp.status_code == HTTPStatus.OK
-    assert resp.json == {"name": "test_sector", "content": geojson}
+
+    # Test json content - matches the sector geojson.
+    assert resp.json == {"name": "test_sector", "content": dumps(sector)}
 
 
 def test_sector_post(test_flask_client, app_mock):

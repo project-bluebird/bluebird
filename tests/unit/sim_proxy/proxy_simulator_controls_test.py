@@ -5,6 +5,7 @@ Tests for the ProxySimulatorControls class
 import datetime
 import json
 import logging
+from io import StringIO
 
 import mock
 import pytest
@@ -37,7 +38,7 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
 with open(TEST_SECTOR, "r") as f:
     geojson = json.load(f)
     del geojson["_source"]
-    sector_element = SectorElement.deserialise(json.dumps(geojson))
+    sector_element = SectorElement.deserialise(StringIO(json.dumps(geojson)))
     _TEST_SECTOR = Sector(name="test-sector", element=sector_element)
 
 with open(TEST_SCENARIO, "r") as f:
