@@ -7,6 +7,7 @@ Contains functions to validate scenario and sector data
 # another part of the schema
 
 import json
+from io import StringIO
 from typing import Union
 
 from aviary.sector.sector_element import SectorElement
@@ -74,6 +75,6 @@ def validate_geojson_sector(geojson: dict) -> Union[SectorElement, str]:
     try:
         validate(instance=geojson, schema=_SECTOR_SCHEMA)
         # TODO (RKM 2019-12-20) Check what exceptions this can throw
-        return SectorElement.deserialise(json.dumps(geojson))
+        return SectorElement.deserialise(StringIO(json.dumps(geojson)))
     except Exception as exc:
         return str(exc)
