@@ -18,10 +18,12 @@ install:
   - pip install --force-reinstall --no-cache-dir git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
 
 script:
-  - pytest -vrs --ignore=./tests/integration ./tests
+  - coverage run -m pytest -vrs --ignore=./tests/integration ./tests
   # Pre-build the BlueBird docker image
   - docker build .
-  - pytest -vrs ./tests/integration
+  - coverage run -m pytest -vrs ./tests/integration
+  # Just print the results for now
+  - coverage report
 # TODO(RKM 2019-11-23) Re-enable after integration tests passing
 # after_success:
 #   - bash $BLUEBIRD_HOME/.travis-build.sh

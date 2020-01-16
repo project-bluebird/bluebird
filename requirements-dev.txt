@@ -2,10 +2,10 @@
 # In addition to requirements.txt, the following are required for development and testing
 
 black
-flake8
-pre-commit
-
+coverage
 docker-compose
+flake8
 mock
+pre-commit
 pytest
 requests
