@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 
 import mock
+import pytest
+from aviary.sector.sector_element import SectorElement
 
 from bluebird.sim_client.bluesky.bluesky_simulator_controls import (
     BlueSkySimulatorControls,
@@ -16,6 +18,7 @@ from bluebird.utils.properties import SimProperties
 from bluebird.utils.properties import SimState
 
 from tests.data import TEST_SCENARIO
+from tests.data import TEST_SECTOR
 
 
 _TEST_SIMINFO = [
@@ -30,6 +33,10 @@ _TEST_SIMINFO = [
 
 with open(TEST_SCENARIO, "r") as f:
     _TEST_SCENARIO = Scenario(name="test-scenario", content=json.load(f))
+
+
+with open(TEST_SECTOR, "r") as f:
+    _TEST_SECTOR = Sector(name="test-sector", element=SectorElement.deserialise(f))
 
 
 def test_abstract_class_implemented():
@@ -71,47 +78,37 @@ def test_load_scenario():
     bs_client_mock = mock.Mock()
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
-    # Test load existing scenario - error response
+    # Test with no sector set
 
-    bs_client_mock.load_scenario.return_value = "Error"
     existing_scenario = Scenario("TEST", [])
+    with pytest.raises(AssertionError):
+        bs_sim_controls.load_scenario(existing_scenario)
+
+    # Test error from scenario parsing
+
+    assert not bs_sim_controls.load_sector(_TEST_SECTOR)
+    existing_scenario = Scenario("TEST", ["a", "b", "c"])
     err = bs_sim_controls.load_scenario(existing_scenario)
-    assert err == "Error"
+    assert err.startswith("Could not parse a BlueSky scenario")
 
-    # Test load existing scenario - valid response
+    # Test upload_new_scenario - error response
 
-    bs_client_mock.reset_mock()
+    bs_client_mock.upload_new_scenario.return_value = "Error 1"
+    err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
+    assert err == "Error 1"
+
+    # Test load_scenario - error response
+
+    bs_client_mock.upload_new_scenario.return_value = None
+    bs_client_mock.load_scenario.return_value = "Error 2"
+    err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
+    assert err == "Error 2"
+
+    # Test load_scenario - valid response
+
     bs_client_mock.load_scenario.return_value = None
-    err = bs_sim_controls.load_scenario(existing_scenario)
+    err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
     assert not err
-    bs_client_mock.load_scenario.assert_called_once_with("test.scn", True)
-
-    with mock.patch(
-        "bluebird.sim_client.bluesky.bluesky_simulator_controls.BlueskyParser"
-    ) as bs_parser_patch:
-
-        # Test uploading new scenario - error from BlueSkyParser
-
-        bs_parser_patch.side_effect = Exception()
-        bs_sim_controls.load_sector(Sector("unused", True))
-
-        err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
-        assert err.startswith("Could not parse a BlueSky scenario")
-
-        # Test uploading new scenario - error from upload_new_scenario
-
-        bs_parser_patch.side_effect = None
-        bs_client_mock.upload_new_scenario.return_value = "Error"
-
-        err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
-        assert err == "Error"
-
-        # Test uploading new scenario - valid response
-
-        bs_client_mock.upload_new_scenario.return_value = None
-
-        err = bs_sim_controls.load_scenario(_TEST_SCENARIO)
-        assert not err
 
 
 def test_start():

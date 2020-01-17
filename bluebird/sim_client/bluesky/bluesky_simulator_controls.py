@@ -3,13 +3,16 @@ Contains the AbstractSimulatorControls implementation for BlueSky
 """
 
 import logging
+import json
 import traceback
 from datetime import datetime
+from io import StringIO
 from typing import Any
 from typing import List
 from typing import Optional
 from typing import Union
 
+import geojson
 from aviary.parser.bluesky_parser import BlueskyParser
 
 import bluebird.utils.properties as props
@@ -48,15 +51,19 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         # have separate concepts of sectors and scenarios. We only store the sector so
         # we can use it in load_scenario
         self._sector = sector
+        return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
+        assert self._sector
         file_name = f"{scenario.name}.scn".lower()
         try:
             # TODO(rkm 2020-01-03) What exceptions can this raise?
-            # NOTE Errors here (aviary parsing) may be caused by error in the previously
-            # stored sector definition
-            # TODO(rkm 2020-01-12) Check this
-            parser = BlueskyParser(self._sector.element, scenario.content)
+            # NOTE(rkm 2020-01-03) Errors here (aviary parsing) may be caused by error
+            # in the previously stored sector definition
+            parser = BlueskyParser(
+                StringIO(geojson.dumps(self._sector.element)),
+                StringIO(json.dumps(scenario.content)),
+            )
             scenario_lines = parser.all_lines()
         except Exception as e:
             return f"Could not parse a BlueSky scenario: {e}"
