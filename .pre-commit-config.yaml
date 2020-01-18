@@ -27,12 +27,12 @@ repos:
       - id: python-check-mock-methods
       - id: python-no-log-warn
   - repo: https://github.com/asottile/pyupgrade
-    rev: v1.25.3
+    rev: v1.26.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: reorder-python-imports
   - repo: https://github.com/psf/black
