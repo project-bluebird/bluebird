@@ -29,7 +29,7 @@ class Gspd(Resource):
         req_args = utils.parse_args(_PARSER)
 
         callsign = req_args[utils.CALLSIGN_LABEL]
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
         if resp:
             return resp
 

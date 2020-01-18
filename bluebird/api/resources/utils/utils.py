@@ -52,10 +52,12 @@ def sim_proxy() -> SimProxy:
     return current_app.config.get(FLASK_CONFIG_LABEL).sim_proxy
 
 
-def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Response]:
+def check_exists(
+    sim_proxy: SimProxy, callsign: types.Callsign, negate: bool = False
+) -> Optional[Response]:
     """Checks if an aircraft exists, and returns an appropriate response if not"""
 
-    exists = sim_proxy().aircraft.exists(callsign)
+    exists = sim_proxy.aircraft.exists(callsign)
     if not isinstance(exists, bool):
         return responses.internal_err_resp(
             f"Could not check if the aircraft exists: {exists}"

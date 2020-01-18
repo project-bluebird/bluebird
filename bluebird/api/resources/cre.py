@@ -36,7 +36,7 @@ class Cre(Resource):
         req_args = utils.parse_args(_PARSER)
         callsign = req_args[utils.CALLSIGN_LABEL]
 
-        resp = utils.check_exists(callsign, negate=True)
+        resp = utils.check_exists(utils.sim_proxy(), callsign, negate=True)
         if resp:
             return resp
 

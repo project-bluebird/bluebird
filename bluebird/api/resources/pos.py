@@ -32,7 +32,7 @@ class Pos(Resource):
             return responses.internal_err_resp(sim_props)
 
         if callsign:
-            resp = utils.check_exists(callsign)
+            resp = utils.check_exists(utils.sim_proxy(), callsign)
             if resp:
                 return resp
 
