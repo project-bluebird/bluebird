@@ -4,13 +4,11 @@ Tests for the DIRECT endpoint
 
 from http import HTTPStatus
 
-import mock
-
-import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
-from bluebird.api.resources.utils.responses import bad_request_resp
 
-from tests.unit.api.resources import endpoint_path, patch_utils_path, TEST_WAYPOINT
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import TEST_WAYPOINT
+from tests.unit.api.resources import get_app_mock
 
 
 _ENDPOINT = "direct"
@@ -42,44 +40,37 @@ def test_direct_post(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "Waypoint name must be specified"
 
-    with mock.patch(patch_utils_path(_ENDPOINT), wraps=utils) as utils_patch:
+    # Test waypoint exists check
 
-        utils_patch.CALLSIGN_LABEL = utils.CALLSIGN_LABEL
-        mock_sim_proxy = mock.Mock()
-        utils_patch.sim_proxy.return_value = mock_sim_proxy
+    app_mock = get_app_mock(test_flask_client)
+    app_mock.sim_proxy.simulation.find_waypoint.return_value = None
 
-        # Test waypoint exists check
+    data["waypoint"] = TEST_WAYPOINT.name
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode() == f"Could not find waypoint {TEST_WAYPOINT.name}"
 
-        mock_sim_proxy.waypoints.find.return_value = None
+    # Test callsign check
 
-        data["waypoint"] = TEST_WAYPOINT.name
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.BAD_REQUEST
-        assert resp.data.decode() == f"Could not find waypoint {TEST_WAYPOINT.name}"
+    app_mock.sim_proxy.simulation.find_waypoint.return_value = TEST_WAYPOINT
+    app_mock.sim_proxy.aircraft.exists.return_value = False
+    print(f"TEST: {app_mock.sim_proxy.aircraft.exists}")
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert resp.data.decode() == 'Aircraft "FAKE" does not exist'
 
-        # Test callsign check
+    # Test error from direct_to_waypoint
 
-        mock_sim_proxy.waypoints.find.return_value = TEST_WAYPOINT
+    app_mock.sim_proxy.aircraft.exists.return_value = True
+    app_mock.sim_proxy.aircraft.direct_to_waypoint.return_value = "Error"
 
-        with api.FLASK_APP.test_request_context():
-            utils_patch.check_exists.return_value = bad_request_resp("Missing aircraft")
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert resp.data.decode() == "Error"
 
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.BAD_REQUEST
-        assert resp.data.decode() == "Missing aircraft"
+    # Test valid response
 
-        # Test error from direct_to_waypoint
+    app_mock.sim_proxy.aircraft.direct_to_waypoint.return_value = None
 
-        utils_patch.check_exists.return_value = None
-        mock_sim_proxy.aircraft.direct_to_waypoint.return_value = "Error"
-
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert resp.data.decode() == "Error"
-
-        # Test valid response
-
-        mock_sim_proxy.aircraft.direct_to_waypoint.return_value = None
-
-        resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-        assert resp.status_code == HTTPStatus.OK
+    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
+    assert resp.status_code == HTTPStatus.OK
