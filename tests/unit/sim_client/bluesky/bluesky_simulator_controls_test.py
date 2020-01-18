@@ -3,6 +3,7 @@ Tests for BlueSkySimulatorControls
 """
 import json
 from datetime import datetime
+from io import StringIO
 
 import mock
 import pytest
@@ -29,12 +30,10 @@ _TEST_SIMINFO = [
     "test-scenario",  # Current scenario name
 ]
 
-with open(TEST_SCENARIO, "r") as f:
-    _TEST_SCENARIO = Scenario(name="test-scenario", content=json.load(f))
+_SECTOR_ELEMENT = SectorElement.deserialise(StringIO(json.dumps(TEST_SECTOR)))
+_TEST_SECTOR = Sector(name="test-sector", element=_SECTOR_ELEMENT)
 
-
-with open(TEST_SECTOR, "r") as f:
-    _TEST_SECTOR = Sector(name="test-sector", element=SectorElement.deserialise(f))
+_TEST_SCENARIO = Scenario(name="test-scenario", content=TEST_SCENARIO)
 
 
 def test_abstract_class_implemented():

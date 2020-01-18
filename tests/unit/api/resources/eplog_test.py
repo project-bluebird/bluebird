@@ -8,6 +8,7 @@ import mock
 
 import bluebird.logging as bb_logging
 from tests.data import TEST_EPISODE_LOG
+from tests.data import TEST_EPISODE_LOG_FILE
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path
 
@@ -73,13 +74,13 @@ def test_eplog_get(test_flask_client):
 
                 # Test valid response
 
-                bb_logging_patch.EP_FILE = TEST_EPISODE_LOG
+                bb_logging_patch.EP_FILE = TEST_EPISODE_LOG_FILE
                 bb_logging_patch.EP_ID = 123
 
                 resp = test_flask_client.get(f"{_ENDPOINT_PATH}?close_ep=True")
                 assert resp.status_code == HTTPStatus.OK
                 assert resp.json == {
                     "cur_ep_id": 123,
-                    "cur_ep_file": str(TEST_EPISODE_LOG.absolute()),
-                    "log": list(line.rstrip("\n") for line in open(TEST_EPISODE_LOG)),
+                    "cur_ep_file": str(TEST_EPISODE_LOG_FILE.absolute()),
+                    "log": TEST_EPISODE_LOG,
                 }

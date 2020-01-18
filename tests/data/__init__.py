@@ -1,15 +1,23 @@
 """
 Package containing test files
 """
+# NOTE(rkm 2020-01-18) We tag the data files with their source commit from Aviary. This
+# helps when debugging, however we have to manually remove them here
+import json
 from pathlib import Path
 
 _TEST_DATA_DIR = Path("tests/data")
 
-TEST_EPISODE_LOG = _TEST_DATA_DIR / "test_episode.log"
-assert TEST_EPISODE_LOG.exists(), f"Expected {TEST_EPISODE_LOG.absolute()} to exist"
+TEST_EPISODE_LOG_FILE = _TEST_DATA_DIR / "test_episode.log"
+with open(TEST_EPISODE_LOG_FILE) as f:
+    TEST_EPISODE_LOG = list(line.rstrip("\n") for line in f)
 
-TEST_SCENARIO = _TEST_DATA_DIR / "test_scenario.json"
-assert TEST_SCENARIO.exists(), f"Expected {TEST_SCENARIO.absolute()} to exist"
+_TEST_SCENARIO_FILE = _TEST_DATA_DIR / "test_scenario.json"
+with open(_TEST_SCENARIO_FILE) as f:
+    TEST_SCENARIO = json.load(f)
+    del TEST_SCENARIO["_source"]
 
-TEST_SECTOR = _TEST_DATA_DIR / "test_sector.geojson"
-assert TEST_SECTOR.exists(), f"Expected {TEST_SECTOR.absolute()} to exist"
+_TEST_SECTOR_FILE = _TEST_DATA_DIR / "test_sector.geojson"
+with open(_TEST_SECTOR_FILE) as f:
+    TEST_SECTOR = json.load(f)
+    del TEST_SECTOR["_source"]

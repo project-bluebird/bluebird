@@ -1,7 +1,6 @@
 """
 Tests for the SCENARIO endpoint
 """
-import json
 from http import HTTPStatus
 
 import mock
@@ -61,9 +60,7 @@ def test_scenario_post(utils_patch, test_flask_client):
 
     simulation_mock.load_scenario.return_value = "Couldn't load scenario"
 
-    with open(TEST_SCENARIO, "r") as f:
-        data["content"] = json.load(f)
-
+    data["content"] = TEST_SCENARIO
     resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert resp.data.decode().startswith("Couldn't load scenario")

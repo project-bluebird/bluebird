@@ -235,4 +235,4 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             self._logger.warning("Overwriting existing file")
         scenario_file.parent.mkdir(parents=True, exist_ok=True)
         with open(scenario_file, "w+") as f:
-            json.dump(scenario.element.scenario_geojson(), f)
+            json.dump(scenario.content, f)
