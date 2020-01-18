@@ -5,9 +5,9 @@ import datetime
 
 import mock
 
-import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
+from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from tests import API_PREFIX
 
 
@@ -63,5 +63,5 @@ def patch_utils_path(endpoint: str) -> str:
 
 def get_app_mock(test_flask_client):
     app_mock = mock.Mock()
-    test_flask_client.application.config[utils.FLASK_CONFIG_LABEL] = app_mock
+    test_flask_client.application.config[FLASK_CONFIG_LABEL] = app_mock
     return app_mock
