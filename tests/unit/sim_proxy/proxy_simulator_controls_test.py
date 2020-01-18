@@ -8,7 +8,6 @@ import logging
 from io import StringIO
 
 import mock
-import pytest
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
@@ -30,7 +29,7 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
     sector_name="test-sector",
     scenario_name="test-scenario",
     scenario_time=0,
-    seed=0,
+    seed=None,
     speed=1.0,
     state=props.SimState.INIT,
     dt=1.0,
@@ -54,11 +53,6 @@ def test_abstract_class_implemented():
 def test_properties():
     """Tests that ProxySimulatorControls implements properties"""
 
-    in_agent_mode_patch = mock.patch(
-        "bluebird.sim_proxy.proxy_simulator_controls.in_agent_mode"
-    )
-    in_agent_mode_patch.start()
-
     mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
     mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
     properties_mock = mock.PropertyMock()
@@ -66,8 +60,6 @@ def test_properties():
     type(mock_sim_controls).properties = properties_mock
 
     # Test call to _sim_controls.properties when not in agent mode
-
-    in_agent_mode_patch.return_value = False
 
     proxy_simulator_controls = ProxySimulatorControls(
         mock_sim_controls, mock_aircraft_controls
@@ -78,8 +70,6 @@ def test_properties():
     properties_mock.assert_called_once()
 
     # Test call to _sim_controls.properties when in agent mode
-
-    in_agent_mode_patch.return_value = True
 
     properties_mock.reset_mock()
     proxy_simulator_controls = ProxySimulatorControls(
@@ -278,10 +268,6 @@ def test_set_speed():
         mock_sim_controls, mock_aircraft_controls
     )
 
-    # Test arg parsing
-    with pytest.raises(AssertionError, match="Speed must be positive"):
-        proxy_simulator_controls.set_speed(-1.0)
-
     # Test error handling from set_speed
     mock_sim_controls.set_speed = mock.Mock(
         sepc=AbstractSimulatorControls.set_speed, return_value="Error"
@@ -307,11 +293,6 @@ def test_set_seed():
     proxy_simulator_controls = ProxySimulatorControls(
         mock_sim_controls, mock_aircraft_controls
     )
-
-    # Test arg parsing
-
-    with pytest.raises(AssertionError, match="Invalid seed"):
-        proxy_simulator_controls.set_seed(-1)
 
     # Test error handling from set_seed
 
