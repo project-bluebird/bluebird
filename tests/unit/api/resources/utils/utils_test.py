@@ -3,13 +3,14 @@ Tests functionality of the bluebird.api.resources.utils package
 """
 from http import HTTPStatus
 
+import mock
 from flask import Response
 from flask_restful import reqparse
 from flask_restful import Resource
 
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
-import bluebird.utils.properties as properties
+import bluebird.utils.properties as props
 import bluebird.utils.types as types
 from tests.unit.api.resources import endpoint_path
 
@@ -67,48 +68,26 @@ def test_try_parse_lat_lon():
     assert res.lon_degrees == args["lon"]
 
 
-def test_check_exists(monkeypatch):
+def test_check_exists():
     """Tests for check_exists"""
 
-    class MockAircraftControls:
-        def __init__(self):
-            self._exists_called = False
-
-        def exists(self, callsign: types.Callsign):
-            assert isinstance(callsign, types.Callsign)
-            if not self._exists_called:
-                self._exists_called = True
-                return "Invalid callsign"
-            # "TEST*" aircraft exist, all others do not
-            return str(callsign).upper().startswith("TEST")
-
-    class MockSimProxy:
-        @property
-        def aircraft(self):
-            return self._aircraft_controls
-
-        def __init__(self):
-            self._aircraft_controls = MockAircraftControls()
-
-    mock = MockSimProxy()
-    monkeypatch.setattr(utils, "sim_proxy", lambda: mock)
-
+    sim_pros_mock = mock.Mock()
     callsign = types.Callsign("FAKE")
 
     # Test error handling
 
+    sim_pros_mock.aircraft.exists.return_value = "Error"
     with api.FLASK_APP.test_request_context():
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(sim_pros_mock, callsign)
     assert isinstance(resp, Response)
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert (
-        resp.data.decode() == "Could not check if the aircraft exists: Invalid callsign"
-    )
+    assert resp.data.decode() == "Could not check if the aircraft exists: Error"
 
     # Test missing callsign
 
+    sim_pros_mock.aircraft.exists.return_value = False
     with api.FLASK_APP.test_request_context():
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(sim_pros_mock, callsign)
     assert isinstance(resp, Response)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == 'Aircraft "FAKE" does not exist'
@@ -117,15 +96,16 @@ def test_check_exists(monkeypatch):
 
     # Test valid callsign
 
+    sim_pros_mock.aircraft.exists.return_value = True
     with api.FLASK_APP.test_request_context():
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(sim_pros_mock, callsign)
     assert not resp
 
 
 def test_convert_aircraft_props():
     """Tests for convert_aircraft_props"""
 
-    props = properties.AircraftProperties(
+    ac_props = props.AircraftProperties(
         "A380",
         types.Altitude(18_500),
         types.Callsign("TEST"),
@@ -135,9 +115,10 @@ def test_convert_aircraft_props():
         types.LatLon(43.8, 123.4),
         types.Altitude(25_000),
         types.VerticalSpeed(32),
+        None,
     )
 
-    converted = utils.convert_aircraft_props(props)
+    converted = utils.convert_aircraft_props(ac_props)
     assert isinstance(converted, dict)
     assert len(converted) == 1
 
