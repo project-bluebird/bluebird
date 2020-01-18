@@ -1,17 +1,16 @@
 """
 Tests functionality of the bluebird.api.resources.utils package
 """
-
 from http import HTTPStatus
 
 from flask import Response
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
-import bluebird.utils.types as types
 import bluebird.utils.properties as properties
-
+import bluebird.utils.types as types
 from tests.unit.api.resources import endpoint_path
 
 

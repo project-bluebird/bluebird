@@ -1,9 +1,7 @@
 """
 Contains the BlueSky client class
 """
-
 # TODO(RKM 2019-11-21) Check all the proxy layer comments
-
 import json
 import logging
 import os

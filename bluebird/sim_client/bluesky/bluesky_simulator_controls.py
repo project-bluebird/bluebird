@@ -1,9 +1,8 @@
 """
 Contains the AbstractSimulatorControls implementation for BlueSky
 """
-
-import logging
 import json
+import logging
 import traceback
 from datetime import datetime
 from io import StringIO

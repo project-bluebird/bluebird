@@ -1,11 +1,8 @@
 """
 Provides logic for the Load Log API endpoint
 """
-
 # TODO(RKM 2019-11-24) This needs completely refactored to reconstruct a GeoJSON
 # scenario from the log files
-
-
 import logging
 import os
 import re
@@ -14,13 +11,16 @@ import uuid
 from pathlib import Path
 from typing import Union
 
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.utils import parse_args, sim_proxy
-from bluebird.utils.timeutils import timeit
+from bluebird.api.resources.utils.utils import parse_args
+from bluebird.api.resources.utils.utils import sim_proxy
 from bluebird.settings import Settings
-from bluebird.utils.properties import SimType, SimMode
+from bluebird.utils.properties import SimMode
+from bluebird.utils.properties import SimType
+from bluebird.utils.timeutils import timeit
 
 
 _LOGGER = logging.getLogger(__name__)

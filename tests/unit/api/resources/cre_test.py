@@ -1,7 +1,6 @@
 """
 Tests for the CRE endpoint
 """
-
 from http import HTTPStatus
 
 import mock
@@ -9,8 +8,8 @@ import mock
 import bluebird.api as api
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-
-from tests.unit.api.resources import endpoint_path, patch_utils_path
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
 _ENDPOINT = "cre"

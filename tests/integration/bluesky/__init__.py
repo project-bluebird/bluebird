@@ -1,7 +1,6 @@
 """
 Integration tests for BlueSky
 """
-
 import time
 from http import HTTPStatus
 

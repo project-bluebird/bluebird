@@ -1,7 +1,6 @@
 """
 MachColl metrics provider class
 """
-
 import logging
 from pathlib import Path
 

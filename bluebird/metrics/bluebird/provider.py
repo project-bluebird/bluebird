@@ -1,12 +1,11 @@
 """
 BlueBird metrics provider class
 """
-
 import logging
 
-from bluebird.settings import Settings
-from bluebird.metrics.bluebird import metrics
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
+from bluebird.metrics.bluebird import metrics
+from bluebird.settings import Settings
 
 
 class Provider(AbstractMetricsProvider):

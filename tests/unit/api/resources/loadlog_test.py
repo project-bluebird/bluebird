@@ -1,15 +1,12 @@
 """
 Tests for the LOADLOG endpoint
 """
-
 # NOTE(RKM 2019-11-18) Tests here which rely on the "validate_scenario" utility function
 # will fail until we upgrade to the GeoJSON format
-
 import pytest
 
-from bluebird.api.resources.loadlog import parse_lines
 import bluebird.api.resources.utils.utils as api_utils
-
+from bluebird.api.resources.loadlog import parse_lines
 from tests.data import TEST_EPISODE_LOG
 
 

@@ -1,12 +1,11 @@
 """
 Basic "happy path" test for any simulator
 """
-
 # NOTE(RKM 2020-01-01) Note that this test isn't run directly, but is imported and
 # called by the tests for each simulator
-
 from dataclasses import dataclass
 from datetime import datetime
+
 import requests
 
 import tests.integration

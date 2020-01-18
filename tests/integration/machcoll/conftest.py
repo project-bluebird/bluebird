@@ -1,7 +1,6 @@
 """
 Configuration for MachColl integration tests
 """
-
 import pytest
 
 

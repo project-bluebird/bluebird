@@ -1,11 +1,13 @@
 """
 Contains utility methods to create Flask responses
 """
-
 from http import HTTPStatus
-from typing import Optional, Union, Dict
+from typing import Dict
+from typing import Optional
+from typing import Union
 
-from flask import make_response, jsonify
+from flask import jsonify
+from flask import make_response
 
 from bluebird.settings import Settings
 

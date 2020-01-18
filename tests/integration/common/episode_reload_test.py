@@ -1,7 +1,6 @@
 """
 Tests for the episode reloading
 """
-
 import pytest
 import requests
 from pyproj import Geod

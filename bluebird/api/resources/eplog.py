@@ -1,10 +1,9 @@
 """
 Provides logic for the 'eplog' (episode log file) API endpoint
 """
-
 # TODO(rkm 2020-01-12) Remove the close_ep arg - mixed concerns
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils

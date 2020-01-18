@@ -1,7 +1,6 @@
 """
 Test for https://github.com/alan-turing-institute/nats/issues/70
 """
-
 import pytest
 import requests
 

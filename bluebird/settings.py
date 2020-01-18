@@ -1,16 +1,15 @@
 """
 Default settings for the BlueBird app
 """
-
 # TODO Rename SIM_MODE
-
 import logging
 import os
 from pathlib import Path
 
 from semver import VersionInfo
 
-from bluebird.utils.properties import SimMode, SimType
+from bluebird.utils.properties import SimMode
+from bluebird.utils.properties import SimType
 
 
 with open("VERSION") as version_file:

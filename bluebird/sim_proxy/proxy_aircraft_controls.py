@@ -1,7 +1,6 @@
 """
 Contains the ProxyAircraftControls class
 """
-
 import copy
 import logging
 from typing import Dict

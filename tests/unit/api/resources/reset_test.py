@@ -1,7 +1,6 @@
 """
 Tests for the RESET endpoint
 """
-
 from http import HTTPStatus
 
 import mock

@@ -1,7 +1,6 @@
 """
 Tests for episode logging
 """
-
 import re
 
 import pytest

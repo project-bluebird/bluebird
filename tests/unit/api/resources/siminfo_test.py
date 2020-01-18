@@ -1,14 +1,12 @@
 """
 Tests for the SIMINFO endpoint
 """
-
 from http import HTTPStatus
 
 import mock
 
 from bluebird.settings import Settings
 from bluebird.utils.types import Callsign
-
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path
 from tests.unit.api.resources import TEST_SIM_PROPS

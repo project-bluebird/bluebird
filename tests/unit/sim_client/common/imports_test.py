@@ -1,7 +1,6 @@
 """
 Contains common tests for importing the sim_client modules
 """
-
 import importlib
 
 # NOTE: These functions aren't actually tests! They are imported and called with the sim

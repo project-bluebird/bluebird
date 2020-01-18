@@ -1,16 +1,14 @@
 """
 Tests for the SCENARIO endpoint
 """
-
 import json
 from http import HTTPStatus
 
 import mock
 
 import bluebird.api.resources.utils.utils as utils
-from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
-
+from bluebird.sim_proxy.sim_proxy import SimProxy
 from tests.data import TEST_SCENARIO
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path

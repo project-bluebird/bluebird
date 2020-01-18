@@ -1,10 +1,9 @@
 """
 Provides logic for the DIRECT API endpoint
 """
-
 # TODO Could also specify a target altitude here
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
@@ -40,7 +39,7 @@ class Direct(Resource):
 
         callsign = req_args[utils.CALLSIGN_LABEL]
 
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
         if resp:
             return resp
 

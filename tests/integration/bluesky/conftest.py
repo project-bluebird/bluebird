@@ -1,7 +1,6 @@
 """
 Configuration for BlueSky integration tests
 """
-
 import pytest
 
 

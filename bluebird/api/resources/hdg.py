@@ -1,12 +1,13 @@
 """
 Provides logic for the HDG (heading) API endpoint
 """
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.types import Callsign, Heading
+from bluebird.utils.types import Callsign
+from bluebird.utils.types import Heading
 
 
 _PARSER = reqparse.RequestParser()
@@ -29,7 +30,7 @@ class Hdg(Resource):
         req_args = utils.parse_args(_PARSER)
 
         callsign = req_args[utils.CALLSIGN_LABEL]
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
         if resp:
             return resp
 

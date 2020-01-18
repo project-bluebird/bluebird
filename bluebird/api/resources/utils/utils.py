@@ -1,18 +1,22 @@
 """
 Contains utility functions for the API resources
 """
-
 import re
-from typing import Optional, Dict, Any, Union
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Union
 
-from flask import current_app, Response
+from flask import current_app
+from flask import Response
 from flask_restful import reqparse
 
-import bluebird.utils.types as types
 import bluebird.api.resources.utils.responses as responses
+import bluebird.utils.types as types
 from bluebird.api.resources.utils.responses import bad_request_resp
 from bluebird.sim_proxy.sim_proxy import SimProxy
-from bluebird.utils.properties import AircraftProperties, AircraftRoute
+from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.properties import AircraftRoute
 
 
 # Name of the Flask config which contains the BlueBird instance
@@ -52,10 +56,12 @@ def sim_proxy() -> SimProxy:
     return current_app.config.get(FLASK_CONFIG_LABEL).sim_proxy
 
 
-def check_exists(callsign: types.Callsign, negate: bool = False) -> Optional[Response]:
+def check_exists(
+    sim_proxy: SimProxy, callsign: types.Callsign, negate: bool = False
+) -> Optional[Response]:
     """Checks if an aircraft exists, and returns an appropriate response if not"""
 
-    exists = sim_proxy().aircraft.exists(callsign)
+    exists = sim_proxy.aircraft.exists(callsign)
     if not isinstance(exists, bool):
         return responses.internal_err_resp(
             f"Could not check if the aircraft exists: {exists}"

@@ -1,11 +1,8 @@
 """
 Logging configuration for BlueBird
 """
-
 # TODO(rkm 2020-01-12) Refactor the episode logging code into SimProxy
-
 import json
-import logging
 import logging.config
 import uuid
 from datetime import datetime

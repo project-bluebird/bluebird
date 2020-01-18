@@ -1,16 +1,15 @@
 """
 Tests for the EPLOG endpoint
 """
-
-from pathlib import Path
 from http import HTTPStatus
+from pathlib import Path
 
 import mock
 
 import bluebird.logging as bb_logging
-
 from tests.data import TEST_EPISODE_LOG
-from tests.unit.api.resources import endpoint_path, patch_utils_path
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
 _ENDPOINT = "eplog"
@@ -82,5 +81,5 @@ def test_eplog_get(test_flask_client):
                 assert resp.json == {
                     "cur_ep_id": 123,
                     "cur_ep_file": str(TEST_EPISODE_LOG.absolute()),
-                    "lines": list(line.rstrip("\n") for line in open(TEST_EPISODE_LOG)),
+                    "log": list(line.rstrip("\n") for line in open(TEST_EPISODE_LOG)),
                 }

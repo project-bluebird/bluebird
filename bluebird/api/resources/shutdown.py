@@ -1,9 +1,9 @@
 """
 Provides logic for the shutdown endpoint
 """
-
 from flask import request
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils

@@ -1,8 +1,8 @@
 """
 Provides logic for the LISTROUTE (list route) API endpoint
 """
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
@@ -29,7 +29,7 @@ class ListRoute(Resource):
         req_args = utils.parse_args(_PARSER)
         callsign = req_args[utils.CALLSIGN_LABEL]
 
-        resp = utils.check_exists(callsign)
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
         if resp:
             return resp
 

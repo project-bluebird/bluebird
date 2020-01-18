@@ -1,7 +1,6 @@
 """
 Configuration for the integration issues tests
 """
-
 import pytest
 
 

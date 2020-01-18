@@ -1,7 +1,6 @@
 """
 Provides logic for the RESET API endpoint
 """
-
 from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as properties

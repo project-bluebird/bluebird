@@ -1,7 +1,6 @@
 """
 Contains the AbstractSimulatorControls implementation for MachColl
 """
-
 import json
 import logging
 import tempfile
@@ -11,11 +10,11 @@ from typing import Union
 
 import bluebird.utils.properties as props
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
-from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
+from bluebird.settings import Settings
 from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
     MachCollAircraftControls,
 )
-from bluebird.settings import Settings
+from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 
 

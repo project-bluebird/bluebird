@@ -1,8 +1,8 @@
 """
 Contains the AbstractMetricsProvider abstract base class
 """
-
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 
 from semver import VersionInfo
 

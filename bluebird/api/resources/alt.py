@@ -1,12 +1,14 @@
 """
 Provides logic for the ALT (altitude) API endpoint
 """
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.types import Altitude, Callsign, VerticalSpeed
+from bluebird.utils.types import Altitude
+from bluebird.utils.types import Callsign
+from bluebird.utils.types import VerticalSpeed
 
 # Parser for post requests
 _PARSER_POST = reqparse.RequestParser()

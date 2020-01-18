@@ -1,13 +1,11 @@
 """
 Tests for the METRIC and METRICPROVIDERS endpoints
 """
-
 from http import HTTPStatus
 
 import mock
 
 import bluebird.api.resources.utils.utils as utils
-
 from tests.unit.api.resources import endpoint_path
 
 

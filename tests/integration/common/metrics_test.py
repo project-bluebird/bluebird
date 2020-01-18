@@ -1,7 +1,6 @@
 """
 Integration tests for the metrics endpoints with BlueSky
 """
-
 import pytest
 import requests
 

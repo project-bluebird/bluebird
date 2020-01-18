@@ -1,7 +1,6 @@
 """
 Basic "happy path" test for BlueSky
 """
-
 from datetime import datetime
 
 from tests.integration.common.happy_path_test import run_happy_path

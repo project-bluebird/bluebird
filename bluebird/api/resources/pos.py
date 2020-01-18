@@ -1,13 +1,14 @@
 """
 Provides logic for the POS (position) API endpoint
 """
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
-from bluebird.api.resources.utils.responses import internal_err_resp
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.properties import SimProperties, AircraftProperties
+from bluebird.api.resources.utils.responses import internal_err_resp
+from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.properties import SimProperties
 from bluebird.utils.types import Callsign
 
 
@@ -32,7 +33,7 @@ class Pos(Resource):
             return responses.internal_err_resp(sim_props)
 
         if callsign:
-            resp = utils.check_exists(callsign)
+            resp = utils.check_exists(utils.sim_proxy(), callsign)
             if resp:
                 return resp
 

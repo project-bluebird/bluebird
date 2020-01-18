@@ -1,13 +1,12 @@
 """
 Tests for BlueBird's built-in metrics (provided by Aviary)
 """
-
-import pytest
 import mock
+import pytest
 
 import bluebird.metrics.bluebird.metrics as metrics
-import bluebird.utils.types as types
 import bluebird.utils.properties as props
+import bluebird.utils.types as types
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 
 
