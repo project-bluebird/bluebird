@@ -1,7 +1,6 @@
 """
 Tests for the SECTOR endpoint
 """
-
 import json
 from http import HTTPStatus
 
@@ -9,7 +8,6 @@ import geojson
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.sim_proxy.proxy_simulator_controls import Sector
-
 from tests.data import TEST_SECTOR
 from tests.unit.api.resources import endpoint_path
 

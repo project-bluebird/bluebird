@@ -1,7 +1,6 @@
 """
 Package containing test files
 """
-
 from pathlib import Path
 
 _TEST_DATA_DIR = Path("tests/data")

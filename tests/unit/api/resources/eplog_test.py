@@ -1,16 +1,15 @@
 """
 Tests for the EPLOG endpoint
 """
-
-from pathlib import Path
 from http import HTTPStatus
+from pathlib import Path
 
 import mock
 
 import bluebird.logging as bb_logging
-
 from tests.data import TEST_EPISODE_LOG
-from tests.unit.api.resources import endpoint_path, patch_utils_path
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
 _ENDPOINT = "eplog"

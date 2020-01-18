@@ -1,14 +1,13 @@
 """
 Tests for BlueSkyAircraftControls
 """
-
 import mock
 import pytest
 
-from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
 from bluebird.sim_client.bluesky.bluesky_aircraft_controls import (
     BlueSkyAircraftControls,
 )
+from bluebird.sim_client.bluesky.bluesky_client import BlueSkyClient
 
 
 def test_abstract_class_implemented():

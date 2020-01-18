@@ -1,10 +1,8 @@
 """
 Tests for the EPINFO endpoint
 """
-
 # NOTE(RKM 2019-12-28) This endpoint is currently disabled since it is now mostly
 # covered by the "eplog" endpoint
-
 from http import HTTPStatus
 
 from tests.unit.api.resources import endpoint_path

@@ -1,13 +1,12 @@
 """
 SimInfo endpoint
 """
-
 from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.properties import SimProperties
 from bluebird.settings import Settings
+from bluebird.utils.properties import SimProperties
 
 
 class SimInfo(Resource):

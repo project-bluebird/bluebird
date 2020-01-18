@@ -1,14 +1,18 @@
 """
 Provides logic for the CRE (create aircraft) API endpoint
 """
-
 from http import HTTPStatus
 
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.types import Callsign, Altitude, LatLon, Heading, GroundSpeed
+from bluebird.utils.types import Altitude
+from bluebird.utils.types import Callsign
+from bluebird.utils.types import GroundSpeed
+from bluebird.utils.types import Heading
+from bluebird.utils.types import LatLon
 
 
 _PARSER = reqparse.RequestParser()

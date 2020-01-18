@@ -1,16 +1,19 @@
 """
 Contains the AbstractAircraftControls implementation for BlueSky
 """
-
 import logging
 import re
 import traceback
-from typing import Dict, List, Optional, Union
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
-from bluebird.utils.units import METERS_PER_FOOT, KTS_PER_MS
+from bluebird.utils.units import KTS_PER_MS
+from bluebird.utils.units import METERS_PER_FOOT
 
 
 _ROUTE_RE = re.compile(r"^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$")

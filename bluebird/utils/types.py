@@ -1,10 +1,10 @@
 """
 Contains utility dataclasses representing physical units
 """
-
-from dataclasses import dataclass
 import re
-from typing import Optional, Union
+from dataclasses import dataclass
+from typing import Optional
+from typing import Union
 
 from bluebird.utils.units import METERS_PER_FOOT
 

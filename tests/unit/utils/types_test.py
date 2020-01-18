@@ -1,7 +1,6 @@
 """
 Tests for the types module
 """
-
 import pytest
 
 import bluebird.utils.types as types

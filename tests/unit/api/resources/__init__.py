@@ -1,7 +1,6 @@
 """
 Package for API resource tests
 """
-
 import datetime
 
 import mock
@@ -9,7 +8,6 @@ import mock
 import bluebird.api.resources.utils.utils as utils
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
-
 from tests import API_PREFIX
 
 

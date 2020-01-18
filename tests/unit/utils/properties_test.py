@@ -1,7 +1,6 @@
 """
 Tests for the properties module
 """
-
 import pytest
 
 

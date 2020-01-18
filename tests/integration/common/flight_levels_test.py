@@ -1,7 +1,6 @@
 """
 Tests for the flight level commands
 """
-
 import pytest
 import requests
 

@@ -1,13 +1,12 @@
 """
 Provides logic for the STEP API endpoint
 """
-
 from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils
-from bluebird.utils.properties import SimMode
 from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode
 
 
 # TODO SimClient's should assert (internally) that the simulator time is advanced

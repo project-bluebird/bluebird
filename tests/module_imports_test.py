@@ -1,7 +1,6 @@
 """
 Tests that no exceptions are thrown when modules are imported
 """
-
 import importlib
 
 import pytest

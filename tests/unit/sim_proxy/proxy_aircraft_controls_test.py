@@ -1,7 +1,6 @@
 """
 Tests for the ProxyAircraftControls class
 """
-
 import copy
 
 import mock

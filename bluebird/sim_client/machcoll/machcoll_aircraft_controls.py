@@ -1,10 +1,12 @@
 """
 Contains the AbstractAircraftControls implementation for MachColl
 """
-
 import logging
 import traceback
-from typing import Dict, Optional, Union, List
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 import bluebird.utils.properties as props
 import bluebird.utils.types as types

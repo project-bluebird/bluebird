@@ -1,9 +1,7 @@
 """
 Contains property class definitions
 """
-
 # TODO(RKM 2020-01-02) Split this / move SimProxy.Sector here
-
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum

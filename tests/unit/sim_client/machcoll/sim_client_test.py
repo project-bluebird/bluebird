@@ -1,12 +1,9 @@
 """
 Tests for the MachColl sim client module
 """
-
-from tests.unit.sim_client.common.imports_test import (
-    sim_client_module_import,
-    abstract_class_implementation,
-    sim_client_instantiation,
-)
+from tests.unit.sim_client.common.imports_test import abstract_class_implementation
+from tests.unit.sim_client.common.imports_test import sim_client_instantiation
+from tests.unit.sim_client.common.imports_test import sim_client_module_import
 
 _MODULE_NAME = "MachColl"
 

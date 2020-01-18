@@ -1,7 +1,6 @@
 """
 Tests for the agent mode and the STEP command
 """
-
 import pytest
 import requests
 

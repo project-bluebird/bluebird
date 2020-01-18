@@ -1,7 +1,6 @@
 """
 Provides fixtures for integration tests
 """
-
 import functools
 import importlib
 import os
@@ -18,9 +17,8 @@ from compose.project import Project as ComposeProject
 from compose.service import BuildAction
 from compose.service import ImageType
 
-from bluebird.settings import Settings
-
 import tests.integration
+from bluebird.settings import Settings
 from tests import API_PREFIX
 
 

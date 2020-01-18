@@ -1,13 +1,12 @@
 """
 Provides logic for the HOLD (simulation pause) API endpoint
 """
-
 from flask_restful import Resource
 
-import bluebird.api.resources.utils.utils as utils
 import bluebird.api.resources.utils.responses as responses
-from bluebird.utils.properties import SimMode
+import bluebird.api.resources.utils.utils as utils
 from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode
 
 
 class Hold(Resource):

@@ -1,7 +1,6 @@
 """
 Tests for the LISTROUTE endpoint
 """
-
 from http import HTTPStatus
 
 import mock
@@ -9,8 +8,9 @@ import mock
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.responses import bad_request_resp
-
-from tests.unit.api.resources import endpoint_path, patch_utils_path, TEST_ROUTE
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
+from tests.unit.api.resources import TEST_ROUTE
 
 
 _ENDPOINT = "listroute"

@@ -1,7 +1,6 @@
 """
 Test for https://github.com/alan-turing-institute/bluebird/issues/63
 """
-
 import pytest
 import requests
 

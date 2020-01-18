@@ -1,13 +1,11 @@
 """
 Tests for the SHUTDOWN endpoint
 """
-
 from http import HTTPStatus
 
 import mock
 
 import bluebird.api.resources.utils.utils as utils
-
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path
 

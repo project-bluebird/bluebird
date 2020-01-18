@@ -1,9 +1,10 @@
 """
 Provides logic for the scenario endpoint
 """
-
 from http import HTTPStatus
-from flask_restful import Resource, reqparse
+
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils

@@ -1,14 +1,13 @@
 """
 Logic for metric endpoints
 """
-
 # TODO(RKM 2019-11-23) Should add a flag to assert that the sim has advanced (has been
 # stepped) since the previous call to the metric endpoint
-
 import logging
 import traceback
 
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils

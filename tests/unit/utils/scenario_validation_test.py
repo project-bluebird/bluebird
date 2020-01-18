@@ -1,11 +1,9 @@
 """
 Tests for the scenario validation
 """
-
 import json
 
 from bluebird.utils.scenario_validation import validate_json_scenario
-
 from tests.data import TEST_SCENARIO
 
 

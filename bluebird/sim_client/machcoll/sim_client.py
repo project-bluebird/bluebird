@@ -8,17 +8,15 @@ Stopped     -> Running, Stepping
 Paused      -> Running, Stepping, Stopped
 Stepping    -> Paused, Stopped
 """
-
 # TODO(RKM 2019-11-27) Add logic to handle MachColl becoming unavailable
-
 import logging
 import os
 from typing import List
 
 from semver import VersionInfo
 
-from .machcoll_client_imports import MCClientMetrics
 from .machcoll_aircraft_controls import MachCollAircraftControls
+from .machcoll_client_imports import MCClientMetrics
 from .machcoll_simulator_controls import MachCollSimulatorControls
 from bluebird.metrics import MetricsProviders
 from bluebird.settings import Settings

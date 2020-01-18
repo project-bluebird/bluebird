@@ -1,9 +1,12 @@
 """
 Contains the AbstractAircraftControls class
 """
-
-from abc import ABC, abstractmethod
-from typing import Optional, Union, List, Dict
+from abc import ABC
+from abc import abstractmethod
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 import bluebird.utils.properties as props
 import bluebird.utils.types as types

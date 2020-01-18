@@ -1,11 +1,9 @@
 """
 Contains functions to validate scenario and sector data
 """
-
 # NOTE(RKM 2019-12-28) We don't currently validate any internal references in the
 # scenario data. I.e. we don't check that a fix referenced by name actually exists in
 # another part of the schema
-
 import json
 from io import StringIO
 from typing import Union

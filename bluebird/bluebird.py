@@ -1,7 +1,6 @@
 """
 Contains the BlueBird class
 """
-
 import logging
 import os
 import signal
@@ -20,8 +19,8 @@ from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
 from bluebird.settings import Settings
 from bluebird.sim_client import setup_sim_client
-from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.sim_proxy.sim_proxy import SimProxy
+from bluebird.utils.abstract_sim_client import AbstractSimClient
 
 
 class BlueBird:

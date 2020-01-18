@@ -1,7 +1,6 @@
 """
 Contains utility functions for dates and times
 """
-
 import datetime
 import logging
 import time

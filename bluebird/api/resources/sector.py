@@ -1,12 +1,12 @@
 """
 Provides logic for the sector API endpoint
 """
-
 from http import HTTPStatus
 
 import geojson
 from aviary.sector.sector_element import SectorElement
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses
 import bluebird.api.resources.utils.utils as utils

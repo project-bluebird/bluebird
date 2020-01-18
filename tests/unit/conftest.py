@@ -1,7 +1,6 @@
 """
 Test configuration for all unit tests
 """
-
 import mock
 import pytest
 

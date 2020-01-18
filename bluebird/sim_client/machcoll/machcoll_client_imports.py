@@ -1,7 +1,6 @@
 """
 Contains the import logic for MCClientMetrics
 """
-
 import logging
 import os
 import sys

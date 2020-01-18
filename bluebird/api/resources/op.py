@@ -1,7 +1,6 @@
 """
 Provides logic for the OP (operate) API endpoint
 """
-
 from flask_restful import Resource
 
 import bluebird.api.resources.utils.responses as responses

@@ -1,7 +1,6 @@
 """
 BlueBird test package
 """
-
 from dotenv import load_dotenv
 
 from bluebird.settings import Settings

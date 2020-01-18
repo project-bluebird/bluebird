@@ -1,7 +1,6 @@
 """
 Tests for BlueSkySimulatorControls
 """
-
 import json
 from datetime import datetime
 
@@ -16,7 +15,6 @@ from bluebird.utils.properties import Scenario
 from bluebird.utils.properties import Sector
 from bluebird.utils.properties import SimProperties
 from bluebird.utils.properties import SimState
-
 from tests.data import TEST_SCENARIO
 from tests.data import TEST_SECTOR
 

@@ -1,8 +1,6 @@
 """
 Package contains BlueBird's metrics code
 """
-
-import importlib
 import importlib.util
 import logging
 from typing import List

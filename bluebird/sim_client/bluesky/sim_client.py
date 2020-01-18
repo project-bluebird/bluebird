@@ -1,9 +1,7 @@
 """
 BlueSky simulation client class
 """
-
 # TODO: Need to re-add the tests for string parsing/units from the old API tests
-
 import os
 from typing import List
 

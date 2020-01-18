@@ -1,13 +1,12 @@
 """
 BlueBird's built-in metrics, provided by Aviary
 """
-
 # TODO(RKM 2019-12-12) Maybe suggest using __all__ in Aviary to only expose the required
 # API functions
 import aviary.metrics as aviary_metrics
 
-import bluebird.utils.types as types
 import bluebird.utils.properties as props
+import bluebird.utils.types as types
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 

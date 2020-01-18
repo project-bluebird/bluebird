@@ -1,17 +1,17 @@
 """
 Contains logic for flask and our app routes
 """
-
 import logging
 import re
 from http import HTTPStatus
 
-from flask import Flask, request
+from flask import Flask
+from flask import request
 from flask_cors import CORS
 from flask_restful import Api
 
-from bluebird.settings import Settings
 from bluebird.api import resources as res
+from bluebird.settings import Settings
 
 
 class BlueBirdApi(Api):

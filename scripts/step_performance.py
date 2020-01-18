@@ -1,7 +1,6 @@
 """
 Measures the performance of the STEP endpoint
 """
-
 import argparse
 import time
 

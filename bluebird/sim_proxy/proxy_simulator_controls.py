@@ -1,7 +1,6 @@
 """
 Contains the ProxySimulatorControls class
 """
-
 import copy
 import json
 import logging

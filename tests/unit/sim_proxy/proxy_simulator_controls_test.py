@@ -1,7 +1,6 @@
 """
 Tests for the ProxySimulatorControls class
 """
-
 import datetime
 import json
 import logging
@@ -15,11 +14,12 @@ import bluebird.utils.properties as props
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 
 # TODO(RKM 2020-01-02) We should be able to remove this import
-from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
+from bluebird.utils.abstract_simulator_controls import (
+    AbstractSimulatorControls,  # noreorder
+)
 from bluebird.utils.properties import Scenario
 from bluebird.utils.properties import Sector
 from bluebird.utils.properties import SimProperties
-
 from tests.data import TEST_SCENARIO
 from tests.data import TEST_SECTOR
 

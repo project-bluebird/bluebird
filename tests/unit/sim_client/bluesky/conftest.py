@@ -1,7 +1,6 @@
 """
 Test configuration module for the current package
 """
-
 import os
 
 import pytest

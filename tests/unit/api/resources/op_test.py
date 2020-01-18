@@ -1,15 +1,14 @@
 """
 Tests for the OP endpoint
 """
-
 from http import HTTPStatus
 
 import mock
 
 import bluebird.settings as settings
 from bluebird.utils.properties import SimMode
-
-from tests.unit.api.resources import endpoint_path, patch_utils_path
+from tests.unit.api.resources import endpoint_path
+from tests.unit.api.resources import patch_utils_path
 
 
 _ENDPOINT = "op"

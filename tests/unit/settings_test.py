@@ -1,10 +1,9 @@
 """
 Tests for the settings module
 """
-
-from bluebird.utils.properties import SimMode
 import bluebird.settings
 from bluebird.settings import Settings
+from bluebird.utils.properties import SimMode
 
 
 def test_can_update_settings():

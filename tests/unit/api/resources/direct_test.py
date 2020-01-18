@@ -1,14 +1,12 @@
 """
 Tests for the DIRECT endpoint
 """
-
 from http import HTTPStatus
 
 import bluebird.api.resources.utils.utils as utils
-
 from tests.unit.api.resources import endpoint_path
-from tests.unit.api.resources import TEST_WAYPOINT
 from tests.unit.api.resources import get_app_mock
+from tests.unit.api.resources import TEST_WAYPOINT
 
 
 _ENDPOINT = "direct"

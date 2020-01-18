@@ -1,10 +1,10 @@
 """
 Contains a utility Timer class
 """
-
 import logging
 import sys
-from threading import Event, Thread
+from threading import Event
+from threading import Thread
 from time import sleep
 
 

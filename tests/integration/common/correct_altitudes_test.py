@@ -1,7 +1,6 @@
 """
 Tests for the altitude command
 """
-
 import requests
 
 import tests.integration

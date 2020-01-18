@@ -1,7 +1,6 @@
 """
 Contains the SimProxy class
 """
-
 # TODO(RKM 2019-11-17) With the current SimProxy implementation, we assume that we are
 # the only client interacting with the simulation server when taking any actions that
 # involve updating the scenario / creating waypoints etc. This might cause trouble if
@@ -9,7 +8,6 @@ Contains the SimProxy class
 # with the same simulation. If we want to support that, then we'll have to add logic
 # which allows one of the instances to act as the "master", and make the other instances
 # aware that some properties may change without their knowledge
-
 import logging
 from typing import List
 

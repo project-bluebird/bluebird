@@ -1,12 +1,11 @@
 """
 Configuration for the api tests
 """
-
 import mock
 import pytest
 
-import bluebird.api.resources.utils.utils as utils
 import bluebird.api as bluebird_api
+import bluebird.api.resources.utils.utils as utils
 
 
 @pytest.fixture

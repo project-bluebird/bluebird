@@ -1,9 +1,9 @@
 """
 Entry point for the BlueBird app
 """
-
 import argparse
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
 
 from dotenv import load_dotenv
 

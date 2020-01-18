@@ -1,12 +1,13 @@
 """
 Logic for the set ground speed API endpoint
 """
-
-from flask_restful import Resource, reqparse
+from flask_restful import reqparse
+from flask_restful import Resource
 
 import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.responses import checked_resp
-from bluebird.utils.types import Callsign, GroundSpeed
+from bluebird.utils.types import Callsign
+from bluebird.utils.types import GroundSpeed
 
 
 _PARSER = reqparse.RequestParser()
