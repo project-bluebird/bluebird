@@ -35,14 +35,10 @@ _TEST_SIM_PROPERTIES = props.SimProperties(
     utc_datetime=datetime.datetime.now(),
 )
 
-with open(TEST_SECTOR, "r") as f:
-    geojson = json.load(f)
-    del geojson["_source"]
-    sector_element = SectorElement.deserialise(StringIO(json.dumps(geojson)))
-    _TEST_SECTOR = Sector(name="test-sector", element=sector_element)
+_SECTOR_ELEMENT = SectorElement.deserialise(StringIO(json.dumps(TEST_SECTOR)))
+_TEST_SECTOR = Sector(name="test-sector", element=_SECTOR_ELEMENT)
 
-with open(TEST_SCENARIO, "r") as f:
-    _TEST_SCENARIO = Scenario("test-scenario", content=json.load(f))
+_TEST_SCENARIO = Scenario("test-scenario", content=TEST_SCENARIO)
 
 
 def test_abstract_class_implemented():
