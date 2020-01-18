@@ -110,6 +110,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # TODO(rkm 2020-01-12) Extract all the info we need - routes
         if not loaded_scenario:
             self._save_scenario_to_file(scenario)
+        self._scenario = scenario
         self._invalidate_data()
         return None
 
@@ -153,12 +154,14 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # Re-loading not currently implemented :^)
         # TODO(rkm 2020-01-12) Delete the .last_* files if we successfully load them
         if not self.sector:
-            return None
+            self._logger.warning("No sector set")
+            return
         last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
         with open(last_sector_file, "w+") as f:
             f.write(self.sector.name)
         if not self._scenario:
-            return None
+            self._logger.warning("No scenario set")
+            return
         last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
         with open(last_scenario_file, "w+") as f:
             f.write(self._scenario.name)

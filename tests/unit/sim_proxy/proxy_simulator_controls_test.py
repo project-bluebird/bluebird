@@ -5,12 +5,15 @@ Tests for the ProxySimulatorControls class
 import datetime
 import json
 import logging
+import uuid
 from io import StringIO
 
 import mock
+import pytest
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
+from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 
@@ -310,3 +313,44 @@ def test_set_seed():
     res = proxy_simulator_controls.set_seed(1)
     assert not res
     mock_sim_controls.set_seed.assert_called_once_with(1)
+
+
+def test_find_waypoint():
+    # Test response when no sector set
+    # Test response when invalid waypoint
+    # Test response when valid waypoint
+    pytest.xfail()
+
+
+def test_store_data():
+
+    mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
+    mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
+    proxy_simulator_controls = ProxySimulatorControls(
+        mock_sim_controls, mock_aircraft_controls
+    )
+
+    # Just to make sure we don't accidentally pass due to a previous test
+    uuid_str = str(uuid.uuid4())[:8]
+
+    # Test .last_sector created
+
+    proxy_simulator_controls.sector = Sector(f"test-sector-{uuid_str}", TEST_SECTOR)
+    proxy_simulator_controls.store_data()
+    last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
+    assert last_sector_file.exists()
+    with open(last_sector_file) as f:
+        assert f.read() == f"test-sector-{uuid_str}"
+
+    # Test .last_scenario created
+
+    mock_sim_controls.load_scenario.return_value = None
+    err = proxy_simulator_controls.load_scenario(
+        Scenario(f"test-scenario-{uuid_str}", [1])
+    )
+    assert not err
+    proxy_simulator_controls.store_data()
+    last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
+    assert last_scenario_file.exists()
+    with open(last_scenario_file) as f:
+        assert f.read() == f"test-scenario-{uuid_str}"
