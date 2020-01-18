@@ -26,6 +26,15 @@ repos:
       - id: python-check-blanket-noqa
       - id: python-check-mock-methods
       - id: python-no-log-warn
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v1.25.3
+    hooks:
+      - id: pyupgrade
+        args: [--py37-plus]
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v1.8.0
+    hooks:
+      - id: reorder-python-imports
   - repo: https://github.com/psf/black
     rev: 19.10b0
     hooks:
@@ -36,11 +45,6 @@ repos:
     hooks:
       - id: flake8
         args: [--config=.flake8]
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v1.25.3
-    hooks:
-      - id: pyupgrade
-        args: [--py37-plus]
   # TODO (RKM 2019-12-20) Enable this & get it to pass!
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: v0.761
