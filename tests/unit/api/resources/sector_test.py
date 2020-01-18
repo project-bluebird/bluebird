@@ -4,8 +4,8 @@ Tests for the SECTOR endpoint
 
 import json
 from http import HTTPStatus
-from geojson import dumps
 
+import geojson
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.sim_proxy.proxy_simulator_controls import Sector
@@ -46,7 +46,7 @@ def test_sector_get(test_flask_client, app_mock):
     assert resp.status_code == HTTPStatus.OK
 
     # Test json content - matches the sector geojson.
-    assert resp.json == {"name": "test_sector", "content": dumps(sector)}
+    assert resp.json == {"name": "test_sector", "content": geojson.dumps(sector)}
 
 
 def test_sector_post(test_flask_client, app_mock):
