@@ -63,4 +63,11 @@ def test_listroute_get(test_flask_client):
 
         resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
         assert resp.status_code == HTTPStatus.OK
-        assert resp.json == utils.convert_aircraft_route(TEST_ROUTE)
+        assert resp.json == {
+            utils.CALLSIGN_LABEL: "TEST",
+            "current_segment_index": 1,
+            "route": [
+                {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
+                {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
+            ],
+        }

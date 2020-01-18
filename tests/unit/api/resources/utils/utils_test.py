@@ -152,37 +152,3 @@ def test_convert_aircraft_props():
     assert converted_props["lon"] == 123.4
     assert converted_props["requested_fl"] == 25_000
     assert converted_props["vs"] == 32.0
-
-
-def test_convert_aircraft_route():
-    """Tests for convert_aircraft_route"""
-
-    callsign_str = "TEST"
-
-    segments = [
-        properties.RouteItem(
-            types.Waypoint("WPT1", types.LatLon(0, 0), types.Altitude("FL350")),
-            types.GroundSpeed(150),
-        ),
-        properties.RouteItem(
-            types.Waypoint("WPT2", types.LatLon(0, 0), None), types.GroundSpeed(200),
-        ),
-        properties.RouteItem(
-            types.Waypoint("WPT3", types.LatLon(0, 0), types.Altitude("FL370")), None
-        ),
-    ]
-    route = properties.AircraftRoute(types.Callsign(callsign_str), segments, 1)
-
-    converted = utils.convert_aircraft_route(route)
-    assert isinstance(converted, dict)
-    assert len(converted) == 1
-    assert len(converted[callsign_str]) == 2
-
-    assert converted[callsign_str]["current_segment_index"] == 1
-
-    converted_route = converted[callsign_str]["route"]
-    assert converted_route == [
-        {"req_alt": 35000, "req_gspd": 492, "wpt_name": "WPT1"},
-        {"req_alt": None, "req_gspd": 656, "wpt_name": "WPT2"},
-        {"req_alt": 37000, "req_gspd": None, "wpt_name": "WPT3"},
-    ]
