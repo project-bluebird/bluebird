@@ -30,6 +30,7 @@ repos:
     rev: v1.16.0
     hooks:
       - id: codespell
+        args: [--ignore-words=.codespell-ignores]
   - repo: https://github.com/asottile/pyupgrade
     rev: v1.26.1
     hooks:
