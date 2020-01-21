@@ -31,7 +31,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def all_properties(
         self,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
-        self._logger.debug("BlueSkyAircraftControls.all_properties")
         if not self._ac_data:
             simt, data = self._mc_client().get_active_flight_states_and_time()
             if not data:
