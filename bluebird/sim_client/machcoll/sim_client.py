@@ -11,6 +11,8 @@ Stepping    -> Paused, Stopped
 # TODO(RKM 2019-11-27) Add logic to handle MachColl becoming unavailable
 import logging
 import os
+from threading import current_thread
+from threading import main_thread
 from typing import List
 
 from semver import VersionInfo
@@ -52,8 +54,15 @@ class SimClient(AbstractSimClient):
     def sim_version(self) -> VersionInfo:
         return self._client_version
 
+    @property
+    def mc_client(self):
+        return (
+            self._mc_client if current_thread() == main_thread() else self._mc_bg_client
+        )
+
     def __init__(self, metrics_providers: MetricsProviders):
-        self.mc_client = None
+        self._mc_client = None
+        self._mc_bg_client = None
         self._client_version: VersionInfo = None
         self._logger = logging.getLogger(__name__)
         self._aircraft_controls = MachCollAircraftControls(self)
@@ -63,13 +72,16 @@ class SimClient(AbstractSimClient):
         )
 
     def connect(self, timeout: int = 1) -> None:
-        self.mc_client = MCClientMetrics(host=Settings.SIM_HOST, port=Settings.MC_PORT)
+        self._mc_client = MCClientMetrics(host=Settings.SIM_HOST, port=Settings.MC_PORT)
+        self._mc_bg_client = MCClientMetrics(
+            host=Settings.SIM_HOST, port=Settings.MC_PORT
+        )
 
         # Perform a request to initialise the connection
-        if not self.mc_client.get_state():
+        if not self._mc_client.get_state():
             raise TimeoutError("Could not connect to the MachColl server")
 
-        version_dict = self.mc_client.compare_api_version()
+        version_dict = self._mc_client.compare_api_version()
         self._client_version = VersionInfo.parse(version_dict["This client version"])
         self._mc_metrics_provider.set_version(self._client_version)
         self._logger.info(f"MCClientMetrics connected. Version: {self._client_version}")
@@ -81,8 +93,8 @@ class SimClient(AbstractSimClient):
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
 
-        if self.mc_client:
-            self.mc_client.close_mq()
+        if self._mc_client:
+            self._mc_client.close_mq()
 
         # NOTE: Using the presence of _client_version to infer that we have a connection
         if not self._client_version:
