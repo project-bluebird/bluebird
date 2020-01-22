@@ -302,20 +302,11 @@ A valid response looks like:
 ```javascript
 {
     "callsign": "AC1001",
+    "current_segment_index": 1,
     "route": [
-        {
-            "is_current": true,
-            "req_alt": "FL250",
-            "req_gspd": 123,
-            "wpt_name": "BKN"
-        },
-        {
-            "is_current": false,
-            "req_alt": "4500",
-            "req_gspd": 100,
-            "wpt_name": "SPY"
-        }
-    ]
+        {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
+        {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
+    ],
 }
 ```
 
