@@ -1,4 +1,3 @@
-import pytest
 import requests
 
 import tests.integration
@@ -12,13 +11,13 @@ def test_create_aircraft():
     assert resp.status_code == 400, "Expected no aircraft in the simulation"
 
     data = {
-      "callsign": "TST1001",
-      "type": "B744",
-      "lat": "0",
-      "lon": "0",
-      "hdg": 0,
-      "alt": "FL250",
-      "gspd": 1
+        "callsign": "TST1001",
+        "type": "B744",
+        "lat": "0",
+        "lon": "0",
+        "hdg": 0,
+        "alt": "FL250",
+        "gspd": 1,
     }
 
     resp = requests.post(f"{api_base}/cre", json=data)

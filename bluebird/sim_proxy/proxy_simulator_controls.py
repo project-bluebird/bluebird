@@ -176,7 +176,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if isinstance(props, str):
             self._logger.error(f"Could not get sim properties: {props}")
             return
-        self._logger.info(           
+        self._logger.info(
             f"UTC={props.utc_datetime}, "
             f"scenario_time={int(props.scenario_time):4}, "
             f"speed={props.speed:.2f}x, "
