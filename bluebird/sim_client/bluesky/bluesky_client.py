@@ -231,7 +231,7 @@ class BlueSkyClient(Client):
                 self.stream(strmname, pydata, sender_id)
 
             # TODO(RKM 2019-11-26) This should probably be based on the stream frequency
-            if self._last_stream_time and time.time() - self._last_stream_time > 1:
+            if self._last_stream_time and time.time() - self._last_stream_time > 2:
                 raise TimeoutError("Lost connection to BlueSky")
 
             return True
