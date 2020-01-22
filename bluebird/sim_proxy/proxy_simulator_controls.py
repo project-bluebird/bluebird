@@ -63,23 +63,25 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         BlueBird can find (i.e. locally on disk)
         """
 
-        # NOTE(rkm 2020-01-03) We can't currently read the sector definition from either
-        # simulator, so we can only check if we have it locally
-        loaded_sector = False
+        # NOTE(rkm 2020-01-03) We store any new sector (and scenario) definitions
+        # locally so they can be loaded again by name at a later point
+        loaded_existing_sector = False
         if not sector.element:
             sector_element = self._load_sector_from_file(sector.name)
             if isinstance(sector_element, str):
                 return f"Error loading sector from file: {sector_element}"
             sector.element = sector_element
-            loaded_sector = True
+            loaded_existing_sector = True
 
         err = self._sim_controls.load_sector(sector)
         if err:
             return err
 
         # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
-        if not loaded_sector:
+
+        if not loaded_existing_sector:
             self._save_sector_to_file(sector)
+
         self.sector = sector
         self._invalidate_data()
         return None
@@ -92,20 +94,20 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         BlueBird can find (i.e. locally on disk)
         """
 
-        loaded_scenario = False
+        loaded_existing_scenario = False
         if not scenario.content:
             scenario_content = self._load_scenario_from_file(scenario.name)
             if isinstance(scenario_content, str):
                 return f"Error loading scenario from file: {scenario_content}"
             scenario.content = scenario_content
-            loaded_scenario = True
+            loaded_existing_scenario = True
 
         err = self._sim_controls.load_scenario(scenario)
         if err:
             return err
 
         # TODO(rkm 2020-01-12) Extract all the info we need - routes
-        if not loaded_scenario:
+        if not loaded_existing_scenario:
             self._save_scenario_to_file(scenario)
         self._scenario = scenario
         self._invalidate_data()
