@@ -170,6 +170,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
                     vertical_speed=types.VerticalSpeed(
                         int(data["vs"][i] * 60 / METERS_PER_FOOT)
                     ),
+                    route=None,
                 )
             return ac_props
         except Exception:
