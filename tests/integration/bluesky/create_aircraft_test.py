@@ -25,5 +25,22 @@ def test_create_aircraft():
 
     resp = requests.get(f"{api_base}/pos")
     assert resp.status_code == 200, "Expected to get the aircraft position"
+    assert resp.json() == {
+        "TST1001": {
+            "actype": "B744",
+            "cleared_fl": None,
+            "current_fl": 25000,
+            "gs": 1,
+            "hdg": 0,
+            "lat": 0.0,
+            "lon": 0.0,
+            "requested_fl": None,
+            "vs": 0,
+        },
+        "scenario_time": 0.0,
+    }
 
-    # TODO: test response content
+    # TODO Test listroute performs correctly for the new aircraft
+    # resp = requests.get(f"{api_base}/listroute?callsign=TST1001")
+    # assert resp.status_code == 200
+    # assert resp.json() == {}

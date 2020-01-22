@@ -77,16 +77,23 @@ def convert_aircraft_props(props: AircraftProperties) -> Dict[str, Any]:
     Parses an AircraftProperties object into a dict suitable for returning via Flask
     """
 
-    return {
-        str(props.callsign): {
-            "actype": props.aircraft_type,
-            "cleared_fl": props.cleared_flight_level.feet,
-            "current_fl": props.altitude.feet,
-            "gs": props.ground_speed.meters_per_sec,
-            "hdg": props.heading.degrees,
-            "lat": props.position.lat_degrees,
-            "lon": props.position.lon_degrees,
-            "requested_fl": props.requested_flight_level.feet,
-            "vs": props.vertical_speed.feet_per_min,
-        }
+    data = {
+        "actype": props.aircraft_type,
+        "current_fl": props.altitude.feet,
+        "gs": props.ground_speed.meters_per_sec,
+        "hdg": props.heading.degrees,
+        "lat": props.position.lat_degrees,
+        "lon": props.position.lon_degrees,
+        "vs": props.vertical_speed.feet_per_min,
     }
+
+    # NOTE(rkm 2020-01-22) If the aircraft has been created outside of the initial
+    # scenario, then we won't have the following data
+    data["cleared_fl"] = (
+        props.cleared_flight_level.feet if props.cleared_flight_level else None
+    )
+    data["requested_fl"] = (
+        props.requested_flight_level.feet if props.requested_flight_level else None
+    )
+
+    return {str(props.callsign): data}

@@ -18,7 +18,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
     """Proxy implementation of AbstractAircraftControls"""
 
     @property
-    def all_properties(self,) -> Union[Dict[types.Callsign, AircraftProperties], str]:
+    def all_properties(self) -> Union[Dict[types.Callsign, AircraftProperties], str]:
 
         if not self._ac_props:
             err = self._set_initial_properties()
@@ -119,6 +119,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
             return err
         # Create an empty entry for the new aircraft
         self._ac_props[callsign] = None
+        self._data_valid = False
         return None
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
@@ -173,7 +174,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
     def _update_ac_properties(
         self, callsign: types.Callsign, new_props: AircraftProperties
     ):
-        """Update the variable bits for props which already exist in the store"""
+        """Updates the stored AircraftProperties with new data from the simulator"""
         # NOTE(rkm 2020-01-12) If we don't have any existing properties, then that means
         # this is an aircraft that has been created after the scenario has been started.
         # We therefore (currently) don't have any route or req. flight level information
@@ -181,8 +182,8 @@ class ProxyAircraftControls(AbstractAircraftControls):
             self._ac_props[callsign] = new_props
         else:
             props = self._ac_props[callsign]
-            props.altitude: types = new_props.altitude
-            props.ground_speed: types = new_props.ground_speed
-            props.heading: types = new_props.heading
-            props.position: types = new_props.position
-            props.vertical_speed: types = new_props.vertical_speed
+            props.altitude = new_props.altitude
+            props.ground_speed = new_props.ground_speed
+            props.heading = new_props.heading
+            props.position = new_props.position
+            props.vertical_speed = new_props.vertical_speed
