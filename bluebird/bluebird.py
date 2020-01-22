@@ -181,6 +181,7 @@ def _proc_killer():
     def killer():
         while not BlueBird.exit_flag:
             time.sleep(0.1)
+        print("\n--- Sending SIGINT to self ---\n")
         os.kill(os.getpid(), signal.SIGINT)
 
     threading.Thread(target=killer).start()

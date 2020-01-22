@@ -46,9 +46,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         proxy_aircraft_controls: ProxyAircraftControls,
     ):
         self._logger = logging.getLogger(__name__)
-        self._props_logger = logging.getLogger(__name__)
-        self._props_logger.name = "Sim Info"
-
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._proxy_aircraft_controls = proxy_aircraft_controls
@@ -154,13 +151,13 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # Re-loading not currently implemented :^)
         # TODO(rkm 2020-01-12) Delete the .last_* files if we successfully load them
         if not self.sector:
-            self._logger.warning("No sector set")
+            self._logger.warning("No sector to store")
             return
         last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
         with open(last_sector_file, "w+") as f:
             f.write(self.sector.name)
         if not self._scenario:
-            self._logger.warning("No scenario set")
+            self._logger.warning("No scenario to store")
             return
         last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
         with open(last_scenario_file, "w+") as f:
@@ -179,7 +176,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if isinstance(props, str):
             self._logger.error(f"Could not get sim properties: {props}")
             return
-        self._props_logger.info(
+        self._logger.info(           
             f"UTC={props.utc_datetime}, "
             f"scenario_time={int(props.scenario_time):4}, "
             f"speed={props.speed:.2f}x, "
