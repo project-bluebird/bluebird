@@ -110,6 +110,7 @@ class RouteItem:
     required_gspd: Optional[types.GroundSpeed]
 
 
+# TODO(rkm 2020-01-22) Remove this - no longer needed
 @dataclass
 class AircraftRoute:
 
@@ -140,7 +141,23 @@ class AircraftProperties:
     position: types.LatLon
     requested_flight_level: types.Altitude
     vertical_speed: types.VerticalSpeed
-    route: AircraftRoute
+    route: List[str]
 
     def __post_init__(self):
         assert self.aircraft_type, "Aircraft type must be defined"
+
+    @classmethod
+    def from_scenario_data(cls, data: Dict[str, Any]) -> "AircraftProperties":
+        return cls(
+            aircraft_type=data["type"],
+            altitude=types.Altitude(data["currentFlightLevel"]),
+            callsign=types.Callsign(data["callsign"]),
+            cleared_flight_level=types.Altitude(data["clearedFlightLevel"]),
+            ground_speed=None,
+            # TODO(rkm 2020-01-22) Check if we should know the initial heading here
+            heading=None,
+            position=types.LatLon(data["startPosition"][1], data["startPosition"][0]),
+            requested_flight_level=types.Altitude(data["requestedFlightLevel"]),
+            vertical_speed=None,
+            route=[x["fixName"] for x in data["route"]],
+        )

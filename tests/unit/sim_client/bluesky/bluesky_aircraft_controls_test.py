@@ -81,8 +81,3 @@ def test_route():
 def test_exists():
     """Tests that BlueSkyAircraftControls implements exists"""
     pytest.xfail()
-
-
-def test_clear_caches():
-    """Tests that BlueSkyAircraftControls implements clear_caches"""
-    pytest.xfail()

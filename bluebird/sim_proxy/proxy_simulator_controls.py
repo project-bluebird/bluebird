@@ -1,6 +1,9 @@
 """
 Contains the ProxySimulatorControls class
 """
+# TODO(rkm 2020-01-22) The startTime and timedelta properties defined in the scenario
+# mean that an aircraft may not immediately appear in the data received from the
+# simulators. Create a test which checks we handle this properly
 import copy
 import json
 import logging
@@ -8,6 +11,8 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 from typing import Union
+
+from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
@@ -106,11 +111,15 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
 
-        # TODO(rkm 2020-01-12) Extract all the info we need - routes
         if not loaded_existing_scenario:
             self._save_scenario_to_file(scenario)
-        self._scenario = scenario
+
+        err = self._validate_scenario_against_sector(self.sector, scenario)
+        if err:
+            return err
+        self._proxy_aircraft_controls.load_scenario(scenario)
         self._invalidate_data()
+        self._scenario = scenario
         return None
 
     def start_timers(self) -> List[Timer]:
@@ -238,3 +247,21 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         scenario_file.parent.mkdir(parents=True, exist_ok=True)
         with open(scenario_file, "w+") as f:
             json.dump(scenario.content, f)
+
+    @staticmethod
+    def _validate_scenario_against_sector(sector: SectorElement, scenario: dict):
+        """
+        Asserts that all waypoints defined in the scenario exist in the current sector
+        """
+        assert sector
+        try:
+            fixes = sector.shape.fixes
+            for aircraft in scenario["aircraft"]:
+                assert aircraft["departure"] in fixes
+                assert aircraft["destination"] in fixes
+                # NOTE(rkm 2020-01-22) This will need to be changed if the scenario
+                # format changes
+                for fixName in [x["fixName"] for x in aircraft["route"]]:
+                    assert fixName in fixes
+        except AssertionError as e:
+            return f"Scenario not valid with the current sector: {e}"
