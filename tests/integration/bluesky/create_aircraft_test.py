@@ -40,7 +40,6 @@ def test_create_aircraft():
         "scenario_time": 0.0,
     }
 
-    # TODO Test listroute performs correctly for the new aircraft
-    # resp = requests.get(f"{api_base}/listroute?callsign=TST1001")
-    # assert resp.status_code == 200
-    # assert resp.json() == {}
+    resp = requests.get(f"{api_base}/listroute?callsign=TST1001")
+    assert resp.status_code == 500
+    assert resp.content.decode() == "Aircraft has no route"
