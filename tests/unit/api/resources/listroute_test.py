@@ -48,9 +48,17 @@ def test_listroute_get(test_flask_client):
         assert resp.status_code == HTTPStatus.BAD_REQUEST
         assert resp.data.decode() == "Missing aircraft"
 
-        # Test error from aircraft route
+        # Test response when no route defined
 
         utils_patch.check_exists.return_value = None
+        sim_proxy_mock.aircraft.route.return_value = "Aircraft has no route"
+
+        resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
+        assert resp.status_code == HTTPStatus.BAD_REQUEST
+        assert resp.data.decode() == "Aircraft has no route"
+
+        # Test error from aircraft route
+
         sim_proxy_mock.aircraft.route.return_value = "Couldn't get route"
 
         resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")

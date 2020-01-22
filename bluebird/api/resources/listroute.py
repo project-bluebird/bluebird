@@ -69,6 +69,8 @@ class ListRoute(Resource):
         route = utils.sim_proxy().aircraft.route(callsign)
 
         if not isinstance(route, AircraftRoute):
+            if route == "Aircraft has no route":
+                return responses.bad_request_resp(route)
             return responses.internal_err_resp(route)
 
         data = {

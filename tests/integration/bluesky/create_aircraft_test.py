@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import requests
 
 import tests.integration
@@ -21,10 +23,10 @@ def test_create_aircraft():
     }
 
     resp = requests.post(f"{api_base}/cre", json=data)
-    assert resp.status_code == 201, "Expected aircraft to be created"
+    assert resp.status_code == HTTPStatus.CREATED, "Expected aircraft to be created"
 
     resp = requests.get(f"{api_base}/pos")
-    assert resp.status_code == 200, "Expected to get the aircraft position"
+    assert resp.status_code == HTTPStatus.OK, "Expected to get the aircraft position"
     assert resp.json() == {
         "TST1001": {
             "actype": "B744",
@@ -41,5 +43,5 @@ def test_create_aircraft():
     }
 
     resp = requests.get(f"{api_base}/listroute?callsign=TST1001")
-    assert resp.status_code == 500
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.content.decode() == "Aircraft has no route"
