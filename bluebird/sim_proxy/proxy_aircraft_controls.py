@@ -134,9 +134,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
         """Utility function to return only the properties for the specified aircraft"""
         if not self.exists(callsign):
             return f"Unrecognised callsign {callsign}"
-        if not self._ac_props[callsign].is_valid:
-            self._update_ac_props(callsign)
-        return self._ac_props[callsign]
+        all_props = self.all_properties
+        if not isinstance(all_props, dict):
+            return all_props
+        return all_props[callsign]
 
     def route(self, callsign: types.Callsign) -> Optional[Union[AircraftRoute, str]]:
         """Utility function to return only the route for the specified aircraft"""
