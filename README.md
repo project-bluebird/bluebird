@@ -91,6 +91,8 @@ Integration tests can run with each supported simulator, however they will only 
 
 Integration tests require Docker to run. To specify a different docker daemon host than localhost, you can pass `--docker-host=<host address>:<port>`. This can be useful when testing if you don't have Docker locally installed, or if the images required for testing are only available on a remote host.
 
+The default integration simulator is BlueSky. To test against a different simulator, specify it with the `--integration-sim=<sim name>` option.
+
 ### Code Quality
 
 BlueBird uses [pre-commit] to help ensure code quality and correctness. Once installed, this automatically runs as part of the git commit process.
