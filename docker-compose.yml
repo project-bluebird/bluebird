@@ -1,21 +1,23 @@
 # Compose file for local development. Any changes to your copy of BlueBird will be included
 
-version: '3.7'
+version: "3.7"
 
 services:
   bluesky:
     container_name: bluesky
     image: turinginst/bluesky:${BS_MIN_VERSION}
-# Uncomment to also include any local changes to BlueSky
-#    volumes:
-#      - ./bluesky:/usr/src/app
+    # Uncomment to also include any local changes to BlueSky
+    # volumes:
+    #   - ./bluesky:/usr/src/app
     expose:
       - 9000
       - 9001
-# Uncomment to also publish the BlueSky ports externally
-#    ports:
-#      - 9000:9000
-#      - 9001:9001
+    environment:
+      - PYTHONUNBUFFERED=1
+  # Uncomment to also publish the BlueSky ports externally
+  # ports:
+  #   - 9000:9000
+  #   - 9001:9001
   bluebird:
     container_name: bluebird
     depends_on:
@@ -26,4 +28,5 @@ services:
     ports:
       - 5001:5001
     environment:
+      - PYTHONUNBUFFERED=1
       - BS_HOST=bluesky
