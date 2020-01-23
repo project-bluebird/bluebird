@@ -23,7 +23,6 @@ __pycache__/
 docs/
 logs/
 scripts/
-tests/
 venv/
 
 # Ignore all BlueSky content other than the code and the default scenarios
