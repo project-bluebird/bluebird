@@ -4,6 +4,8 @@ Contains the ProxySimulatorControls class
 # TODO(rkm 2020-01-22) The startTime and timedelta properties defined in the scenario
 # mean that an aircraft may not immediately appear in the data received from the
 # simulators. Create a test which checks we handle this properly
+# TODO(rkm 2020-01-22) Check the effect of loading a new sector when a scenario is
+# already running (cached data etc.)
 import copy
 import json
 import logging
@@ -54,6 +56,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._proxy_aircraft_controls = proxy_aircraft_controls
+        # NOTE(rkm 2020-01-22) We assume here that the seed is persistent for the
+        # current simulation instance, even through calls to load_sector/reset etc.
         self._seed: Optional[int] = None
         self.sector: Optional[Sector] = None
         self._scenario: Optional[Scenario] = None
@@ -82,13 +86,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
 
-        # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
-
         if not loaded_existing_sector:
             self._save_sector_to_file(sector)
 
-        self.sector = sector
         self._invalidate_data()
+        self.sector = sector
+        self._scenario = None
         return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
@@ -114,10 +117,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if not loaded_existing_scenario:
             self._save_scenario_to_file(scenario)
 
-        err = self._validate_scenario_against_sector(self.sector, scenario)
+        err = self._validate_scenario_against_sector(
+            self.sector.element, scenario.content
+        )
         if err:
             return err
-        self._proxy_aircraft_controls.load_scenario(scenario)
+        self._proxy_aircraft_controls.set_initial_properties(scenario.content)
         self._invalidate_data()
         self._scenario = scenario
         return None
@@ -191,7 +196,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             f"UTC={props.utc_datetime}, "
             f"scenario_time={int(props.scenario_time):4}, "
             f"speed={props.speed:.2f}x, "
-            f"scenario={props.state.name}"
+            f"state={props.state.name}"
         )
 
     def _invalidate_data(self):
@@ -204,6 +209,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # _invalidate_data needs to be called
         if self.sector:
             sim_props.sector_name = self.sector.name
+        if self._scenario:
+            sim_props.scenario_name = self._scenario.name
         sim_props.seed = self._seed
 
     @staticmethod
@@ -257,11 +264,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         try:
             fixes = sector.shape.fixes
             for aircraft in scenario["aircraft"]:
-                assert aircraft["departure"] in fixes
-                assert aircraft["destination"] in fixes
+                # TODO(rkm 2020-01-22) This doesn't seem to be valid with the test file?
+                # assert aircraft["departure"] in fixes
+                # assert aircraft["destination"] in fixes
                 # NOTE(rkm 2020-01-22) This will need to be changed if the scenario
                 # format changes
                 for fixName in [x["fixName"] for x in aircraft["route"]]:
-                    assert fixName in fixes
+                    assert fixName in fixes, f"Fix {fixName} not in {fixes}"
         except AssertionError as e:
             return f"Scenario not valid with the current sector: {e}"

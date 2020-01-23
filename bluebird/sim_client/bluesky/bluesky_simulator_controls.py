@@ -123,7 +123,7 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
         try:
             return props.SimProperties(
                 dt=data[1],
-                scenario_name=data[6] or None,
+                scenario_name=None,
                 scenario_time=round(data[2], 2),
                 sector_name=None,
                 seed=None,

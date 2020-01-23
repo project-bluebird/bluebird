@@ -8,12 +8,11 @@ from tests.integration.common.happy_path_test import SimUniqueProps
 
 
 def test_happy_path():
-    run_happy_path(
-        SimUniqueProps(
-            sim_type="bluesky",
-            dt=0.05,
-            initial_utc_datetime=datetime.utcnow().replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ),
-        )
+    unique_props = SimUniqueProps(
+        sim_type="bluesky",
+        dt=0.05,
+        initial_utc_datetime=datetime.utcnow().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ),
     )
+    run_happy_path(unique_props)
