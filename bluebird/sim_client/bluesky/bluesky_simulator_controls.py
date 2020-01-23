@@ -68,13 +68,18 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
             # Write the parsed scenario to file to help with debugging
             scn_file = Settings.DATA_DIR / "last_bluesky_scenario.scn"
             with open(scn_file, "w+") as f:
-                f.write("\n".join(scenario_lines))
+                f.write("\n".join(scenario_lines) + "\n")
         except Exception as e:
             return f"Could not parse a BlueSky scenario: {e}"
         err = self._bluesky_client.upload_new_scenario(file_name, scenario_lines)
         if err:
+            self._logger.debug(f"Scenario content was:{scenario_lines}")
             return err
-        return self._bluesky_client.load_scenario(file_name)
+        err = self._bluesky_client.load_scenario(file_name)
+        if err:
+            self._logger.debug(f"Scenario content was:{scenario_lines}")
+            return err
+        return None
 
     def start(self) -> Optional[str]:
         return self._bluesky_client.send_stack_cmd("OP")
