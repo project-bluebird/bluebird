@@ -8,12 +8,13 @@ import sys
 
 _LOGGER = logging.getLogger(__name__)
 
-# Attempt to import the MCClientMetrics class from the machine_college module
-# TODO(RKM 2019-11-18) Refactor this so that the import from MC_PATH is tested first.
-# This is to allow faster development and debugging
+# Attempt to import the MCClientMetrics class from the nats.mc_client module, fallback
+# to MC_PATH if needed
 
 try:
-    from nats.machine_college.bluebird_if.mc_client_metrics import MCClientMetrics
+    from nats.mc_client.mc_client_metrics import MCClientMetrics
+
+    _LOGGER.debug(f"Imported MCClientMetrics from pip package")
 except ModuleNotFoundError:
     _LOGGER.warning(
         "Could not find the nats package in sys.path. Attempting to look in "
@@ -26,6 +27,4 @@ except ModuleNotFoundError:
         _MC_PATH
     ), "Expected MC_PATH to point to the root nats directory"
     sys.path.append(_MC_PATH)
-    from nats.machine_college.bluebird_if.mc_client_metrics import (  # noqa: F401
-        MCClientMetrics,
-    )
+    from nats.mc_client.mc_client_metrics import MCClientMetrics  # noqa: F401
