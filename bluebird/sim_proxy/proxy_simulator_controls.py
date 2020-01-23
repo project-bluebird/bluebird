@@ -3,7 +3,7 @@ Contains the ProxySimulatorControls class
 """
 # TODO(rkm 2020-01-22) The startTime and timedelta properties defined in the scenario
 # mean that an aircraft may not immediately appear in the data received from the
-# simulators. Create a test which checks we handle this properly
+# simulators. Capture this in AircraftProperties, expose it, and add tests
 # TODO(rkm 2020-01-22) Check the effect of loading a new sector when a scenario is
 # already running (cached data etc.)
 import copy
