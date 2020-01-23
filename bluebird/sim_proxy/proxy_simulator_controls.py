@@ -4,6 +4,8 @@ Contains the ProxySimulatorControls class
 # TODO(rkm 2020-01-22) The startTime and timedelta properties defined in the scenario
 # mean that an aircraft may not immediately appear in the data received from the
 # simulators. Create a test which checks we handle this properly
+# TODO(rkm 2020-01-22) Check the effect of loading a new sector when a scenario is
+# already running (cached data etc.)
 import copy
 import json
 import logging
@@ -54,6 +56,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._proxy_aircraft_controls = proxy_aircraft_controls
+        # NOTE(rkm 2020-01-22) We assume here that the seed is persistent for the
+        # current simulation instance, even through calls to load_sector/reset etc.
         self._seed: Optional[int] = None
         self.sector: Optional[Sector] = None
         self._scenario: Optional[Scenario] = None
