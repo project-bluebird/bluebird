@@ -250,9 +250,11 @@ class BlueSkyClient(Client):
         self.send_event(b"SCENARIO", data)
 
         time.sleep(25 / POLL_RATE)
-        resp = self._scn_response
 
-        return resp if resp else "No response received" if not resp == "Ok" else None
+        resp = self._scn_response
+        if resp == "Ok":
+            return None
+        return resp if resp else "No response received"
 
     def load_scenario(self, filename, start_paused=False) -> Optional[str]:
         """Load a scenario from a file"""

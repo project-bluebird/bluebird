@@ -12,7 +12,6 @@ import bluebird.utils.types as types
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.properties import AircraftProperties
 from bluebird.utils.properties import AircraftRoute
-from bluebird.utils.properties import Scenario
 
 
 class ProxyAircraftControls(AbstractAircraftControls):
@@ -34,9 +33,6 @@ class ProxyAircraftControls(AbstractAircraftControls):
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
-        props = self.all_properties
-        if isinstance(props, str):
-            return props
         return list(self._ac_props.keys())
 
     @property
@@ -83,15 +79,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         if not self.exists(callsign):
             return f"Unrecognised callsign {callsign}"
-        return "Err"
-        # TODO(rkm 2020-01-12) Needs to be able to check the sector waypoints
-        # route_waypoints = [x.waypoint for x in self._ac_routes[callsign].segments]
-        # if waypoint not in route_waypoints:
-        #     return "Waypoint not on the route"
-        # err = self._aircraft_controls.direct_to_waypoint(callsign, waypoint)
-        # if err:
-        #     return err
-        # return None
+        return self._aircraft_controls.direct_to_waypoint(callsign, waypoint)
 
     def create(
         self,
@@ -153,17 +141,17 @@ class ProxyAircraftControls(AbstractAircraftControls):
         return self._prev_ac_props
 
     # TODO(rkm 2020-01-22) Add a test for this
-    def set_initial_properties(self, scenario: Scenario) -> Optional[str]:
+    def set_initial_properties(self, scenario_content: dict) -> Optional[str]:
         """
         Set any properties which are not tracked by the simulator - i.e. the flight
         levels, routes, and aircraft types
         """
         new_props: Dict[types.Callsign, AircraftProperties] = {}
-        for aircraft in scenario["aircraft"]:
+        for aircraft in scenario_content["aircraft"]:
             callsign = types.Callsign(aircraft["callsign"])
             new_props[callsign] = AircraftProperties.from_scenario_data(aircraft)
+        self._ac_props = new_props
         self._data_valid = False
-        return self._ac_props
 
     def _update_ac_properties(
         self, callsign: types.Callsign, new_props: AircraftProperties
