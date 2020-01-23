@@ -24,7 +24,9 @@ script:
   - coverage run -m pytest -vrs --ignore=./tests/integration ./tests
   # Pre-build the BlueBird docker image
   - docker build --quiet .
-  - coverage run -m pytest -vrs ./tests/integration
+  # TMP
+  - pytest -rs ./tests/integration/bluesky/happy_path_test.py
+  # - coverage run -m pytest -vrs ./tests/integration
   # Just print the results for now
   - coverage report
 # TODO(RKM 2019-11-23) Re-enable after integration tests passing
