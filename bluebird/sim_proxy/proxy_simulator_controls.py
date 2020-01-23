@@ -1,6 +1,11 @@
 """
 Contains the ProxySimulatorControls class
 """
+# TODO(rkm 2020-01-22) The startTime and timedelta properties defined in the scenario
+# mean that an aircraft may not immediately appear in the data received from the
+# simulators. Create a test which checks we handle this properly
+# TODO(rkm 2020-01-22) Check the effect of loading a new sector when a scenario is
+# already running (cached data etc.)
 import copy
 import json
 import logging
@@ -8,6 +13,8 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 from typing import Union
+
+from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import Settings
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
@@ -49,6 +56,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._proxy_aircraft_controls = proxy_aircraft_controls
+        # NOTE(rkm 2020-01-22) We assume here that the seed is persistent for the
+        # current simulation instance, even through calls to load_sector/reset etc.
         self._seed: Optional[int] = None
         self.sector: Optional[Sector] = None
         self._scenario: Optional[Scenario] = None
@@ -63,25 +72,26 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         BlueBird can find (i.e. locally on disk)
         """
 
-        # NOTE(rkm 2020-01-03) We can't currently read the sector definition from either
-        # simulator, so we can only check if we have it locally
-        loaded_sector = False
+        # NOTE(rkm 2020-01-03) We store any new sector (and scenario) definitions
+        # locally so they can be loaded again by name at a later point
+        loaded_existing_sector = False
         if not sector.element:
             sector_element = self._load_sector_from_file(sector.name)
             if isinstance(sector_element, str):
                 return f"Error loading sector from file: {sector_element}"
             sector.element = sector_element
-            loaded_sector = True
+            loaded_existing_sector = True
 
         err = self._sim_controls.load_sector(sector)
         if err:
             return err
 
-        # TODO(rkm 2020-01-12) Extract all the info we need - waypoints
-        if not loaded_sector:
+        if not loaded_existing_sector:
             self._save_sector_to_file(sector)
-        self.sector = sector
+
         self._invalidate_data()
+        self.sector = sector
+        self._scenario = None
         return None
 
     def load_scenario(self, scenario: Scenario) -> Optional[str]:
@@ -92,23 +102,30 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         BlueBird can find (i.e. locally on disk)
         """
 
-        loaded_scenario = False
+        loaded_existing_scenario = False
         if not scenario.content:
             scenario_content = self._load_scenario_from_file(scenario.name)
             if isinstance(scenario_content, str):
                 return f"Error loading scenario from file: {scenario_content}"
             scenario.content = scenario_content
-            loaded_scenario = True
+            loaded_existing_scenario = True
+
+        err = self._validate_scenario_against_sector(
+            self.sector.element, scenario.content
+        )
+        if err:
+            return err
 
         err = self._sim_controls.load_scenario(scenario)
         if err:
             return err
 
-        # TODO(rkm 2020-01-12) Extract all the info we need - routes
-        if not loaded_scenario:
+        if not loaded_existing_scenario:
             self._save_scenario_to_file(scenario)
-        self._scenario = scenario
+
+        self._proxy_aircraft_controls.set_initial_properties(scenario.content)
         self._invalidate_data()
+        self._scenario = scenario
         return None
 
     def start_timers(self) -> List[Timer]:
@@ -180,7 +197,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             f"UTC={props.utc_datetime}, "
             f"scenario_time={int(props.scenario_time):4}, "
             f"speed={props.speed:.2f}x, "
-            f"scenario={props.state.name}"
+            f"state={props.state.name}"
         )
 
     def _invalidate_data(self):
@@ -193,6 +210,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         # _invalidate_data needs to be called
         if self.sector:
             sim_props.sector_name = self.sector.name
+        if self._scenario:
+            sim_props.scenario_name = self._scenario.name
         sim_props.seed = self._seed
 
     @staticmethod
@@ -236,3 +255,28 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         scenario_file.parent.mkdir(parents=True, exist_ok=True)
         with open(scenario_file, "w+") as f:
             json.dump(scenario.content, f)
+
+    @staticmethod
+    def _validate_scenario_against_sector(sector: SectorElement, scenario: dict):
+        """
+        Asserts that all waypoints defined in the scenario exist in the current sector
+        """
+        # TODO(rkm 2020-01-23) Additionally, since the coordinates are repeated in both
+        # the sector and scenario definitions, we could also assert that the coordinates
+        # for each fix match
+        assert sector
+        try:
+            sector_fixes = list(sector.shape.fixes.keys())
+            for aircraft in scenario["aircraft"]:
+                assert (
+                    aircraft["departure"] in sector_fixes
+                ), f"Departure fix {aircraft['departure']} not in {sector_fixes}"
+                assert (
+                    aircraft["destination"] in sector_fixes
+                ), f"Destination fix {aircraft['destination']} not in {sector_fixes}"
+                for fixName in [x["fixName"] for x in aircraft["route"]]:
+                    assert (
+                        fixName in sector_fixes
+                    ), f"Fix {fixName} not in {sector_fixes}"
+        except AssertionError as e:
+            return f"Scenario not valid with the current sector: {e}"

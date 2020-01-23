@@ -15,9 +15,9 @@ with open(TEST_EPISODE_LOG_FILE) as f:
 _TEST_SCENARIO_FILE = _TEST_DATA_DIR / "test_scenario.json"
 with open(_TEST_SCENARIO_FILE) as f:
     TEST_SCENARIO = json.load(f)
-    del TEST_SCENARIO["_source"]
+    TEST_SCENARIO.pop("_source", None)
 
 _TEST_SECTOR_FILE = _TEST_DATA_DIR / "test_sector.geojson"
 with open(_TEST_SECTOR_FILE) as f:
     TEST_SECTOR = json.load(f)
-    del TEST_SECTOR["_source"]
+    TEST_SECTOR.pop("_source", None)
