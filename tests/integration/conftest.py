@@ -1,14 +1,13 @@
 """
 Provides fixtures for integration tests
 """
-import functools
-import importlib
 import os
 import re
 import subprocess
+import time
 from datetime import datetime
+from http import HTTPStatus
 from pathlib import Path
-from typing import Callable
 
 import pytest
 import requests
@@ -23,6 +22,28 @@ from tests import API_PREFIX
 
 
 _HOST_RE = re.compile(r"http:\/\/(.*):.*")
+
+_MAX_WAIT_SECONDS = 20
+
+
+def _wait_for_bluebird():
+
+    timeout = time.time() + _MAX_WAIT_SECONDS
+    reset_api = f"{tests.integration.API_BASE}/reset"
+
+    while True:
+        try:
+            if requests.post(reset_api).status_code == HTTPStatus.OK:
+                break
+        except requests.exceptions.ConnectionError:
+            pass
+
+        if time.time() > timeout:
+            raise requests.exceptions.ConnectionError(
+                "Couldn't get a response from BlueBird before the timeout"
+            )
+
+        time.sleep(1)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -52,24 +73,9 @@ def pre_integration_setup(request):
 
     integration_sim = request.config.getoption("--integration-sim")
 
-    # Grab the wait_for_containers function so we can use it later
-    mod = importlib.import_module(f"{__package__}.{integration_sim}.__init__")
-    try:
-        wait_for_containers = getattr(mod, "wait_for_containers")
-    except AttributeError:
-        pytest.exit(
-            f"Inegration test package for {integration_sim} has no function named "
-            "wait_for_containers",
-            1,
-        )
-
     api_host = docker_host.split(":")[0] if docker_host else "localhost"
     api_base = f"http://{api_host}:{Settings.PORT}{API_PREFIX}"
     tests.integration.API_BASE = api_base
-
-    # Bind the base API URL to the wait_for_containers function so we don't have to pass
-    # it around
-    wait_for_containers = functools.partial(wait_for_containers, api_base)
 
     compose_file = Path("tests", "integration", integration_sim, "docker-compose.yml",)
 
@@ -89,7 +95,7 @@ def pre_integration_setup(request):
 
     print("\n=== Integration setup complete ===\n")
 
-    yield (project, wait_for_containers)  # Runs all the tests
+    yield project  # Runs all the tests
 
     project.down(ImageType.none, include_volumes=True, timeout=0)
 
@@ -117,18 +123,16 @@ def _print_container_logs(project, restart_t):
 def integration_test_wrapper(pre_integration_setup, request):
     """Performs setup & teardown around each integration test"""
 
-    # The pre_integration_setup fixture yields the compose project, and the
-    # wait_for_containers function
+    # The pre_integration_setup fixture yields the compose project
     project: ComposeProject
-    wait_for_containers: Callable
-    project, wait_for_containers = pre_integration_setup
+    project = pre_integration_setup
 
     restart_t = datetime.utcnow()
 
     project.restart(timeout=0)
 
     try:
-        wait_for_containers()
+        _wait_for_bluebird()
     except requests.exceptions.ConnectionError:
         _print_container_logs(project, restart_t)
         raise
