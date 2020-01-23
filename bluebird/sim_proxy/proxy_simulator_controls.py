@@ -261,16 +261,22 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         """
         Asserts that all waypoints defined in the scenario exist in the current sector
         """
+        # TODO(rkm 2020-01-23) Additionally, since the coordinates are repeated in both
+        # the sector and scenario definitions, we could also assert that the coordinates
+        # for each fix match
         assert sector
         try:
-            fixes = sector.shape.fixes
+            sector_fixes = list(sector.shape.fixes.keys())
             for aircraft in scenario["aircraft"]:
-                # TODO(rkm 2020-01-22) This doesn't seem to be valid with the test file?
-                # assert aircraft["departure"] in fixes
-                # assert aircraft["destination"] in fixes
-                # NOTE(rkm 2020-01-22) This will need to be changed if the scenario
-                # format changes
+                assert (
+                    aircraft["departure"] in sector_fixes
+                ), f"Departure fix {aircraft['departure']} not in {sector_fixes}"
+                assert (
+                    aircraft["destination"] in sector_fixes
+                ), f"Destination fix {aircraft['destination']} not in {sector_fixes}"
                 for fixName in [x["fixName"] for x in aircraft["route"]]:
-                    assert fixName in fixes, f"Fix {fixName} not in {fixes}"
+                    assert (
+                        fixName in sector_fixes
+                    ), f"Fix {fixName} not in {sector_fixes}"
         except AssertionError as e:
             return f"Scenario not valid with the current sector: {e}"
