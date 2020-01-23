@@ -1,15 +1,39 @@
 ---
 version: "3.7"
 
-# TODO(rkm 2020-01-13) Add services for MachColl, RabbitMQ, and any other dependencies
-
 services:
+  rabbitmq:
+    container_name: rabbitmq_integration
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+  metrics:
+    container_name: machcoll_metrics_integration
+    image: nats-metrics-img
+    depends_on:
+      - rabbitmq
+    ports:
+      - 5322:5322
+    environment:
+      - PYTHONUNBUFFERED=1
+  machcoll:
+    container_name: machcoll_integration
+    image: machcoll-img
+    depends_on:
+      - metrics
+    ports:
+      - 5321:5321
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MC_SCENARIO_FILENAME
+      - MC_AIRSPACE_FILENAME
   bluebird:
     container_name: bluebird_integration
-    depends_on:
-      - machcoll
     build:
       context: ../../../
+    depends_on:
+      - machcoll
     volumes:
       - /usr/src/app/logs/ # Prevents any local logs being copied to the container
     ports:
