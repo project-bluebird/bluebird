@@ -16,6 +16,7 @@ from aviary.parser.bluesky_parser import BlueskyParser
 
 import bluebird.utils.properties as props
 from bluebird.settings import in_agent_mode
+from bluebird.settings import Settings
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import Scenario
 
@@ -64,6 +65,10 @@ class BlueSkySimulatorControls(AbstractSimulatorControls):
                 StringIO(json.dumps(scenario.content)),
             )
             scenario_lines = parser.all_lines()
+            # Write the parsed scenario to file to help with debugging
+            scn_file = Settings.DATA_DIR / "last_bluesky_scenario.scn"
+            with open(scn_file, "w+") as f:
+                f.write("\n".join(scenario_lines))
         except Exception as e:
             return f"Could not parse a BlueSky scenario: {e}"
         err = self._bluesky_client.upload_new_scenario(file_name, scenario_lines)
