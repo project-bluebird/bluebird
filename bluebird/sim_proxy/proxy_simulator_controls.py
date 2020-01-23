@@ -274,12 +274,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         try:
             sector_fixes = list(sector.shape.fixes.keys())
             for aircraft in scenario["aircraft"]:
-                assert (
-                    aircraft["departure"] in sector_fixes
-                ), f"Departure fix {aircraft['departure']} not in {sector_fixes}"
-                assert (
-                    aircraft["destination"] in sector_fixes
-                ), f"Destination fix {aircraft['destination']} not in {sector_fixes}"
                 for fixName in [x["fixName"] for x in aircraft["route"]]:
                     assert (
                         fixName in sector_fixes
