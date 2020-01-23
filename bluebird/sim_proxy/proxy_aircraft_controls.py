@@ -128,8 +128,11 @@ class ProxyAircraftControls(AbstractAircraftControls):
             return props
         return props.route or "Aircraft has no route"
 
-    def invalidate_data(self):
+    def invalidate_data(self, clear: bool = False):
         """Clears the data_valid flag"""
+        if clear:
+            self._ac_props = {}
+            self._prev_ac_props = {}
         self._data_valid = False
 
     def store_current_props(self):

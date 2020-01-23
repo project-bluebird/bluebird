@@ -138,7 +138,11 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     @timeit("ProxySimulatorControls")
     def reset(self) -> Optional[str]:
-        return self._invalidating_response(self._sim_controls.reset())
+        err = self._invalidating_response(self._sim_controls.reset(), clear=True)
+        if err:
+            return err
+        self._scenario = None
+        return None
 
     def pause(self) -> Optional[str]:
         return self._invalidating_response(self._sim_controls.pause())
@@ -180,11 +184,13 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         with open(last_scenario_file, "w+") as f:
             f.write(self._scenario.name)
 
-    def _invalidating_response(self, err: Optional[str]) -> Optional[str]:
+    def _invalidating_response(
+        self, err: Optional[str], clear: bool = False
+    ) -> Optional[str]:
         """Utility function which calls _invalidate_data if there is no error"""
         if err:
             return err
-        self._invalidate_data()
+        self._invalidate_data(clear=clear)
         return None
 
     def _log_sim_props(self):
@@ -200,8 +206,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             f"state={props.state.name}"
         )
 
-    def _invalidate_data(self):
-        self._proxy_aircraft_controls.invalidate_data()
+    def _invalidate_data(self, clear: bool = False):
+        self._proxy_aircraft_controls.invalidate_data(clear=clear)
         self._data_valid = False
 
     def _update_sim_props(self, sim_props: SimProperties) -> None:
