@@ -40,17 +40,19 @@ def run_happy_path(props: SimUniqueProps):
     resp = requests.post(f"{api_base}/reset")
     assert resp.status_code == 200
 
-    sim_info = _get_sim_info(api_base)
-    assert sim_info["callsigns"] == []
-    assert sim_info["dt"] == props.dt
-    assert sim_info["mode"] == "Agent"
-    assert sim_info["scenario_name"] is None
-    assert sim_info["scenario_time"] == 0
-    assert sim_info["seed"] is None
-    assert sim_info["sim_type"].lower() == props.sim_type
-    assert sim_info["speed"] == 1  # NOTE This is the DTMULT value in agent mode
-    assert sim_info["state"] == "INIT"
-    assert sim_info["utc_datetime"] == str(props.initial_utc_datetime)
+    assert _get_sim_info(api_base) == {
+        "callsigns": [],
+        "dt": props.dt,
+        "mode": "Agent",
+        "scenario_name": None,
+        "scenario_time": 0.0,
+        "sector_name": None,
+        "seed": None,
+        "sim_type": props.sim_type,
+        "speed": 1,  # NOTE This is the DTMULT value in agent mode
+        "state": "INIT",
+        "utc_datetime": str(props.initial_utc_datetime),
+    }
 
     data = {"name": "sector-1", "content": TEST_SECTOR}
     resp = requests.post(f"{api_base}/sector", json=data)
