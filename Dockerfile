@@ -5,10 +5,15 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt .
+COPY requirements.txt requirements-nats.txt ./
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+
+ARG NATS_PYPI_INDEX
+RUN if [ ! -z $NATS_PYPI_INDEX ]; then \
+        pip install -i $NATS_PYPI_INDEX --no-cache-dir -r requirements-nats.txt; \
+    fi
 
 COPY ./bluesky/bluesky ./bluesky/bluesky
 COPY .env run.py VERSION ./
