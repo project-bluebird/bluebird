@@ -1,6 +1,11 @@
 """
 Provides fixtures for integration tests
 """
+# NOTE(rkm 2020-01-28) Some of the setup logic here is a bit tricky, since the tests
+# which are requested to be run may not match up with the other options that have been
+# specified. I.e. it's possible to request to run the MachColl integration tests but
+# and also specify --integration-sim=bluesky.
+import importlib
 import os
 import re
 import subprocess
@@ -23,7 +28,7 @@ from tests import API_PREFIX
 
 _HOST_RE = re.compile(r"http:\/\/(.*):.*")
 
-_MAX_WAIT_SECONDS = 20
+_MAX_WAIT_SECONDS = 30
 
 
 def _wait_for_bluebird():
@@ -46,7 +51,7 @@ def _wait_for_bluebird():
         time.sleep(1)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="package", autouse=True)
 def pre_integration_setup(request):
     """Determines if the integration tests can be run, and sets up the containers"""
 
@@ -69,9 +74,21 @@ def pre_integration_setup(request):
     )
 
     if not docker_available:
-        pytest.exit("Docker not detected", 1)
+        pytest.fail("Integration tests specified but Docker not detected")
 
     integration_sim = request.config.getoption("--integration-sim")
+
+    # Grab and run the pre_integration_check function for the specified simulator
+    mod = importlib.import_module(f"{__package__}.{integration_sim}.__init__")
+    try:
+        pre_integration_check = getattr(mod, "pre_integration_check")
+    except AttributeError:
+        pytest.exit(
+            f"Integration test package for {integration_sim} has no function named "
+            "pre_integration_check",
+            1,
+        )
+    pre_integration_check()
 
     api_host = docker_host.split(":")[0] if docker_host else "localhost"
     api_base = f"http://{api_host}:{Settings.PORT}{API_PREFIX}"

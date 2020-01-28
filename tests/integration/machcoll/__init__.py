@@ -1,5 +1,11 @@
 """
 Integration tests for MachColl
 """
-# TODO(RKM 2019-11-18) Implement this, but skip if there isn't a local server running
-# (see check for this in the BlueSky integration tests)
+import os
+
+import pytest
+
+
+def pre_integration_check():
+    if not os.environ.get("NATS_PYPI_INDEX", None):
+        pytest.fail("MachColl tests specified, but NATS_PYPI_INDEX not set")
