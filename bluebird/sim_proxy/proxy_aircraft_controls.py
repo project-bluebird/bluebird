@@ -6,12 +6,15 @@ import logging
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Union
+
+from aviary.sector.route import Route
+from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.types as types
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.properties import AircraftProperties
-from bluebird.utils.properties import AircraftRoute
 
 
 class ProxyAircraftControls(AbstractAircraftControls):
@@ -35,19 +38,13 @@ class ProxyAircraftControls(AbstractAircraftControls):
     def callsigns(self) -> Union[List[types.Callsign], str]:
         return list(self._ac_props.keys())
 
-    @property
-    def all_routes(self) -> Union[Dict[types.Callsign, AircraftRoute], str]:
-        props = self.all_properties
-        if isinstance(props, str):
-            return props
-        return [{ac.callsign: ac.route} for ac in props]
-
     def __init__(self, aircraft_controls: AbstractAircraftControls):
         self._logger = logging.getLogger(__name__)
         self._aircraft_controls = aircraft_controls
 
         self._ac_props: Dict[types.Callsign, Optional[AircraftProperties]] = {}
         self._prev_ac_props: Dict[types.Callsign, Optional[AircraftProperties]] = {}
+        self._routes: Dict[str, Route] = {}
         self._data_valid: bool = False
 
     def set_cleared_fl(
@@ -121,12 +118,17 @@ class ProxyAircraftControls(AbstractAircraftControls):
             return all_props
         return all_props[callsign]
 
-    def route(self, callsign: types.Callsign) -> Optional[Union[AircraftRoute, str]]:
+    def route(self, callsign: types.Callsign) -> Union[Tuple[str, str, List[str]], str]:
         """Utility function to return only the route for the specified aircraft"""
         props = self.properties(callsign)
         if not isinstance(props, AircraftProperties):
             return props
-        return props.route or "Aircraft has no route"
+        if not props.route_name:
+            return "Aircraft has no route"
+
+        route = self._routes[props.route_name]
+        next_waypoint = route.next_waypoint(props.position.lat, props.position.lon)
+        return (props.route_name, next_waypoint, route.fix_list)
 
     def invalidate_data(self, clear: bool = False):
         """Clears the data_valid flag"""
@@ -144,15 +146,29 @@ class ProxyAircraftControls(AbstractAircraftControls):
         return self._prev_ac_props
 
     # TODO(rkm 2020-01-22) Add a test for this
-    def set_initial_properties(self, scenario_content: dict) -> Optional[str]:
+    def set_initial_properties(
+        self, sector_element: SectorElement, scenario_content: dict
+    ) -> Optional[str]:
         """
         Set any properties which are not tracked by the simulator - i.e. the flight
         levels, routes, and aircraft types
         """
+
+        for route in sector_element.routes():
+            self._routes[route.name] = route
+
         new_props: Dict[types.Callsign, AircraftProperties] = {}
         for aircraft in scenario_content["aircraft"]:
             callsign = types.Callsign(aircraft["callsign"])
-            new_props[callsign] = AircraftProperties.from_scenario_data(aircraft)
+            new_props[callsign] = AircraftProperties.from_data(aircraft)
+            # Match the route name to the waypoints in the scenario data
+            aircraft_route_waypoints = [x["fixName"] for x in aircraft["route"]]
+            new_props[callsign].route_name = next(
+                x
+                for x in self._routes
+                if self._routes[x].fix_names == aircraft_route_waypoints
+            )
+
         self._ac_props = new_props
         self._data_valid = False
 

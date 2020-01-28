@@ -10,8 +10,6 @@ import bluebird.api.resources.utils.utils as utils
 from bluebird.api.resources.utils.responses import bad_request_resp
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path
-from tests.unit.api.resources import TEST_ROUTE
-
 
 _ENDPOINT = "listroute"
 _ENDPOINT_PATH = endpoint_path(_ENDPOINT)
@@ -67,15 +65,18 @@ def test_listroute_get(test_flask_client):
 
         # Test valid response
 
-        sim_proxy_mock.aircraft.route.return_value = TEST_ROUTE
+        route_info = (
+            "test_route",
+            "FIRE",
+            ["WATER", "FIRE", "EARTH"],
+        )
+        sim_proxy_mock.aircraft.route.return_value = route_info
 
         resp = test_flask_client.get(f"{endpoint_path}{callsign_str}")
         assert resp.status_code == HTTPStatus.OK
         assert resp.json == {
             utils.CALLSIGN_LABEL: "TEST",
-            "current_segment_index": 1,
-            "route": [
-                {"req_alt": None, "req_gspd": None, "wpt_name": "FIX1"},
-                {"req_alt": 321, "req_gspd": 403, "wpt_name": "FIX2"},
-            ],
+            "route_name": route_info[0],
+            "next_waypoint": route_info[1],
+            "route_waypoints": route_info[2],
         }

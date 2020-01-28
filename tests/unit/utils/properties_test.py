@@ -1,8 +1,24 @@
 """
 Tests for the properties module
 """
-import pytest
+from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.types import LatLon
+from tests.data import TEST_SCENARIO
 
 
-def test():
-    pytest.xfail("Not implemented")
+def test_aircraft_properties_from_data():
+    aircraft_data = TEST_SCENARIO["aircraft"][0]
+    AircraftProperties.from_data(aircraft_data) == AircraftProperties(
+        aircraft_type=aircraft_data["type"],
+        altitude=aircraft_data["currentFlightLevel"],
+        callsign=aircraft_data["callsign"],
+        cleared_flight_level=aircraft_data["clearedFlightLevel"],
+        ground_speed=None,
+        heading=None,
+        position=LatLon(
+            aircraft_data["startPosition"][0], aircraft_data["startPosition"][1]
+        ),
+        requested_flight_level=aircraft_data["requestedFlightLevel"],
+        vertical_speed=None,
+        route_name=None,
+    )

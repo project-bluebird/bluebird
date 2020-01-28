@@ -6,6 +6,7 @@ import traceback
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import Union
 
 import bluebird.utils.properties as props
@@ -49,20 +50,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def callsigns(self) -> Union[List[types.Callsign], str]:
         all_props = self.all_properties
         return all_props if isinstance(all_props, str) else all_props.keys()
-
-    @property
-    def all_routes(self) -> Dict[types.Callsign, props.AircraftRoute]:
-        raise NotImplementedError
-        resp = self._mc_client().get_active_callsigns()
-        _raise_for_no_data(resp)
-        routes = {}
-        for callsign_str in resp:
-            callsign = types.Callsign(callsign_str)
-            # TODO: Check that a None response *only* implies a connection error
-            route = self._mc_client().get_flight_plan_for_callsign(str(callsign))
-            # TODO: Check the type of route
-            routes[callsign] = route
-        return routes
 
     def __init__(self, sim_client):
         self._sim_client = sim_client
@@ -116,9 +103,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
         _raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
 
-    def route(
-        self, callsign: types.Callsign
-    ) -> Optional[Union[props.AircraftRoute, str]]:
+    def route(self, callsign: types.Callsign) -> Union[Tuple[str, str, List[str]], str]:
         raise NotImplementedError
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
@@ -141,15 +126,18 @@ class MachCollAircraftControls(AbstractAircraftControls):
             rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
             # TODO Not currently available: gs, hdg, pos, vs
             return props.AircraftProperties(
-                ac_props["flight-data"]["type"],
-                alt,
-                types.Callsign(ac_props["flight-data"]["callsign"]),
-                types.Altitude("FL" + str(ac_props["instruction"]["cfl"])),
-                types.GroundSpeed(ac_props["pos"]["speed"]),
-                types.Heading(0),
-                types.LatLon(ac_props["pos"]["lat"], ac_props["pos"]["long"]),
-                rfl,
-                types.VerticalSpeed(0),
+                aircraft_type=ac_props["flight-data"]["type"],
+                altitude=alt,
+                callsign=types.Callsign(ac_props["flight-data"]["callsign"]),
+                cleared_flight_level=types.Altitude(
+                    "FL" + str(ac_props["instruction"]["cfl"])
+                ),
+                ground_speed=types.GroundSpeed(ac_props["pos"]["speed"]),
+                heading=types.Heading(0),
+                position=types.LatLon(ac_props["pos"]["lat"], ac_props["pos"]["long"]),
+                requested_flight_level=rfl,
+                route_name=None,
+                vertical_speed=types.VerticalSpeed(0),
             )
         except Exception:
             return f"Error parsing AircraftProperties: {traceback.format_exc()}"

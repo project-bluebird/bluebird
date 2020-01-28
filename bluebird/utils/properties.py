@@ -1,13 +1,11 @@
 """
 Contains property class definitions
 """
-# TODO(RKM 2020-01-02) Split this / move SimProxy.Sector here
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
 from typing import Any
 from typing import Dict
-from typing import List
 from typing import Optional
 
 from aviary.sector.sector_element import SectorElement
@@ -104,30 +102,6 @@ class Sector:
     element: Optional[SectorElement]
 
 
-@dataclass
-class RouteItem:
-    waypoint: types.Waypoint
-    required_gspd: Optional[types.GroundSpeed]
-
-
-# TODO(rkm 2020-01-22) Remove this - no longer needed
-@dataclass
-class AircraftRoute:
-
-    segments: List[RouteItem]
-    current_segment_index: Optional[int]
-
-    def __post_init__(self):
-        if self.current_segment_index:
-            assert 0 < self.current_segment_index < len(self.segments)
-        # TODO(RKM 2019-11-19) Do we want to enforce that all waypoints have a specified
-        # target altitude when being included in an aircraft's route?
-        # for segment in self.segments:
-        #     assert (
-        #         segment.waypoint.altitude
-        #     ), "Waypoint altitude must be set to be included in a route"
-
-
 @dataclass(eq=True)
 class AircraftProperties:
     """Dataclass representing all the properties of an aircraft"""
@@ -140,14 +114,18 @@ class AircraftProperties:
     heading: types.Heading
     position: types.LatLon
     requested_flight_level: types.Altitude
+    route_name: str
     vertical_speed: types.VerticalSpeed
-    route: List[str]
 
     def __post_init__(self):
         assert self.aircraft_type, "Aircraft type must be defined"
 
     @classmethod
-    def from_scenario_data(cls, data: Dict[str, Any]) -> "AircraftProperties":
+    def from_data(cls, data: Dict[str, Any]) -> "AircraftProperties":
+        """
+        Create an AircraftProperties from the current sector element and an "aircraft"
+        object from the scenario json
+        """
         return cls(
             aircraft_type=data["type"],
             altitude=types.Altitude(data["currentFlightLevel"]),
@@ -158,6 +136,6 @@ class AircraftProperties:
             heading=None,
             position=types.LatLon(data["startPosition"][1], data["startPosition"][0]),
             requested_flight_level=types.Altitude(data["requestedFlightLevel"]),
+            route_name=None,
             vertical_speed=None,
-            route=[x["fixName"] for x in data["route"]],
         )

@@ -26,7 +26,7 @@ _TEST_PROPS = {
         position=types.LatLon(23, 45),
         requested_flight_level=types.Altitude("FL250"),
         vertical_speed=types.VerticalSpeed(120),
-        route=None,
+        route_name=None,
     ),
     _TEST_CALLSIGN_2: props.AircraftProperties(
         aircraft_type="B737",
@@ -38,25 +38,11 @@ _TEST_PROPS = {
         position=types.LatLon(45, 32),
         requested_flight_level=types.Altitude("FL083"),
         vertical_speed=types.VerticalSpeed(-120),
-        route=None,
+        route_name=None,
     ),
 }
 
 _TEST_WAYPOINT_1 = types.Waypoint("FIX1", types.LatLon(0, 0), altitude=None)
-
-_TEST_ROUTES = {
-    _TEST_CALLSIGN_1: props.AircraftRoute([], 0),
-    _TEST_CALLSIGN_2: props.AircraftRoute(
-        segments=[
-            props.RouteItem(_TEST_WAYPOINT_1, required_gspd=None),
-            props.RouteItem(
-                types.Waypoint("FIX2", types.LatLon(1, 1), altitude=None),
-                required_gspd=None,
-            ),
-        ],
-        current_segment_index=1,
-    ),
-}
 
 _INVALID_ARG = "Invalid argument at position"
 
@@ -166,35 +152,6 @@ def test_callsigns():
     callsigns = proxy_aircraft_controls.callsigns
     assert callsigns == list(_TEST_PROPS.keys())
     mock_all_properties.assert_not_called()
-
-
-def test_all_routes():
-    """Tests that ProxyAircraftControls implements all_routes"""
-
-    mock_aircraft_controls = mock.create_autospec(spec=AbstractAircraftControls)
-    proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
-
-    # Test error handling for the initial population of the aircraft route cache
-    mock_all_routes = mock.PropertyMock(return_value="Error")
-    type(mock_aircraft_controls).all_routes = mock_all_routes
-    all_routes = proxy_aircraft_controls.all_routes
-    assert all_routes == "Error"
-    assert not proxy_aircraft_controls.ac_routes
-    mock_all_routes.assert_called_once()
-
-    # Test initial population of ac_routes
-    mock_all_routes = mock.PropertyMock(return_value=copy.deepcopy(_TEST_ROUTES))
-    type(mock_aircraft_controls).all_routes = mock_all_routes
-    all_routes = proxy_aircraft_controls.all_routes
-    assert all_routes == _TEST_ROUTES
-    assert proxy_aircraft_controls.ac_routes == _TEST_ROUTES
-    mock_all_routes.assert_called_once()
-
-    # Test use of the cache
-    # Test re-calculation of invalidated route indices
-    # Test re-calculation of invalidated route indices with no aircraft
-    # Test re-calculation of invalidated route indices with valid aircraft
-    pytest.xfail("Need to (re-)implement the calculation of the current route index")
 
 
 def test_set_cleared_fl():
@@ -348,7 +305,7 @@ def test_set_vertical_speed():
 def test_direct_to_waypoint():
     """Tests that ProxyAircraftControls implements direct_to_waypoint"""
 
-    mock_aircraft_controls = mock.create_autospec(spec=AbstractAircraftControls)
+    mock_aircraft_controls = mock.Mock()
     proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
 
     # Test invalid args
@@ -365,30 +322,18 @@ def test_direct_to_waypoint():
     with pytest.raises(AssertionError, match="Callsign not in aircraft data"):
         proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_1, test_waypoint)
 
-    # Test error for waypoint not in route
-    proxy_aircraft_controls.ac_props = copy.deepcopy(_TEST_PROPS)
-    proxy_aircraft_controls.ac_routes = copy.deepcopy(_TEST_ROUTES)
-    err = proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_1, test_waypoint)
-    assert err == "Waypoint not on the route"
-
     # Test error from direct_to_waypoint
-    mock_direct_to_waypoint = mock.Mock(
-        spec=AbstractAircraftControls.direct_to_waypoint, return_value="Error"
-    )
+    mock_direct_to_waypoint = mock.Mock(return_value="Error")
     mock_aircraft_controls.direct_to_waypoint = mock_direct_to_waypoint
     err = proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
     assert err == "Error"
 
     # TODO(RKM 2019-11-20) This check fails for some reason, but looks ok in the debug
     # output...
-    # mock_direct_to_waypoint.assert_called_once_with(
-    #     _TEST_CALLSIGN_2, _TEST_WAYPOINT_1
-    # )
+    mock_direct_to_waypoint.assert_called_once_with(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
 
     # Test valid call
-    mock_direct_to_waypoint = mock.Mock(
-        spec=AbstractAircraftControls.direct_to_waypoint, return_value=None
-    )
+    mock_direct_to_waypoint.return_value = None
     mock_aircraft_controls.direct_to_waypoint = mock_direct_to_waypoint
     err = proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
     assert not err
@@ -510,9 +455,7 @@ def test_create():
     assert mock_properties.call_args[0][0] == types.Callsign("TEST1")
 
     # Test blank route created
-    assert proxy_aircraft_controls.ac_routes[_TEST_CALLSIGN_1] == props.AircraftRoute(
-        _TEST_CALLSIGN_1, [], None
-    )
+    assert proxy_aircraft_controls.ac_routes[_TEST_CALLSIGN_1] == ...
 
 
 def test_properties():
@@ -552,32 +495,23 @@ def test_properties():
 def test_route():
     """Tests that ProxyAircraftControls implements route"""
 
-    mock_aircraft_controls = mock.create_autospec(spec=AbstractAircraftControls)
+    mock_aircraft_controls = mock.Mock()
     proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
 
-    # Test invalid args
-    with pytest.raises(AssertionError, match=f"{_INVALID_ARG} 0"):
-        proxy_aircraft_controls.route(None)  # type: ignore
+    # Test response when no props available
 
-    # Test error from route
-    mock_route = mock.Mock(spec=AbstractAircraftControls.route, return_value="Error")
-    mock_aircraft_controls.route = mock_route
-    err = proxy_aircraft_controls.route(_TEST_CALLSIGN_1)
-    assert err == "Error"
+    err = proxy_aircraft_controls.route("TEST")
+    assert err == "Unrecognised callsign TEST"
 
     # Test valid call
-    mock_route = mock.Mock(
-        spec=AbstractAircraftControls.route, return_value=_TEST_ROUTES[_TEST_CALLSIGN_1]
+    mock_aircraft_controls.all_properties = mock.PropertyMock(
+        return_value={_TEST_CALLSIGN_1: _TEST_PROPS}
     )
-    mock_aircraft_controls.route = mock_route
-    route = proxy_aircraft_controls.route(_TEST_CALLSIGN_1)
-    assert route == _TEST_ROUTES[_TEST_CALLSIGN_1]
 
-    # Test cache updated
-    assert (
-        proxy_aircraft_controls.ac_routes[_TEST_CALLSIGN_1]
-        == _TEST_ROUTES[_TEST_CALLSIGN_1]
-    )
+    test_route_info = ()
+    mock_aircraft_controls.route = mock.Mock(return_value=test_route_info)
+    route = proxy_aircraft_controls.route(_TEST_CALLSIGN_1)
+    assert route == ...
 
 
 def test_exists():
@@ -600,21 +534,5 @@ def test_exists():
     assert exists
 
 
-def test_clear_caches():
-    """Tests that ProxyAircraftControls implements clear_caches"""
-
-    mock_aircraft_controls = mock.create_autospec(spec=AbstractAircraftControls)
-    proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
-
-    # Test clear_cache clears the route indices
-    proxy_aircraft_controls.ac_props = copy.deepcopy(_TEST_PROPS)
-    proxy_aircraft_controls.ac_routes = copy.deepcopy(_TEST_ROUTES)
-    proxy_aircraft_controls.clear_caches()
-    ac_props = proxy_aircraft_controls.ac_props
-    assert len(ac_props) == len(_TEST_PROPS)
-    for prop in ac_props:
-        assert ac_props[prop] is None
-    ac_routes = proxy_aircraft_controls.ac_routes
-    assert len(ac_routes) == len(_TEST_ROUTES)
-    for route in ac_routes.values():
-        assert route.current_segment_index is None
+def test_invalidate_data():
+    raise NotImplementedError()
