@@ -31,6 +31,8 @@ services:
   bluebird:
     container_name: bluebird_integration
     build:
+      args:
+        - NATS_PYPI_INDEX=$NATS_PYPI_INDEX
       context: ../../../
     depends_on:
       - machcoll
