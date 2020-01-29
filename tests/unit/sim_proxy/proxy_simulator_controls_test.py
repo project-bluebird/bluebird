@@ -1,13 +1,14 @@
 """
 Tests for the ProxySimulatorControls class
 """
-# Todo check any missing methods
 import datetime
 import json
 import logging
 import uuid
 from io import StringIO
+from pathlib import Path
 
+import geojson
 import mock
 from aviary.sector.sector_element import SectorElement
 
@@ -83,30 +84,89 @@ def test_properties():
     properties_mock.assert_called_once()
 
 
-def test_load_scenario():
-    """Tests that ProxySimulatorControls implements properties"""
+def test_load_sector(tmpdir):
 
-    mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
-    mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
+    data_dir = Path(tmpdir)
+    Settings.DATA_DIR = data_dir
+
+    mock_sim_controls = mock.Mock()
+    mock_aircraft_controls = mock.Mock()
     proxy_simulator_controls = ProxySimulatorControls(
         mock_sim_controls, mock_aircraft_controls
     )
 
+    # First test uploading a new sector
+
+    # Test error handling from load_sector
+
+    mock_sim_controls.load_sector.return_value = "Sim error"
+    err = proxy_simulator_controls.load_sector(_TEST_SECTOR)
+    assert err == "Sim error"
+
+    # Test valid response
+
+    mock_sim_controls.load_sector.return_value = None
+    err = proxy_simulator_controls.load_sector(_TEST_SECTOR)
+    assert not err
+
+    # Assert sector saved to file
+
+    with open(data_dir / "sectors" / f"{_TEST_SECTOR.name}.geojson") as f:
+        assert geojson.dumps(SectorElement.deserialise(f)) == geojson.dumps(
+            _TEST_SECTOR.element
+        )
+
+    # Test load of existing sector by name
+
+    existing_sector = Sector(_TEST_SECTOR.name, None)
+    err = proxy_simulator_controls.load_sector(existing_sector)
+    assert not err
+
+
+def test_load_scenario(tmpdir):
+
+    data_dir = Path(tmpdir)
+    Settings.DATA_DIR = data_dir
+
+    mock_sim_controls = mock.Mock()
+    mock_aircraft_controls = mock.Mock()
+    proxy_simulator_controls = ProxySimulatorControls(
+        mock_sim_controls, mock_aircraft_controls
+    )
+
+    # Test error when no sector set
+
+    res = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
+    assert res == "No sector set"
+
+    # First test uploading a new scenario
+
+    mock_sim_controls.load_sector.return_value = None
+    assert not proxy_simulator_controls.load_sector(_TEST_SECTOR)
+
     # Test error handling from load_scenario
 
-    mock_sim_controls.load_scenario.return_value = "Error"
+    mock_sim_controls.load_scenario.return_value = "Sim error"
 
-    res = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
-    assert res == "Error"
+    err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
+    assert err == "Sim error"
 
-    # Test load_scenario
+    # Test valid response
 
-    mock_sim_controls.reset_mock()
     mock_sim_controls.load_scenario.return_value = None
+    err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
+    assert not err
 
-    res = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
-    assert not res
-    mock_sim_controls.load_scenario.assert_called_once_with(_TEST_SCENARIO)
+    # Assert scenario saved to file
+
+    with open(data_dir / "scenarios" / f"{_TEST_SCENARIO.name}.json") as f:
+        assert json.load(f) == _TEST_SCENARIO.content
+
+    # Test load of existing scenario by name
+
+    existing_scn = Scenario(_TEST_SCENARIO.name, None)
+    err = proxy_simulator_controls.load_scenario(existing_scn)
+    assert not err
 
 
 def test_start():

@@ -70,6 +70,7 @@ _SCENARIO_SCHEMA = {
 
 
 def validate_json_scenario(data: dict) -> Optional[str]:
+    """Returns an error description if the given scenario is invalid, otherwise None"""
     try:
         validate(instance=data, schema=_SCENARIO_SCHEMA)
     except ValidationError as exc:

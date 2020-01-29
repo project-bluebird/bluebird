@@ -70,6 +70,7 @@ _SECTOR_SCHEMA = {
 
 
 def validate_geojson_sector(geojson: dict) -> Union[SectorElement, str]:
+    """Returns a SectorElement or an error string"""
     try:
         validate(instance=geojson, schema=_SECTOR_SCHEMA)
         # TODO (RKM 2019-12-20) Check what exceptions this can throw

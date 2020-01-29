@@ -14,6 +14,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+import geojson
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import Settings
@@ -101,6 +102,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         only contains a name, then the name must refer to an existing scenario which
         BlueBird can find (i.e. locally on disk)
         """
+        if not self.sector:
+            return "No sector set"
 
         loaded_existing_scenario = False
         if not scenario.content:
@@ -223,7 +226,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     def _sector_filename(sector_name: str) -> Path:
         return Settings.DATA_DIR / "sectors" / f"{sector_name.lower()}.geojson"
 
-    def _load_sector_from_file(self, sector_name: str):
+    def _load_sector_from_file(self, sector_name: str) -> Union[SectorElement, str]:
         sector_file = self._sector_filename(sector_name)
         self._logger.debug(f"Loading sector from {sector_file}")
         if not sector_file.exists():
@@ -238,19 +241,20 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             self._logger.warning("Overwriting existing file")
         sector_file.parent.mkdir(parents=True, exist_ok=True)
         with open(sector_file, "w+") as f:
-            json.dump(sector.element.sector_geojson(), f)
+            geojson.dump(sector.element, f, indent=4)
 
     @staticmethod
     def _scenario_filename(scenario_name: str) -> Path:
         return Settings.DATA_DIR / "scenarios" / f"{scenario_name.lower()}.json"
 
-    def _load_scenario_from_file(self, scenario_name: str):
+    def _load_scenario_from_file(self, scenario_name: str) -> Union[str, dict]:
         scenario_file = self._scenario_filename(scenario_name)
         self._logger.debug(f"Loading scenario from {scenario_file}")
         if not scenario_file.exists():
             return f"No scenario file at {scenario_file}"
         with open(scenario_file) as f:
-            return validate_json_scenario(json.load(f))
+            scenario = json.load(f)
+            return validate_json_scenario(scenario) or scenario
 
     def _save_scenario_to_file(self, scenario: Scenario):
         scenario_file = self._scenario_filename(scenario.name)
@@ -259,7 +263,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             self._logger.warning("Overwriting existing file")
         scenario_file.parent.mkdir(parents=True, exist_ok=True)
         with open(scenario_file, "w+") as f:
-            json.dump(scenario.content, f)
+            json.dump(scenario.content, f, indent=4)
 
     @staticmethod
     def _validate_scenario_against_sector(sector: SectorElement, scenario: dict):
