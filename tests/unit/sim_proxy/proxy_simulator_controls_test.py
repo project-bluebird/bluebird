@@ -4,7 +4,6 @@ Tests for the ProxySimulatorControls class
 import datetime
 import json
 import logging
-import uuid
 from io import StringIO
 from pathlib import Path
 
@@ -141,13 +140,10 @@ def test_load_scenario(tmpdir):
 
     # First test uploading a new scenario
 
-    mock_sim_controls.load_sector.return_value = None
-    assert not proxy_simulator_controls.load_sector(_TEST_SECTOR)
-
     # Test error handling from load_scenario
 
+    proxy_simulator_controls.sector = _TEST_SECTOR
     mock_sim_controls.load_scenario.return_value = "Sim error"
-
     err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
     assert err == "Sim error"
 
@@ -374,7 +370,7 @@ def test_set_seed():
     mock_sim_controls.set_seed.assert_called_once_with(1)
 
 
-def test_store_data():
+def test_store_data(tmpdir):
 
     mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
     mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
@@ -382,27 +378,31 @@ def test_store_data():
         mock_sim_controls, mock_aircraft_controls
     )
 
-    # Just to make sure we don't accidentally pass due to a previous test
-    uuid_str = str(uuid.uuid4())[:8]
+    # Set the scenario and sector
 
-    # Test .last_sector created
-
-    proxy_simulator_controls.sector = Sector(f"test-sector-{uuid_str}", TEST_SECTOR)
-    proxy_simulator_controls.store_data()
-    last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
-    assert last_sector_file.exists()
-    with open(last_sector_file) as f:
-        assert f.read() == f"test-sector-{uuid_str}"
-
-    # Test .last_scenario created
-
+    proxy_simulator_controls.sector = _TEST_SECTOR
     mock_sim_controls.load_scenario.return_value = None
-    err = proxy_simulator_controls.load_scenario(
-        Scenario(f"test-scenario-{uuid_str}", [1])
-    )
+    err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
     assert not err
-    proxy_simulator_controls.store_data()
-    last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
-    assert last_scenario_file.exists()
-    with open(last_scenario_file) as f:
-        assert f.read() == f"test-scenario-{uuid_str}"
+
+    # Assert exceptions are caught
+
+    Settings.DATA_DIR = "fake"
+    err = proxy_simulator_controls.store_data()
+    assert err.startswith("Error storing data: ")
+
+    # Assert .last_sector created
+
+    data_dir = Path(tmpdir)
+    Settings.DATA_DIR = data_dir
+
+    err = proxy_simulator_controls.store_data()
+    assert not err
+
+    with open(tmpdir / "sectors" / ".last_sector") as f:
+        assert f.read() == f"test-sector\n"
+
+    # Assert .last_scenario created
+
+    with open(tmpdir / "scenarios" / ".last_scenario") as f:
+        assert f.read() == f"test-scenario\n"

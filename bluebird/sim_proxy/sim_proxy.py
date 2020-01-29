@@ -78,7 +78,9 @@ class SimProxy(AbstractSimClient):
         the simulator was shut down successfully. Always returns True if shutdown_sim
         was not requested
         """
-        self._proxy_simulator_controls.store_data()
+        err = self._proxy_simulator_controls.store_data()
+        if err:
+            self._logger.error(err)
         return self._sim_client.shutdown(shutdown_sim)
 
     def call_metric_function(

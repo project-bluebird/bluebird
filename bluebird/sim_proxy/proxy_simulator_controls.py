@@ -169,22 +169,29 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     def set_seed(self, seed: int) -> Optional[str]:
         return self._invalidating_response(self._sim_controls.set_seed(seed))
 
-    def store_data(self) -> None:
-        # Saves the current sector and scenario filenames so they can be easily reloaded
-        # Re-loading not currently implemented :^)
-        # TODO(rkm 2020-01-12) Delete the .last_* files if we successfully load them
-        if not self.sector:
-            self._logger.warning("No sector to store")
-            return
-        last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
-        with open(last_sector_file, "w+") as f:
-            f.write(self.sector.name)
-        if not self._scenario:
-            self._logger.warning("No scenario to store")
-            return
-        last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
-        with open(last_scenario_file, "w+") as f:
-            f.write(self._scenario.name)
+    def store_data(self) -> Optional[str]:
+        """
+        Saves the current sector and scenario filenames so they can be easily reloaded.
+        This is called last and should therefore be allowed to fail. Re-loading not
+        currently implemented :^)
+        """
+        try:
+            if not self.sector:
+                self._logger.warning("No sector to store")
+                return
+            last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
+            self._assert_parent_dir_exists(last_sector_file)
+            with open(last_sector_file, "w+") as f:
+                f.write(self.sector.name + "\n")
+            if not self._scenario:
+                self._logger.warning("No scenario to store")
+                return
+            last_scenario_file = Settings.DATA_DIR / "scenarios" / ".last_scenario"
+            self._assert_parent_dir_exists(last_scenario_file)
+            with open(last_scenario_file, "w+") as f:
+                f.write(self._scenario.name + "\n")
+        except Exception as exc:
+            return f"Error storing data: {exc}"
 
     def _invalidating_response(
         self, err: Optional[str], clear: bool = False
@@ -232,14 +239,15 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if not sector_file.exists():
             return f"No sector file at {sector_file}"
         with open(sector_file) as f:
-            return validate_geojson_sector(json.load(f))
+            sector_json = json.load(f)
+        return validate_geojson_sector(sector_json)
 
     def _save_sector_to_file(self, sector: Sector):
         sector_file = self._sector_filename(sector.name)
         self._logger.debug(f"Saving sector to {sector_file}")
         if sector_file.exists():
             self._logger.warning("Overwriting existing file")
-        sector_file.parent.mkdir(parents=True, exist_ok=True)
+        self._assert_parent_dir_exists(sector_file)
         with open(sector_file, "w+") as f:
             geojson.dump(sector.element, f, indent=4)
 
@@ -254,16 +262,20 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             return f"No scenario file at {scenario_file}"
         with open(scenario_file) as f:
             scenario = json.load(f)
-            return validate_json_scenario(scenario) or scenario
+        return validate_json_scenario(scenario) or scenario
 
     def _save_scenario_to_file(self, scenario: Scenario):
         scenario_file = self._scenario_filename(scenario.name)
         self._logger.debug(f"Saving scenario to {scenario_file}")
         if scenario_file.exists():
             self._logger.warning("Overwriting existing file")
-        scenario_file.parent.mkdir(parents=True, exist_ok=True)
+        self._assert_parent_dir_exists(scenario_file)
         with open(scenario_file, "w+") as f:
             json.dump(scenario.content, f, indent=4)
+
+    @staticmethod
+    def _assert_parent_dir_exists(file: Path):
+        file.parent.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _validate_scenario_against_sector(sector: SectorElement, scenario: dict):
