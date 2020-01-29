@@ -30,6 +30,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
                 if callsign not in all_props:
                     self._logger.warning(f"Aircraft {callsign} has been removed")
                     self._ac_props.pop(callsign, None)
+                    continue
                 self._update_ac_properties(callsign, all_props[callsign])
             self._data_valid = True
         return self._ac_props
@@ -72,10 +73,16 @@ class ProxyAircraftControls(AbstractAircraftControls):
         return self._aircraft_controls.set_vertical_speed(callsign, vertical_speed)
 
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: types.Waypoint
+        self, callsign: types.Callsign, waypoint: str
     ) -> Optional[str]:
-        if not self.exists(callsign):
-            return f"Unrecognised callsign {callsign}"
+        props = self.properties(callsign)
+        if not isinstance(props, AircraftProperties):
+            return props
+        if not props.route_name:
+            return "Aircraft has no route"
+        route_waypoints = [x[0] for x in self._routes[props.route_name].fix_list]
+        if waypoint not in route_waypoints:
+            return f'Waypoint "{waypoint}" is not in the route {route_waypoints}'
         return self._aircraft_controls.direct_to_waypoint(callsign, waypoint)
 
     def create(
@@ -127,8 +134,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
             return "Aircraft has no route"
 
         route = self._routes[props.route_name]
-        next_waypoint = route.next_waypoint(props.position.lat, props.position.lon)
-        return (props.route_name, next_waypoint, route.fix_list)
+        next_waypoint = route.next_waypoint(
+            props.position.lat_degrees, props.position.lon_degrees
+        )
+        return (props.route_name, next_waypoint, [x[0] for x in route.fix_list])
 
     def invalidate_data(self, clear: bool = False):
         """Clears the data_valid flag"""
@@ -145,10 +154,9 @@ class ProxyAircraftControls(AbstractAircraftControls):
     def prev_ac_props(self):
         return self._prev_ac_props
 
-    # TODO(rkm 2020-01-22) Add a test for this
     def set_initial_properties(
         self, sector_element: SectorElement, scenario_content: dict
-    ) -> Optional[str]:
+    ) -> None:
         """
         Set any properties which are not tracked by the simulator - i.e. the flight
         levels, routes, and aircraft types
@@ -161,12 +169,15 @@ class ProxyAircraftControls(AbstractAircraftControls):
         for aircraft in scenario_content["aircraft"]:
             callsign = types.Callsign(aircraft["callsign"])
             new_props[callsign] = AircraftProperties.from_data(aircraft)
+            if "route" not in aircraft:
+                new_props[callsign].route_name = None
+                continue
             # Match the route name to the waypoints in the scenario data
             aircraft_route_waypoints = [x["fixName"] for x in aircraft["route"]]
             new_props[callsign].route_name = next(
                 x
                 for x in self._routes
-                if self._routes[x].fix_names == aircraft_route_waypoints
+                if self._routes[x].fix_names() == aircraft_route_waypoints
             )
 
         self._ac_props = new_props

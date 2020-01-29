@@ -5,16 +5,23 @@ import copy
 
 import mock
 import pytest
+from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
+from bluebird.utils.sector_validation import validate_geojson_sector
+from tests.data import TEST_SCENARIO
+from tests.data import TEST_SECTOR
 
 _TEST_CALLSIGN_1 = types.Callsign("TEST1")
 _TEST_CALLSIGN_2 = types.Callsign("TEST2")
 
+_TEST_SECTOR_ELEMENT = validate_geojson_sector(TEST_SECTOR)
+assert isinstance(_TEST_SECTOR_ELEMENT, SectorElement)
 
+# TODO (rkm 2020-01-28) Construct these from the test data
 _TEST_PROPS = {
     _TEST_CALLSIGN_1: props.AircraftProperties(
         aircraft_type="A380",
@@ -41,8 +48,6 @@ _TEST_PROPS = {
         route_name=None,
     ),
 }
-
-_TEST_WAYPOINT_1 = types.Waypoint("FIX1", types.LatLon(0, 0), altitude=None)
 
 _INVALID_ARG = "Invalid argument at position"
 
@@ -308,35 +313,49 @@ def test_direct_to_waypoint():
     mock_aircraft_controls = mock.Mock()
     proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
 
-    # Test invalid args
-    with pytest.raises(AssertionError, match=f"{_INVALID_ARG} 0"):
-        proxy_aircraft_controls.direct_to_waypoint(None, None)  # type: ignore
-    with pytest.raises(AssertionError, match=f"{_INVALID_ARG} 1"):
-        proxy_aircraft_controls.direct_to_waypoint(
-            _TEST_CALLSIGN_1, None  # type: ignore
-        )
-
     # Test error for missing aircraft
-    proxy_aircraft_controls.ac_props = {}
-    test_waypoint = types.Waypoint("FIX3", types.LatLon(0, 0), None)
-    with pytest.raises(AssertionError, match="Callsign not in aircraft data"):
-        proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_1, test_waypoint)
+
+    err = proxy_aircraft_controls.direct_to_waypoint("INVALID", "")
+    assert err == "Unrecognised callsign INVALID"
+
+    # Test error when no route_name
+
+    test_scenario = copy.deepcopy(TEST_SCENARIO)
+    test_aircraft_data = test_scenario["aircraft"][0]
+    test_callsign = types.Callsign(test_aircraft_data["callsign"])
+    test_props = props.AircraftProperties.from_data(test_aircraft_data)
+    mock_aircraft_controls.all_properties = {test_callsign: test_props}
+
+    test_aircraft_data.pop("route")
+    proxy_aircraft_controls.set_initial_properties(_TEST_SECTOR_ELEMENT, test_scenario)
+
+    err = proxy_aircraft_controls.direct_to_waypoint(test_callsign, "")
+    assert err == "Aircraft has no route"
+
+    # Test error when waypoint not in route
+
+    proxy_aircraft_controls.set_initial_properties(_TEST_SECTOR_ELEMENT, TEST_SCENARIO)
+    err = proxy_aircraft_controls.direct_to_waypoint(test_callsign, "TEST")
+    assert (
+        err == 'Waypoint "TEST" is not in the route '
+        "['FIYRE', 'EARTH', 'WATER', 'AIR', 'SPIRT']"
+    )
 
     # Test error from direct_to_waypoint
+
     mock_direct_to_waypoint = mock.Mock(return_value="Error")
     mock_aircraft_controls.direct_to_waypoint = mock_direct_to_waypoint
-    err = proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
+    err = proxy_aircraft_controls.direct_to_waypoint(test_callsign, "FIYRE")
     assert err == "Error"
-
-    # TODO(RKM 2019-11-20) This check fails for some reason, but looks ok in the debug
-    # output...
-    mock_direct_to_waypoint.assert_called_once_with(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
+    mock_direct_to_waypoint.assert_called_once_with(test_callsign, "FIYRE")
 
     # Test valid call
+
+    mock_direct_to_waypoint.reset_mock()
     mock_direct_to_waypoint.return_value = None
-    mock_aircraft_controls.direct_to_waypoint = mock_direct_to_waypoint
-    err = proxy_aircraft_controls.direct_to_waypoint(_TEST_CALLSIGN_2, _TEST_WAYPOINT_1)
+    err = proxy_aircraft_controls.direct_to_waypoint(test_callsign, "FIYRE")
     assert not err
+    mock_direct_to_waypoint.assert_called_once_with(test_callsign, "FIYRE")
 
 
 def test_create():
@@ -504,14 +523,17 @@ def test_route():
     assert err == "Unrecognised callsign TEST"
 
     # Test valid call
-    mock_aircraft_controls.all_properties = mock.PropertyMock(
-        return_value={_TEST_CALLSIGN_1: _TEST_PROPS}
-    )
 
-    test_route_info = ()
-    mock_aircraft_controls.route = mock.Mock(return_value=test_route_info)
-    route = proxy_aircraft_controls.route(_TEST_CALLSIGN_1)
-    assert route == ...
+    test_aircraft_data = TEST_SCENARIO["aircraft"][0]
+    test_callsign = types.Callsign(test_aircraft_data["callsign"])
+    test_props = props.AircraftProperties.from_data(test_aircraft_data)
+    mock_aircraft_controls.all_properties = {test_callsign: test_props}
+
+    proxy_aircraft_controls.set_initial_properties(_TEST_SECTOR_ELEMENT, TEST_SCENARIO)
+
+    route = proxy_aircraft_controls.route(test_callsign)
+    # TODO(rkm 2020-01-28) Refactor this so it won't break if the test data changes
+    assert route == ("ASCENSION", "FIYRE", ["FIYRE", "EARTH", "WATER", "AIR", "SPIRT"])
 
 
 def test_exists():
@@ -536,3 +558,21 @@ def test_exists():
 
 def test_invalidate_data():
     raise NotImplementedError()
+
+
+def test_set_initial_properties():
+
+    mock_aircraft_controls = mock.Mock()
+    proxy_aircraft_controls = ProxyAircraftControls(mock_aircraft_controls)
+
+    test_aircraft_data = TEST_SCENARIO["aircraft"][0]
+    test_callsign = types.Callsign(test_aircraft_data["callsign"])
+    test_props = props.AircraftProperties.from_data(test_aircraft_data)
+    mock_aircraft_controls.all_properties = {test_callsign: test_props}
+
+    proxy_aircraft_controls.set_initial_properties(_TEST_SECTOR_ELEMENT, TEST_SCENARIO)
+
+    assert isinstance(
+        proxy_aircraft_controls.properties(test_callsign), props.AircraftProperties
+    )
+    assert isinstance(proxy_aircraft_controls.route(test_callsign), tuple)

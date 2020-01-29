@@ -84,7 +84,7 @@ class AbstractAircraftControls(ABC):
 
     @abstractmethod
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: types.Waypoint
+        self, callsign: types.Callsign, waypoint: str
     ) -> Optional[str]:
         """
         Send the aircraft directly to the specified waypoint

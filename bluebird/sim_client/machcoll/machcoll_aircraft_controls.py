@@ -80,7 +80,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
         raise NotImplementedError
 
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: types.Waypoint
+        self, callsign: types.Callsign, waypoint: str
     ) -> Optional[str]:
         raise NotImplementedError
 

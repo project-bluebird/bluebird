@@ -3,7 +3,6 @@ Contains utility dataclasses representing physical units
 """
 import re
 from dataclasses import dataclass
-from typing import Optional
 from typing import Union
 
 from bluebird.utils.units import METERS_PER_FOOT
@@ -166,20 +165,3 @@ class VerticalSpeed:
         :return:
         """
         return VerticalSpeed(vertical_speed * 60 / METERS_PER_FOOT)
-
-
-@dataclass(eq=True, frozen=True)
-class Waypoint:
-    """
-    Dataclass representing a named waypoint and optional altitude
-    """
-
-    name: str
-    position: LatLon
-    altitude: Optional[Altitude]
-
-    def __post_init__(self):
-        assert self.name, "Name must not be empty or None"
-
-    def __hash__(self):
-        return hash(self.name)

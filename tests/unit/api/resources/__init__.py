@@ -35,8 +35,6 @@ TEST_AIRCRAFT_PROPS = props.AircraftProperties(
     None,
 )
 
-TEST_WAYPOINT = types.Waypoint("FIX1", types.LatLon(45, 90), types.Altitude("FL225"))
-
 
 def endpoint_path(endpoint: str) -> str:
     """Returns the endpoint path"""
