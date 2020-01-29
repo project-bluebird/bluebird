@@ -151,8 +151,9 @@ class ProxyAircraftControls(AbstractAircraftControls):
         # which stores the current state every n seconds
         self.prev_step_props = copy.deepcopy(self._ac_props)
 
-    def prev_ac_props(self):
-        return self._prev_ac_props
+    def prev_ac_props(self) -> Dict[types.Callsign, Optional[AircraftProperties]]:
+        # NOTE(rkm 2020-01-29) Defensive copy
+        return copy.deepcopy(self._prev_ac_props)
 
     def set_initial_properties(
         self, sector_element: SectorElement, scenario_content: dict
