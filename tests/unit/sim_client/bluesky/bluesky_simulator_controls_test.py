@@ -9,19 +9,17 @@ import mock
 import pytest
 from aviary.sector.sector_element import SectorElement
 
+import bluebird.utils.properties as props
+from bluebird.settings import Settings
 from bluebird.sim_client.bluesky.bluesky_simulator_controls import (
     BlueSkySimulatorControls,
 )
-from bluebird.utils.properties import Scenario
-from bluebird.utils.properties import Sector
-from bluebird.utils.properties import SimProperties
-from bluebird.utils.properties import SimState
+from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from tests.data import TEST_SCENARIO
 from tests.data import TEST_SECTOR
 
-
 _TEST_SIMINFO = [
-    1.54,  # Sim speed
+    1.123,  # Sim speed
     0.05,  # Sim dt
     1234,  # Sim time (seconds elapsed)
     "2020-01-02 12:34:56",  # Sim time (UTC datetime)
@@ -31,40 +29,63 @@ _TEST_SIMINFO = [
 ]
 
 _SECTOR_ELEMENT = SectorElement.deserialise(StringIO(json.dumps(TEST_SECTOR)))
-_TEST_SECTOR = Sector(name="test-sector", element=_SECTOR_ELEMENT)
+_TEST_SECTOR = props.Sector(name="test-sector", element=_SECTOR_ELEMENT)
 
-_TEST_SCENARIO = Scenario(name="test-scenario", content=TEST_SCENARIO)
+_TEST_SCENARIO = props.Scenario(name="test-scenario", content=TEST_SCENARIO)
 
 
 def test_abstract_class_implemented():
     """Tests that BlueSkyAircraftControls implements the abstract base class"""
 
-    bs_client_mock = mock.Mock()
-    BlueSkySimulatorControls(bs_client_mock)
+    # Test basic instantiation
+    BlueSkySimulatorControls(mock.Mock())
+
+    # Test ABC exactly implemented
+    assert AbstractSimulatorControls.__abstractmethods__ == {
+        x for x in dir(BlueSkySimulatorControls) if not x.startswith("_")
+    }
 
 
 def test_properties():
     """Test the properties property"""
 
     bs_client_mock = mock.Mock()
-    bs_client_mock.sim_info_stream_data = _TEST_SIMINFO
     bs_sim_controls = BlueSkySimulatorControls(bs_client_mock)
 
-    with mock.patch(
-        "bluebird.sim_client.bluesky.bluesky_simulator_controls.in_agent_mode"
-    ) as in_agent_mode_mock:
-        in_agent_mode_mock.return_value = False
-        props = bs_sim_controls.properties
+    # Test error when no data received
 
-    assert isinstance(props, SimProperties)
-    assert props == SimProperties(
-        sector_name=None,
-        scenario_name="test-scenario",
-        scenario_time=1234,
-        seed=None,
-        speed=1.54,
-        state=SimState.RUN,
+    bs_client_mock.sim_info_stream_data = None
+    bs_sim_controls.properties == "aaa"
+
+    # Test properties when we have data - Agent mode
+
+    bs_client_mock.sim_info_stream_data = _TEST_SIMINFO
+    Settings.SIM_MODE = props.SimMode.Agent
+
+    assert bs_sim_controls.properties == props.SimProperties(
         dt=0.05,
+        scenario_name=None,
+        scenario_time=1234,
+        sector_name=None,
+        seed=None,
+        speed=1.0,
+        state=props.SimState.RUN,
+        utc_datetime=datetime(2020, 1, 2, 12, 34, 56),
+    )
+
+    # Test properties when we have data - Sandbox mode
+
+    bs_client_mock.sim_info_stream_data = _TEST_SIMINFO
+    Settings.SIM_MODE = props.SimMode.Sandbox
+
+    assert bs_sim_controls.properties == props.SimProperties(
+        dt=0.05,
+        scenario_name=None,
+        scenario_time=1234,
+        sector_name=None,
+        seed=None,
+        speed=1.12,
+        state=props.SimState.RUN,
         utc_datetime=datetime(2020, 1, 2, 12, 34, 56),
     )
 
@@ -77,14 +98,14 @@ def test_load_scenario():
 
     # Test with no sector set
 
-    existing_scenario = Scenario("TEST", [])
+    existing_scenario = props.Scenario("TEST", [])
     with pytest.raises(AssertionError):
         bs_sim_controls.load_scenario(existing_scenario)
 
     # Test error from scenario parsing
 
     assert not bs_sim_controls.load_sector(_TEST_SECTOR)
-    existing_scenario = Scenario("TEST", ["a", "b", "c"])
+    existing_scenario = props.Scenario("TEST", ["a", "b", "c"])
     err = bs_sim_controls.load_scenario(existing_scenario)
     assert err.startswith("Could not parse a BlueSky scenario")
 
@@ -273,7 +294,6 @@ def test_dt_mult_handling():
         in_agent_mode_mock.return_value = True
 
         props = bs_sim_controls.properties
-        assert isinstance(props, SimProperties)
         assert props.speed == dt_mult
 
         bs_client_mock.reset_sim.return_value = None
@@ -281,5 +301,4 @@ def test_dt_mult_handling():
         assert not err
 
         props = bs_sim_controls.properties
-        assert isinstance(props, SimProperties)
         assert props.speed == 1

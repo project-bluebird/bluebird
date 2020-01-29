@@ -6,7 +6,6 @@ import traceback
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import bluebird.utils.properties as props
@@ -102,9 +101,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
         resp = self._mc_client().get_active_flight_by_callsign(str(callsign))
         _raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
-
-    def route(self, callsign: types.Callsign) -> Union[Tuple[str, str, List[str]], str]:
-        raise NotImplementedError
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         raise NotImplementedError

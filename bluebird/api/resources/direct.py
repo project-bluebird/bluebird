@@ -28,14 +28,10 @@ class Direct(Resource):
         """
 
         req_args = utils.parse_args(_PARSER)
-        waypoint_str = req_args["waypoint"]
+        waypoint_name = req_args["waypoint"]
 
-        if not waypoint_str:
+        if not waypoint_name:
             return responses.bad_request_resp("Waypoint name must be specified")
-
-        waypoint = utils.sim_proxy().simulation.find_waypoint(waypoint_str)
-        if not waypoint:
-            return responses.bad_request_resp(f"Could not find waypoint {waypoint_str}")
 
         callsign = req_args[utils.CALLSIGN_LABEL]
 
@@ -43,6 +39,6 @@ class Direct(Resource):
         if resp:
             return resp
 
-        err = utils.sim_proxy().aircraft.direct_to_waypoint(callsign, waypoint)
+        err = utils.sim_proxy().aircraft.direct_to_waypoint(callsign, waypoint_name)
 
         return responses.checked_resp(err)

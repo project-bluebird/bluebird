@@ -9,7 +9,6 @@ import uuid
 from io import StringIO
 
 import mock
-import pytest
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
@@ -313,13 +312,6 @@ def test_set_seed():
     res = proxy_simulator_controls.set_seed(1)
     assert not res
     mock_sim_controls.set_seed.assert_called_once_with(1)
-
-
-def test_find_waypoint():
-    # Test response when no sector set
-    # Test response when invalid waypoint
-    # Test response when valid waypoint
-    pytest.xfail()
 
 
 def test_store_data():

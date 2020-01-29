@@ -34,15 +34,6 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         all_props = self.all_properties
         return all_props if isinstance(all_props, str) else all_props.keys()
 
-    @property
-    def all_routes(self) -> Union[Dict[types.Callsign, props.AircraftRoute], str]:
-        for callsign in self.callsigns:
-            route = self.route(callsign)
-            if not isinstance(route, props.AircraftRoute):
-                return route
-            self.ac_routes[callsign] = route
-        return self.ac_routes
-
     def __init__(self, bluesky_client):
         self._bluesky_client = bluesky_client
         self._logger = logging.getLogger(__name__)
@@ -80,27 +71,11 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         cmd_str = f"VS {callsign} {vertical_speed}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
 
-    # NOTE(RKM 2019-11-18) For BlueSky, I think the waypoint has to exist on the
-    # aircraft's route
     def direct_to_waypoint(
-        self, callsign: types.Callsign, waypoint: types.Waypoint
+        self, callsign: types.Callsign, waypoint: str
     ) -> Optional[str]:
         cmd_str = f"DIRECT {callsign} {waypoint}"
         return self._tmp_stack_cmd_handle_list(cmd_str)
-
-    # TODO Check how BlueSky handles the variable length arguments here with LAT LON
-    def add_waypoint_to_route(
-        self,
-        callsign: types.Callsign,
-        waypoint: types.Waypoint,
-        gspd: types.GroundSpeed,
-    ) -> Optional[str]:
-        cmd_str = f"ADDWPT {callsign} {waypoint}"
-        if waypoint.altitude:
-            cmd_str += f" {waypoint.altitude}"
-        if gspd:
-            cmd_str += f" {gspd}"
-        return self._bluesky_client.send_stack_cmd(cmd_str)
 
     def create(
         self,
@@ -129,19 +104,6 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         if not isinstance(all_props, dict):
             return all_props
         return all_props[callsign]
-
-    def route(
-        self, callsign: types.Callsign
-    ) -> Optional[Union[props.AircraftRoute, str]]:
-        assert callsign
-        stack_cmd = f"LISTRTE {callsign}"
-        # TODO(RKM 2019-11-23) For large routes, we should check that we wait long
-        # enough for BlueSky to send us all the data. If not, we need to update it to
-        # send a "stop" message, and then wait to receive that
-        route = self._bluesky_client.send_stack_cmd(stack_cmd, response_expected=True)
-        if not isinstance(route, list):
-            return route
-        return self._convert_to_ac_route(callsign, route)
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         all_callsings = self.callsigns
@@ -175,35 +137,3 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
             return ac_props
         except Exception:
             return f"Error parsing ac data from stream: {traceback.format_exc()}"
-
-    def _convert_to_ac_route(
-        self, callsign: types.Callsign, data: list
-    ) -> Optional[Union[props.AircraftRoute, str]]:
-        route = props.AircraftRoute(callsign, [], None)
-        for idx, line in enumerate(map(lambda s: s.replace(" ", ""), data)):
-            match = _ROUTE_RE.match(line)
-            if not match:
-                return f"Error parsing route: No match for {line}"
-            wpt_name = match.group(2)
-            # NOTE(RKM 2019-11-23) BlueSky has no consistency...
-            req_alt_str = match.group(3) if "-" not in match.group(3) else None
-            req_alt = None
-            if req_alt_str:
-                req_alt = (
-                    types.Altitude(req_alt_str)
-                    if req_alt_str.startswith("FL")
-                    else types.Altitude(int(req_alt_str))
-                )
-            # TODO(RKM 2019-11-23) Could also get Mach here(?)
-            req_gspd = (
-                types.GroundSpeed(int(match.group(4)) / KTS_PER_MS)
-                if "-" not in match.group(4)
-                else None
-            )
-            # TODO(RKM 2019-11-23) Fill-in the route latlon etc. in the proxy layer
-            route.segments.append(
-                props.RouteItem(types.Waypoint(wpt_name, None, req_alt), req_gspd)
-            )
-            if bool(match.group(1)):
-                route.current_segment_index = idx
-        return route

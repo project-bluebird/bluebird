@@ -6,7 +6,6 @@ from http import HTTPStatus
 import bluebird.api.resources.utils.utils as utils
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import get_app_mock
-from tests.unit.api.resources import TEST_WAYPOINT
 
 
 _ENDPOINT = "direct"
@@ -38,21 +37,11 @@ def test_direct_post(test_flask_client):
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == "Waypoint name must be specified"
 
-    # Test waypoint exists check
-
-    app_mock = get_app_mock(test_flask_client)
-    app_mock.sim_proxy.simulation.find_waypoint.return_value = None
-
-    data["waypoint"] = TEST_WAYPOINT.name
-    resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
-    assert resp.status_code == HTTPStatus.BAD_REQUEST
-    assert resp.data.decode() == f"Could not find waypoint {TEST_WAYPOINT.name}"
-
     # Test callsign check
 
-    app_mock.sim_proxy.simulation.find_waypoint.return_value = TEST_WAYPOINT
+    app_mock = get_app_mock(test_flask_client)
     app_mock.sim_proxy.aircraft.exists.return_value = False
-    print(f"TEST: {app_mock.sim_proxy.aircraft.exists}")
+    data["waypoint"] = "WATER"
     resp = test_flask_client.post(_ENDPOINT_PATH, json=data)
     assert resp.status_code == HTTPStatus.BAD_REQUEST
     assert resp.data.decode() == 'Aircraft "FAKE" does not exist'

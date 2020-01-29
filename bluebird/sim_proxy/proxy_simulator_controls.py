@@ -166,9 +166,6 @@ class ProxySimulatorControls(AbstractSimulatorControls):
     def set_seed(self, seed: int) -> Optional[str]:
         return self._invalidating_response(self._sim_controls.set_seed(seed))
 
-    def find_waypoint(self, name: str):
-        raise NotImplementedError()
-
     def store_data(self) -> None:
         # Saves the current sector and scenario filenames so they can be easily reloaded
         # Re-loading not currently implemented :^)

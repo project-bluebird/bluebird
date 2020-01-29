@@ -6,7 +6,6 @@ from abc import abstractmethod
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import bluebird.utils.properties as props
@@ -116,14 +115,6 @@ class AbstractAircraftControls(ABC):
         """
         Get all the properties for the specified aircraft. Returns None if the aircraft
         was not found, or a string if there were any errors
-        """
-
-    @abstractmethod
-    def route(self, callsign: types.Callsign) -> Union[Tuple[str, str, List[str]], str]:
-        """
-        Returns the route for the specified aircraft. Returns None if the aircraft was
-        not found, or a string to indicate an error
-        :param callsign:
         """
 
     @abstractmethod
