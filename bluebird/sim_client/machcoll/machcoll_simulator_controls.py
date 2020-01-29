@@ -8,13 +8,14 @@ import traceback
 from typing import Optional
 from typing import Union
 
+from nats.mc_client.mc_client_metrics import MCClientMetrics
+
 import bluebird.utils.properties as props
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
 from bluebird.settings import Settings
 from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
     MachCollAircraftControls,
 )
-from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 
 

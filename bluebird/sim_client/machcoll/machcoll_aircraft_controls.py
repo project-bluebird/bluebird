@@ -8,9 +8,10 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from nats.mc_client.mc_client_metrics import MCClientMetrics
+
 import bluebird.utils.properties as props
 import bluebird.utils.types as types
-from bluebird.sim_client.machcoll.machcoll_client_imports import MCClientMetrics
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 
 

@@ -15,10 +15,10 @@ from threading import current_thread
 from threading import main_thread
 from typing import List
 
+from nats.mc_client.mc_client_metrics import MCClientMetrics
 from semver import VersionInfo
 
 from .machcoll_aircraft_controls import MachCollAircraftControls
-from .machcoll_client_imports import MCClientMetrics
 from .machcoll_simulator_controls import MachCollSimulatorControls
 from bluebird.metrics import MetricsProviders
 from bluebird.settings import Settings
