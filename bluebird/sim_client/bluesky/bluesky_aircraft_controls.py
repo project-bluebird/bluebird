@@ -143,7 +143,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         # TODO(rkm 2020-01-30) This was a temporary hack to try and determine in what
         # cases the call to send_stack_cmd would return a list. This needs investigated
-        resp = self._client.send_stack_cmd(cmd_str, resp_expected)
+        resp = self._bluesky_client.send_stack_cmd(cmd_str, resp_expected)
         if isinstance(resp, list):
             raise ValueError("Got a list response")
         return resp
