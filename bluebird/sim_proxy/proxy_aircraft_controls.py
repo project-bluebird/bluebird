@@ -166,7 +166,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
     def store_current_props(self):
         # TODO(rkm 2020-01-12) In sandbox mode, this needs to be hooked-up to a timer
         # which stores the current state every n seconds
-        self.prev_step_props = copy.deepcopy(self._ac_props)
+        self._prev_ac_props = copy.deepcopy(self._ac_props)
 
     def prev_ac_props(self) -> Dict[types.Callsign, Optional[AircraftProperties]]:
         # NOTE(rkm 2020-01-29) Defensive copy
