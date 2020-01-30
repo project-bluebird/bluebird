@@ -59,8 +59,14 @@ def sector_exit_metric(*args, **kwargs):
     aircraft_controls: ProxyAircraftControls = kwargs["aircraft_controls"]
     simulator_controls: ProxySimulatorControls = kwargs["simulator_controls"]
 
-    assert simulator_controls.sector
-    prev_props = aircraft_controls.prev_ac_props()[callsign]
+    assert simulator_controls.sector, "A sector definition is required"
+    try:
+        prev_props = aircraft_controls.prev_ac_props()[callsign]
+    except:
+        # NOTE (RJ 2020-01-30):
+        # aircraft_controls.prev_ac_props() is empty before STEP is called for the first time
+        # aviary_metrics.sector_exit_metric() returns None if aircraft is still in the sector
+        return None
     assert isinstance(prev_props, props.AircraftProperties)
 
     current_props = aircraft_controls.properties(callsign)
