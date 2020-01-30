@@ -47,7 +47,9 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
 
-        vspd = kwargs.get("vspd", "")
+        vspd = kwargs.get("vspd")
+        if kwargs.get("vspd") is None:
+            vspd = ""
         cmd_str = f"ALT {callsign} {flight_level} {vspd}".strip()
         # TODO This can also return list (multiple errors?)
         return self._tmp_stack_cmd_handle_list(cmd_str)
