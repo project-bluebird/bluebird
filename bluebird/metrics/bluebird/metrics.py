@@ -74,7 +74,7 @@ def sector_exit_metric(*args, **kwargs):
         prev_props.position.lat_degrees,
         prev_props.altitude.meters,
         prev_props.requested_flight_level,
-        simulator_controls.sector,
+        simulator_controls.sector.element,
         prev_props.route_name,  # TODO(rkm 2020-01-28) Check the required arg type
     )
 
