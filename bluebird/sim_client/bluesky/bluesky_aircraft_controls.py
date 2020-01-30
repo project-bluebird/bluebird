@@ -137,3 +137,13 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
             return ac_props
         except Exception:
             return f"Error parsing ac data from stream: {traceback.format_exc()}"
+
+    def _tmp_stack_cmd_handle_list(
+        self, cmd_str: str, resp_expected: bool = False
+    ) -> Optional[str]:
+        # TODO(rkm 2020-01-30) This was a temporary hack to try and determine in what
+        # cases the call to send_stack_cmd would return a list. This needs investigated
+        resp = self._client.send_stack_cmd(cmd_str, resp_expected)
+        if isinstance(resp, list):
+            raise ValueError("Got a list response")
+        return resp
