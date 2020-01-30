@@ -46,10 +46,7 @@ _TEST_SCENARIO = Scenario("test-scenario", content=TEST_SCENARIO)
 
 def test_abstract_class_implemented():
     """Tests that ProxySimulatorControls implements the abstract base class"""
-
-    mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
-    mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
-    ProxySimulatorControls(mock_sim_controls, mock_aircraft_controls)
+    ProxySimulatorControls(mock.Mock(), mock.Mock())
 
 
 def test_properties():

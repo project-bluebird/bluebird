@@ -22,21 +22,32 @@ class ProxyAircraftControls(AbstractAircraftControls):
 
     @property
     def all_properties(self) -> Union[Dict[types.Callsign, AircraftProperties], str]:
-        if not self._data_valid:
-            all_props = self._aircraft_controls.all_properties
-            if not isinstance(all_props, dict):
-                return all_props
-            for callsign in list(self._ac_props):
-                if callsign not in all_props:
-                    self._logger.warning(f"Aircraft {callsign} has been removed")
-                    self._ac_props.pop(callsign, None)
-                    continue
-                self._update_ac_properties(callsign, all_props[callsign])
-            self._data_valid = True
+        self._logger.debug("all_properties: Accessed")
+        if self._data_valid:
+            self._logger.debug("all_properties: Using cache")
+            return self._ac_props
+        all_props = self._aircraft_controls.all_properties
+        if not isinstance(all_props, dict):
+            return all_props
+        for callsign in list(self._ac_props):
+            if callsign not in all_props:
+                self._logger.warning(
+                    f"all_properties: Aircraft {callsign} has "
+                    "been removed from the simulation"
+                )
+                self._ac_props.pop(callsign, None)
+                continue
+            self._update_ac_properties(callsign, all_props[callsign])
+        self._logger.debug("all_properties: Data now valid")
+        self._data_valid = True
         return self._ac_props
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
+        if not self._data_valid:
+            err = self.all_properties
+            if isinstance(err, str):
+                return err
         return list(self._ac_props.keys())
 
     def __init__(self, aircraft_controls: AbstractAircraftControls):
@@ -64,12 +75,12 @@ class ProxyAircraftControls(AbstractAircraftControls):
 
     def set_ground_speed(
         self, callsign: types.Callsign, ground_speed: types.GroundSpeed
-    ):
+    ) -> Optional[str]:
         return self._aircraft_controls.set_ground_speed(callsign, ground_speed)
 
     def set_vertical_speed(
         self, callsign: types.Callsign, vertical_speed: types.VerticalSpeed
-    ):
+    ) -> Optional[str]:
         return self._aircraft_controls.set_vertical_speed(callsign, vertical_speed)
 
     def direct_to_waypoint(
@@ -96,6 +107,9 @@ class ProxyAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         # NOTE(RKM 2019-11-20) Creating an aircraft with a specified route is currently
         # not implemented
+        exists = self.exists(callsign)
+        if not isinstance(exists, bool):
+            return exists
         if self.exists(callsign):
             return "Aircraft already exists"
         err = self._aircraft_controls.create(
@@ -103,10 +117,15 @@ class ProxyAircraftControls(AbstractAircraftControls):
         )
         if err:
             return err
-        # Create an empty entry for the new aircraft
+        # Create an empty entry for the new aircraft and ensure we get new data back
         self._ac_props[callsign] = None
         self._data_valid = False
-        return None
+        all_properties = self.all_properties
+        if not isinstance(all_properties, dict):
+            return all_properties
+        return (
+            None if callsign in all_properties else "New callsign missing from sim data"
+        )
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         all_callsings = self.callsigns
@@ -118,12 +137,10 @@ class ProxyAircraftControls(AbstractAircraftControls):
 
     def properties(self, callsign: types.Callsign) -> Union[AircraftProperties, str]:
         """Utility function to return only the properties for the specified aircraft"""
-        if not self.exists(callsign):
-            return f"Unrecognised callsign {callsign}"
         all_props = self.all_properties
         if not isinstance(all_props, dict):
             return all_props
-        return all_props[callsign]
+        return all_props.get(callsign, None) or f"Unknown callsign {callsign}"
 
     def route(self, callsign: types.Callsign) -> Union[Tuple[str, str, List[str]], str]:
         """Utility function to return only the route for the specified aircraft"""
@@ -139,7 +156,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
         )
         return (props.route_name, next_waypoint, [x[0] for x in route.fix_list])
 
-    def invalidate_data(self, clear: bool = False):
+    def invalidate_data(self, clear: bool = False) -> None:
         """Clears the data_valid flag"""
         if clear:
             self._ac_props = {}
