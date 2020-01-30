@@ -60,11 +60,10 @@ def sector_exit_metric(*args, **kwargs):
     simulator_controls: ProxySimulatorControls = kwargs["simulator_controls"]
 
     assert simulator_controls.sector
-
     prev_props = aircraft_controls.prev_ac_props()[callsign]
     assert isinstance(prev_props, props.AircraftProperties)
 
-    current_props = aircraft_controls.properties[callsign]
+    current_props = aircraft_controls.properties(callsign)
     assert isinstance(current_props, props.AircraftProperties)
 
     return aviary_metrics.sector_exit_metric(
@@ -77,4 +76,26 @@ def sector_exit_metric(*args, **kwargs):
         prev_props.requested_flight_level,
         simulator_controls.sector,
         prev_props.route_name,  # TODO(rkm 2020-01-28) Check the required arg type
+    )
+
+
+def fuel_efficiency_metric(*args, **kwargs):
+    """
+    The Aviary fuel efficiency meric functions. Expected *args are:
+        callsign: Callsign
+    See: https://github.com/alan-turing-institute/aviary/blob/develop/aviary/metrics/fuel_efficiency_metric.py # noqa: E501
+    """
+
+    assert len(args) == 1 and isinstance(args[0], str), "Expected 1 string argument"
+    callsign = types.Callsign(args[0])
+
+    aircraft_controls: ProxyAircraftControls = kwargs["aircraft_controls"]
+
+    current_props = aircraft_controls.properties(callsign)
+    assert isinstance(current_props, props.AircraftProperties)
+
+    return aviary_metrics.fuel_efficiency_metric(
+        current_props.altitude.meters,
+        current_props.requested_flight_level.meters,
+        current_props.initial_flight_level.meters
     )

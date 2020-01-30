@@ -116,6 +116,7 @@ class AircraftProperties:
     requested_flight_level: types.Altitude
     route_name: str
     vertical_speed: types.VerticalSpeed
+    initial_flight_level: types.Altitude
 
     def __post_init__(self):
         assert self.aircraft_type, "Aircraft type must be defined"
@@ -138,4 +139,5 @@ class AircraftProperties:
             requested_flight_level=types.Altitude(data["requestedFlightLevel"]),
             route_name=None,
             vertical_speed=None,
+            initial_flight_level=types.Altitude(data["currentFlightLevel"]),
         )
