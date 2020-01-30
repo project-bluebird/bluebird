@@ -53,9 +53,8 @@ class Metric(Resource):
                 f"metric named '{metric_name}'"
             )
         except Exception as exc:  # Catch all other cases
-            msg = exc.args[0].split("\n")[0]
             return responses.bad_request_resp(
-                f"Metric function returned an error: {msg}\n{traceback.format_exc()}"
+                f"Metric function returned an error: {exc}\n{traceback.format_exc()}"
             )
 
         return responses.ok_resp({metric_name: result})
