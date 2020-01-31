@@ -104,5 +104,5 @@ def fuel_efficiency_metric(*args, **kwargs):
     return aviary_metrics.fuel_efficiency_metric(
         current_props.altitude.meters,
         current_props.requested_flight_level.meters,
-        current_props.initial_flight_level.meters
+        current_props.initial_flight_level.meters,
     )
