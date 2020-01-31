@@ -19,10 +19,11 @@ _TEST_PROPS = props.AircraftProperties(
     cleared_flight_level=types.Altitude("FL234"),
     ground_speed=types.GroundSpeed(160),
     heading=types.Heading(128),
+    initial_flight_level=types.Altitude("FL185"),
     position=types.LatLon(23, 45),
     requested_flight_level=types.Altitude("FL250"),
-    vertical_speed=types.VerticalSpeed(120),
     route_name=None,
+    vertical_speed=types.VerticalSpeed(120),
 )
 
 

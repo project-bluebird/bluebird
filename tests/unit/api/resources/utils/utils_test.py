@@ -106,16 +106,17 @@ def test_convert_aircraft_props():
     """Tests for convert_aircraft_props"""
 
     ac_props = props.AircraftProperties(
-        "A380",
-        types.Altitude(18_500),
-        types.Callsign("TEST"),
-        types.Altitude("FL225"),
-        types.GroundSpeed(23),
-        types.Heading(47),
-        types.LatLon(43.8, 123.4),
-        types.Altitude(25_000),
-        types.VerticalSpeed(32),
-        None,
+        aircraft_type="A380",
+        altitude=types.Altitude(18_500),
+        callsign=types.Callsign("TEST"),
+        cleared_flight_level=types.Altitude("FL225"),
+        ground_speed=types.GroundSpeed(23),
+        heading=types.Heading(47),
+        initial_flight_level=types.Altitude(18_500),
+        position=types.LatLon(43.8, 123.4),
+        requested_flight_level=types.Altitude(25_000),
+        route_name=None,
+        vertical_speed=types.VerticalSpeed(32),
     )
 
     converted = utils.convert_aircraft_props(ac_props)
