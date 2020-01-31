@@ -64,14 +64,15 @@ def sector_exit_metric(*args, **kwargs):
     current_props = aircraft_controls.properties(callsign)
     assert isinstance(current_props, props.AircraftProperties)
 
-    try:
-        prev_props = aircraft_controls.prev_ac_props()[callsign]
-    except:
-        # NOTE (RJ 2020-01-30):
-        # aircraft_controls.prev_ac_props() is empty before STEP is called for the first time
-        # aviary_metrics.sector_exit_metric() returns None if aircraft is still in the sector
+    all_prev_props = aircraft_controls.prev_ac_props()
+    prev_props = all_prev_props.get(callsign, None)
+    if not all_prev_props or not prev_props:
+        # NOTE (RJ 2020-01-30) aircraft_controls.prev_ac_props() is empty before STEP is
+        # called for the first time. aviary_metrics.sector_exit_metric() returns None if
+        # aircraft is still in the sector
+        # NOTE (rkm 2020-01-30) This also covers the case where a new aircraft has been
+        # created on this step - i.e. no previous data
         return None
-    assert isinstance(prev_props, props.AircraftProperties)
 
     return aviary_metrics.sector_exit_metric(
         current_props.position.lon_degrees,
