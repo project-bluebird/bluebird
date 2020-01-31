@@ -4,8 +4,10 @@ Contains the AbstractSimulatorControls implementation for MachColl
 import json
 import logging
 import tempfile
-import traceback
+from datetime import datetime
+from datetime import timedelta
 from typing import Optional
+from typing import Tuple
 from typing import Union
 
 from nats.mc_client.mc_client_metrics import MCClientMetrics
@@ -26,33 +28,6 @@ def _raise_for_no_data(data):
 class MachCollSimulatorControls(AbstractSimulatorControls):
     """AbstractSimulatorControls implementation for MachColl"""
 
-    @property
-    def properties(self) -> Union[props.SimProperties, str]:
-        responses = []
-        for req in [
-            self._mc_client().get_state,
-            self._mc_client().get_speed,
-            self._mc_client().get_step,
-            self._mc_client().get_time,
-        ]:
-            responses.append(req())
-            if not responses[-1]:
-                return f"Could not get property from sim ({req.__name__})"
-
-        try:
-            responses[0] = self._parse_sim_state(responses[0])
-        except ValueError:
-            return traceback.format_exc()
-
-        # Different type returned on failure, have to handle separately
-        responses.append(self._mc_client().get_scenario_filename())
-        if not isinstance(responses[-1], str):
-            return f"Could not get the current scenario name: {responses[-1]}"
-
-        if len(responses) != len(props.SimProperties.__annotations__):
-            return "Expected the number of arguments to match"
-        return props.SimProperties(*responses)  # Splat!
-
     def __init__(
         self,
         sim_client,
@@ -63,6 +38,33 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self._aircraft_controls = aircraft_controls
         self._mc_metrics_provider = mc_metrics_provider
         self._logger = logging.getLogger(__name__)
+
+    @property
+    def properties(self) -> Union[props.SimProperties, str]:
+
+        sim_state = self._get_sim_state()
+        if not isinstance(sim_state, props.SimState):
+            return sim_state
+
+        sim_speed = self._mc_client().get_speed()
+        if not isinstance(sim_speed, (float, int)):
+            return sim_speed
+
+        times = self._get_sim_times()
+        if not isinstance(times, tuple):
+            return times
+        scenario_time, utc_datetime = times
+
+        return props.SimProperties(
+            dt=0,  # TODO(rkm 2020-01-31) Currently unknown
+            scenario_name=None,
+            scenario_time=scenario_time,
+            sector_name=None,
+            seed=None,
+            speed=sim_speed,
+            state=sim_state,
+            utc_datetime=utc_datetime,
+        )
 
     def load_sector(self, sector: props.Sector) -> Optional[str]:
         assert sector.element
@@ -87,7 +89,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     # response)
     def start(self) -> Optional[str]:
         # NOTE: If agent mode, no need to explicitly start since we can step from init
-        state = self._get_state()
+        state = self._get_sim_state()
         if isinstance(state, str):
             return state
         if state == props.SimState.RUN:
@@ -97,7 +99,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def reset(self) -> Optional[str]:
-        state = self._get_state()
+        state = self._get_sim_state()
         if isinstance(state, str):
             return state
         if state == props.SimState.INIT:
@@ -107,7 +109,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def pause(self) -> Optional[str]:
-        state = self._get_state()
+        state = self._get_sim_state()
         if isinstance(state, str):
             return state
         if state in [
@@ -121,7 +123,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def resume(self) -> Optional[str]:
-        state = self._get_state()
+        state = self._get_sim_state()
         if isinstance(state, str):
             return state
         if state == props.SimState.RUN:
@@ -133,7 +135,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def stop(self) -> Optional[str]:
-        state = self._get_state()
+        state = self._get_sim_state()
         if isinstance(state, str):
             return state
         if state == props.SimState.END:
@@ -168,27 +170,31 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
 
-    def _get_state(self) -> Union[props.SimState, str]:
-        state = self._mc_client().get_state()
-        if not state:
-            return f"Could not get the sim state"
-        try:
-            return self._parse_sim_state(state)
-        except ValueError as exc:
-            return f"Error getting sim state: {exc}"
-
-    @staticmethod
-    def _parse_sim_state(val: str) -> props.SimState:
+    def _get_sim_state(self) -> Union[props.SimState, str]:
         # TODO There is also a possible "stepping" mode (?)
-        if val.upper() == "INIT":
+        resp = self._mc_client().get_state()
+        if not resp:
+            return "Could not get state - no response received"
+        if resp.upper() == "INIT":
             return props.SimState.INIT
-        if val.upper() == "RUNNING":
+        if resp.upper() == "RUNNING":
             return props.SimState.RUN
-        if val.upper() == "STOPPED":
+        if resp.upper() == "STOPPED":
             return props.SimState.END
-        if val.upper() == "PAUSED":
+        if resp.upper() == "PAUSED":
             return props.SimState.HOLD
-        raise ValueError(f'Unknown state: "{val}"')
+        return f"Could not parse a valid sim state value from {resp}"
+
+    def _get_sim_times(self) -> Union[Tuple[Union[float, int], datetime], str]:
+        resp = self._mc_client().get_time()
+        if not isinstance(resp, (float, int)):
+            return resp
+        utc_datetime = (
+            datetime.combine(datetime.today(), datetime.min.time())
+            + timedelta(seconds=resp)
+        ).strftime("%Y-%m-%d %H:%M:%S")
+        scenario_time = resp - 46_800  # 13 hours in seconds
+        return (scenario_time, utc_datetime)
 
     @staticmethod
     def _is_success(data) -> bool:
