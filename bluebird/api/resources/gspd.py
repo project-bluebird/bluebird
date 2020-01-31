@@ -34,6 +34,6 @@ class Gspd(Resource):
         if resp:
             return resp
 
-        err = utils.sim_proxy().aircraft.set_ground_speed(callsign, req_args["spd"])
+        err = utils.sim_proxy().aircraft.set_ground_speed(callsign, req_args["gspd"])
 
         return checked_resp(err)

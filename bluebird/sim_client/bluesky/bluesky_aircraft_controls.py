@@ -47,7 +47,9 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
     ) -> Optional[str]:
 
-        vspd = kwargs.get("vspd", "")
+        vspd = kwargs.get("vspd")
+        if kwargs.get("vspd") is None:
+            vspd = ""
         cmd_str = f"ALT {callsign} {flight_level} {vspd}".strip()
         # TODO This can also return list (multiple errors?)
         return self._tmp_stack_cmd_handle_list(cmd_str)
@@ -133,6 +135,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
                     vertical_speed=types.VerticalSpeed(
                         int(data["vs"][i] * 60 / METERS_PER_FOOT)
                     ),
+                    initial_flight_level=None,
                 )
             return ac_props
         except Exception:
@@ -143,7 +146,7 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
     ) -> Optional[str]:
         # TODO(rkm 2020-01-30) This was a temporary hack to try and determine in what
         # cases the call to send_stack_cmd would return a list. This needs investigated
-        resp = self._client.send_stack_cmd(cmd_str, resp_expected)
+        resp = self._bluesky_client.send_stack_cmd(cmd_str, resp_expected)
         if isinstance(resp, list):
             raise ValueError("Got a list response")
         return resp

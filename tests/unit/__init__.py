@@ -1,6 +1,10 @@
 """
 BlueBird unit test package
 """
+from bluebird.settings import Settings
+
+
+Settings.DATA_DIR.mkdir(exist_ok=True)
 
 TEST_ACIDS = ["TST1001", "TST1002"]
 

@@ -15,10 +15,11 @@ def test_aircraft_properties_from_data():
         cleared_flight_level=aircraft_data["clearedFlightLevel"],
         ground_speed=None,
         heading=None,
+        initial_flight_level=aircraft_data["currentFlightLevel"],
         position=LatLon(
             aircraft_data["startPosition"][0], aircraft_data["startPosition"][1]
         ),
         requested_flight_level=aircraft_data["requestedFlightLevel"],
-        vertical_speed=None,
         route_name=None,
+        vertical_speed=None,
     )
