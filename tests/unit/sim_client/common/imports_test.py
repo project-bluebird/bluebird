@@ -14,15 +14,15 @@ def sim_client_module_import(sim_name: str):
     importlib.import_module(f"bluebird.sim_client.{sim_name.lower()}.sim_client")
 
 
-def sim_client_instantiation(sim_name: str):
+def sim_client_instantiation(sim_name: str, *args, extra_methods=set()):
     """Tests that the SimClient can be instantiated"""
     module = importlib.import_module(
         f"bluebird.sim_client.{sim_name.lower()}.sim_client"
     )
     sim_client_class = getattr(module, "SimClient")
-    sim_client_class()
+    sim_client_class(*args)
 
     # Test ABC exactly implemented
-    assert AbstractSimClient.__abstractmethods__ == {
+    assert extra_methods.union(AbstractSimClient.__abstractmethods__) == {
         x for x in dir(sim_client_class) if not x.startswith("_")
     }

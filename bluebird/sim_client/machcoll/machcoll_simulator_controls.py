@@ -149,7 +149,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         # self._mc_client().queue_metrics_query("metrics.score")
         resp = self._mc_client().set_increment()
         _raise_for_no_data(resp)
-        self._aircraft_controls.clear_cache()
+        self._aircraft_controls.clear_cache()  # TODO
         # TODO(RKM 2019-11-26) Update metrics
         # self._mc_metrics_provider.update(...)
         return None if self._is_success(resp) else str(resp)

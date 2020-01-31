@@ -177,7 +177,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         """
         try:
             if not self.sector:
-                self._logger.warning("No sector to store")
+                self._logger.warning("No sector to store on exit")
                 return
             last_sector_file = Settings.DATA_DIR / "sectors" / ".last_sector"
             self._assert_parent_dir_exists(last_sector_file)

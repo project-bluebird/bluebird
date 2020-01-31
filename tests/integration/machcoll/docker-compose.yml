@@ -28,6 +28,8 @@ services:
       - PYTHONUNBUFFERED=1
       - MC_SCENARIO_FILENAME
       - MC_AIRSPACE_FILENAME
+  # NOTE(rkm 2020-01-31) For debugging, you can uncomment this section and use this as a
+  # standard docker-compose file
   bluebird:
     container_name: bluebird_integration
     build:

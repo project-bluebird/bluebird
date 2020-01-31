@@ -16,4 +16,6 @@ mc_aircraft_controls = pytest.importorskip(
 
 def test_sim_client_instantiation():
     """Tests that the SimClient can be instantiated"""
-    sim_client_instantiation(_MODULE_NAME)
+    sim_client_instantiation(
+        _MODULE_NAME, {"MachColl": None}, extra_methods={"mc_client"}
+    )

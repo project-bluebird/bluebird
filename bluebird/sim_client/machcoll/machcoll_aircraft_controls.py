@@ -106,9 +106,6 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
         raise NotImplementedError
 
-    def clear_cache(self):
-        self._ac_data = {}
-
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
 

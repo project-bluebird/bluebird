@@ -1,7 +1,6 @@
 """
 Tests for MachCollSimulatorControls
 """
-import mock
 import pytest
 
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
@@ -15,7 +14,7 @@ def test_abstract_class_implemented():
     """Tests that MachCollAircraftControls implements the abstract base class"""
 
     # Test basic instantiation
-    mc_simulator_controls.MachCollSimulatorControls(mock.Mock())
+    mc_simulator_controls.MachCollSimulatorControls(None, None, None)
 
     # Test ABC exactly implemented
     assert AbstractSimulatorControls.__abstractmethods__ == {
