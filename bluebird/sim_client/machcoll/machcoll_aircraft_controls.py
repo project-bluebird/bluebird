@@ -8,6 +8,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from nats.mc_client.mc_client import MCClient
 from nats.mc_client.mc_client_metrics import MCClientMetrics
 
 import bluebird.utils.properties as props
@@ -26,16 +27,27 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def all_properties(
         self,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
-        _, data = self._mc_client().get_active_flight_states_and_time()
-        self._raise_for_no_data(data)
+        # NOTE (rkm 2020-02-02) Would like to use get_active_flight_states_and_time
+        # here, but this returns data keyed by the internal identifiers
         callsigns = self._mc_client().get_active_callsigns()
+        # NOTE (rkm 2020-02-02) None response form get_active_callsigns may hide
+        # connection loss
         if callsigns is None:
-            return {}
+            callsigns = []
         all_props = {}
         for callsign_str in callsigns:
-            flight_props = self._mc_client().get_active_flight_by_callsign(callsign_str)
+            flight_props = self._mc_client().get_active_flight_by_callsign(
+                callsign_str,
+                [
+                    MCClient.FlightPropertiesFilterOption.POS,
+                    MCClient.FlightPropertiesFilterOption.FLIGHT_DATA,
+                ],
+            )
             self._raise_for_no_data(flight_props)
-            all_props[props.callsign] = self._parse_aircraft_properties(flight_props)
+            ac_props = self._parse_aircraft_properties(flight_props)
+            if not isinstance(ac_props, props.AircraftProperties):
+                return ac_props
+            all_props[ac_props.callsign] = ac_props
         return all_props
 
     @property
@@ -108,22 +120,17 @@ class MachCollAircraftControls(AbstractAircraftControls):
         ac_props: dict,
     ) -> Union[props.AircraftProperties, str]:
         try:
-            alt = types.Altitude("FL" + str(ac_props["pos"]["afl"]))
-            # TODO Check this is appropriate
-            rfl_val = ac_props["flight-plan"]["rfl"]
-            rfl = types.Altitude("FL" + str(rfl_val)) if rfl_val else alt
             # TODO Not currently available: gs, hdg, pos, vs
             return props.AircraftProperties(
                 aircraft_type=ac_props["flight-data"]["type"],
-                altitude=alt,
+                altitude=types.Altitude(f'FL{ac_props["pos"]["afl"]}'),
                 callsign=types.Callsign(ac_props["flight-data"]["callsign"]),
-                cleared_flight_level=types.Altitude(
-                    "FL" + str(ac_props["instruction"]["cfl"])
-                ),
+                cleared_flight_level=None,
                 ground_speed=types.GroundSpeed(ac_props["pos"]["speed"]),
                 heading=types.Heading(0),
+                initial_flight_level=None,
                 position=types.LatLon(ac_props["pos"]["lat"], ac_props["pos"]["long"]),
-                requested_flight_level=rfl,
+                requested_flight_level=None,
                 route_name=None,
                 vertical_speed=types.VerticalSpeed(0),
             )

@@ -129,13 +129,13 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
                     cleared_flight_level=None,
                     ground_speed=types.GroundSpeed(int(data["gs"][i])),
                     heading=types.Heading(int(data["trk"][i])),
+                    initial_flight_level=None,
                     position=types.LatLon(data["lat"][i], data["lon"][i]),
                     requested_flight_level=None,
                     route_name=None,
                     vertical_speed=types.VerticalSpeed(
                         int(data["vs"][i] * 60 / METERS_PER_FOOT)
                     ),
-                    initial_flight_level=None,
                 )
             return ac_props
         except Exception:
