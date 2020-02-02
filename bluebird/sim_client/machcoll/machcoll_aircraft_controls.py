@@ -15,46 +15,38 @@ import bluebird.utils.types as types
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 
 
-def _raise_for_no_data(data):
-    assert data, "No data received from the simulator"
-
-
 class MachCollAircraftControls(AbstractAircraftControls):
-    """
-    AbstractAircraftControls implementation for MachColl
-    """
+    """AbstractAircraftControls implementation for MachColl"""
 
-    # @property
-    # def stream_data(self) -> Optional[List[bb_props.AircraftProperties]]:
-    #     raise NotImplementedError
+    def __init__(self, sim_client):
+        self._sim_client = sim_client
+        self._logger = logging.getLogger(__name__)
 
     @property
     def all_properties(
         self,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
-        if not self._ac_data:
-            simt, data = self._mc_client().get_active_flight_states_and_time()
-            if not data:
-                return "No data received from MachColl"
-
-        resp = self._mc_client().get_active_callsigns()
-        _raise_for_no_data(resp)
+        _, data = self._mc_client().get_active_flight_states_and_time()
+        self._raise_for_no_data(data)
+        callsigns = self._mc_client().get_active_callsigns()
+        if callsigns is None:
+            return {}
         all_props = {}
-        for callsign_str in resp:
-            callsign = types.Callsign(callsign_str)
-            props = self.properties(callsign)
-            all_props[callsign] = props
+        for callsign_str in callsigns:
+            flight_props = self._mc_client().get_active_flight_by_callsign(callsign_str)
+            self._raise_for_no_data(flight_props)
+            all_props[props.callsign] = self._parse_aircraft_properties(flight_props)
         return all_props
 
     @property
     def callsigns(self) -> Union[List[types.Callsign], str]:
-        all_props = self.all_properties
-        return all_props if isinstance(all_props, str) else all_props.keys()
-
-    def __init__(self, sim_client):
-        self._sim_client = sim_client
-        self._logger = logging.getLogger(__name__)
-        self._ac_data = {}
+        callsigns = self._mc_client().get_active_callsigns()
+        self._raise_for_no_data(callsigns)
+        if callsigns is None:
+            return []
+        if not isinstance(callsigns, list):
+            return callsigns
+        return [types.Callsign(x) for x in callsigns]
 
     def set_cleared_fl(
         self, callsign: types.Callsign, flight_level: types.Altitude, **kwargs
@@ -98,13 +90,15 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def properties(
         self, callsign: types.Callsign
     ) -> Optional[Union[props.AircraftProperties, str]]:
-        raise NotImplementedError
         resp = self._mc_client().get_active_flight_by_callsign(str(callsign))
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return self._parse_aircraft_properties(resp)
 
     def exists(self, callsign: types.Callsign) -> Union[bool, str]:
-        raise NotImplementedError
+        callsigns = self.callsigns
+        if not isinstance(callsigns, list):
+            return callsigns
+        return callsign in callsigns
 
     def _mc_client(self) -> MCClientMetrics:
         return self._sim_client.mc_client
@@ -135,3 +129,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
             )
         except Exception:
             return f"Error parsing AircraftProperties: {traceback.format_exc()}"
+
+    @staticmethod
+    def _raise_for_no_data(data) -> None:
+        assert data is not None, "No data received from the simulator"

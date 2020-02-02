@@ -21,10 +21,6 @@ from bluebird.sim_client.machcoll.machcoll_aircraft_controls import (
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 
 
-def _raise_for_no_data(data):
-    assert data, "No data received from the simulator"
-
-
 class MachCollSimulatorControls(AbstractSimulatorControls):
     """AbstractSimulatorControls implementation for MachColl"""
 
@@ -67,12 +63,26 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         )
 
     def load_sector(self, sector: props.Sector) -> Optional[str]:
-        assert sector.element
-        file_name = f"{sector.name}.geojon"
-        with tempfile.NamedTemporaryFile() as tf:
-            json.dump(sector.element.sector_geojson(), tf)
-            resp = self._mc_client().upload_airspace_file(tf, file_name)
-        return None if resp == file_name else f'Unsuccessful upload: "{resp}"'
+        sector_filename = f"{sector.name}.geojson"
+        sector_path = Settings.DATA_DIR / "sectors" / sector_filename
+        assert sector_path.exists(), "Expected this to have been created by sim proxy"
+        uploaded_filename = self._mc_client().upload_airspace_file(
+            sector_path, sector_filename
+        )
+        if (
+            isinstance(uploaded_filename, dict)
+            and uploaded_filename["code"]["Short Description"]
+            == "A file with the same name already exists"
+        ):
+            self._logger.warning("Sector file already existed, but not replaced")
+            uploaded_filename = sector_filename
+        elif not uploaded_filename.endswith(sector_filename):
+            return f'Unsuccessful upload: "{uploaded_filename}"'
+
+        # TODO(rkm 2020-02-02) Check error handling here
+        resp = self._mc_client().set_airspace_file(uploaded_filename)
+        self._raise_for_no_data(resp)
+        return resp
 
     def load_scenario(self, scenario: props.Scenario) -> Optional[str]:
         file_name = f"{scenario.name}.json"
@@ -95,7 +105,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if state == props.SimState.RUN:
             return
         resp = self._mc_client().sim_start()
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     def reset(self) -> Optional[str]:
@@ -105,7 +115,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if state == props.SimState.INIT:
             return
         resp = self._mc_client().sim_stop()
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     def pause(self) -> Optional[str]:
@@ -119,7 +129,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         ]:
             return None
         resp = self._mc_client().sim_pause()
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     def resume(self) -> Optional[str]:
@@ -131,7 +141,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if state == props.SimState.END:
             return "Can't resume sim from 'END' state"
         resp = self._mc_client().sim_resume()
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     def stop(self) -> Optional[str]:
@@ -141,15 +151,15 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         if state == props.SimState.END:
             return
         resp = self._mc_client().sim_stop()
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         return None if self._is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
         # TODO(RKM 2019-11-24) get the list of metrics to queue, and their args(?)
         # self._mc_client().queue_metrics_query("metrics.score")
         resp = self._mc_client().set_increment()
-        _raise_for_no_data(resp)
-        self._aircraft_controls.clear_cache()  # TODO
+        self._raise_for_no_data(resp)
+        # self._aircraft_controls.clear_cache() # TOD
         # TODO(RKM 2019-11-26) Update metrics
         # self._mc_metrics_provider.update(...)
         return None if self._is_success(resp) else str(resp)
@@ -160,7 +170,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             if Settings.SIM_MODE == props.SimMode.Agent
             else self._mc_client().set_speed(speed)
         )
-        _raise_for_no_data(resp)
+        self._raise_for_no_data(resp)
         self._logger.warning(f"Unhandled data: {resp}")
         return None if (resp == speed) else f"Unknown response: {resp}"
 
@@ -203,3 +213,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         except KeyError:
             pass
         return False
+
+    @staticmethod
+    def _raise_for_no_data(data) -> None:
+        assert data is not None, "No data received from the simulator"

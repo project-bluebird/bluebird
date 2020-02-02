@@ -93,8 +93,11 @@ class SimClient(AbstractSimClient):
 
     def shutdown(self, shutdown_sim: bool = False) -> bool:
 
-        if self._mc_client:
+        # TODO(rkm 2020-02-02) Investigate OSError here, related to:
+        # https://docs.python.org/3.7/reference/datamodel.html#object.__del__
+        if self.mc_client:
             self._mc_client.close_mq()
+            self._mc_bg_client.close_mq()
 
         # NOTE: Using the presence of _client_version to infer that we have a connection
         if not self._client_version:
