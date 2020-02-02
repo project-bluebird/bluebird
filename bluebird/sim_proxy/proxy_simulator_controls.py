@@ -37,17 +37,6 @@ SIM_LOG_RATE = 0.2
 class ProxySimulatorControls(AbstractSimulatorControls):
     """Proxy implementation of AbstractSimulatorControls"""
 
-    @property
-    def properties(self) -> Union[SimProperties, str]:
-        if not self._sim_props or not self._data_valid:
-            sim_props = copy.deepcopy(self._sim_controls.properties)
-            if not isinstance(sim_props, SimProperties):
-                return sim_props
-            self._update_sim_props(sim_props)
-            self._sim_props = sim_props
-            self._data_valid = True
-        return self._sim_props
-
     def __init__(
         self,
         sim_controls: AbstractSimulatorControls,
@@ -64,6 +53,17 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._scenario: Optional[Scenario] = None
         self._sim_props: Optional[SimProperties] = None
         self._data_valid: bool = False
+
+    @property
+    def properties(self) -> Union[SimProperties, str]:
+        if not self._sim_props or not self._data_valid:
+            sim_props = copy.deepcopy(self._sim_controls.properties)
+            if not isinstance(sim_props, SimProperties):
+                return sim_props
+            self._update_sim_props(sim_props)
+            self._sim_props = sim_props
+            self._data_valid = True
+        return self._sim_props
 
     def load_sector(self, sector: Sector) -> Optional[str]:
         """
@@ -82,6 +82,10 @@ class ProxySimulatorControls(AbstractSimulatorControls):
                 return f"Error loading sector from file: {sector_element}"
             sector.element = sector_element
             loaded_existing_sector = True
+
+        err = self.reset()
+        if err:
+            return err
 
         err = self._sim_controls.load_sector(sector)
         if err:
@@ -116,6 +120,10 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         err = self._validate_scenario_against_sector(
             self.sector.element, scenario.content
         )
+        if err:
+            return err
+
+        err = self.reset()
         if err:
             return err
 
@@ -160,6 +168,8 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     @timeit("ProxySimulatorControls")
     def step(self) -> Optional[str]:
+        if not self._scenario:
+            return "No scenario set"
         self._proxy_aircraft_controls.store_current_props()
         return self._invalidating_response(self._sim_controls.step())
 
