@@ -71,22 +71,22 @@ class MachCollAircraftControls(AbstractAircraftControls):
     def set_heading(
         self, callsign: types.Callsign, heading: types.Heading
     ) -> Optional[str]:
-        raise NotImplementedError
+        return self._not_implemented_response("set_heading")
 
     def set_ground_speed(
         self, callsign: types.Callsign, ground_speed: types.GroundSpeed
     ):
-        raise NotImplementedError
+        return self._not_implemented_response("set_ground_speed")
 
     def set_vertical_speed(
         self, callsign: types.Callsign, vertical_speed: types.VerticalSpeed
     ):
-        raise NotImplementedError
+        return self._not_implemented_response("set_vertical_speed")
 
     def direct_to_waypoint(
         self, callsign: types.Callsign, waypoint: str
     ) -> Optional[str]:
-        raise NotImplementedError
+        return self._not_implemented_response("direct_to_waypoint")
 
     def create(
         self,
@@ -97,7 +97,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
         altitude: types.Altitude,
         gspd: types.GroundSpeed,
     ) -> Optional[str]:
-        raise NotImplementedError
+        return self._not_implemented_response("create")
 
     def properties(
         self, callsign: types.Callsign
@@ -140,3 +140,7 @@ class MachCollAircraftControls(AbstractAircraftControls):
     @staticmethod
     def _raise_for_no_data(data) -> None:
         assert data is not None, "No data received from the simulator"
+
+    @staticmethod
+    def _not_implemented_response(method: str):
+        return f"Error: Method {method} not implemented for MachColl"
