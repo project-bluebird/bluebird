@@ -14,4 +14,5 @@ msgpack
 zmq
 
 # TODO: Eventually this should be download from PyPi
-git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
+# git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
+git+https://github.com/alan-turing-institute/aviary.git@feature/add_FIR#egg=aviary
