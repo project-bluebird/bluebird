@@ -12,7 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ARG NATS_PYPI_INDEX
 RUN if [ ! -z $NATS_PYPI_INDEX ]; then \
+        echo Building with support for MachColl ;\
         pip install -i $NATS_PYPI_INDEX --no-cache-dir -r requirements-nats.txt; \
+    else \
+        echo Not building with support for MachColl ;\
     fi
 
 COPY ./bluesky/bluesky ./bluesky/bluesky
