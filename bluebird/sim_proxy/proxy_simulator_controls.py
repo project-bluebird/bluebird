@@ -220,7 +220,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
             return
         self._logger.info(
             f"UTC={props.utc_datetime}, "
-            f"scenario_time={int(props.scenario_time):4}, "
+            f"scenario_time={int(props.scenario_time):4}s, "
             f"speed={props.speed:.2f}x, "
             f"state={props.state.name}"
         )

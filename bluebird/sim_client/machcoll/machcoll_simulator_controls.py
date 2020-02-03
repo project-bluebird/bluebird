@@ -1,9 +1,9 @@
 """
 Contains the AbstractSimulatorControls implementation for MachColl
 """
-import json
 import logging
-import tempfile
+import re
+import uuid
 from datetime import datetime
 from datetime import timedelta
 from typing import Optional
@@ -34,6 +34,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self._aircraft_controls = aircraft_controls
         self._mc_metrics_provider = mc_metrics_provider
         self._logger = logging.getLogger(__name__)
+        self._scenario_start_time = 0
 
     @property
     def properties(self) -> Union[props.SimProperties, str]:
@@ -43,6 +44,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             return sim_state
 
         sim_speed = self._mc_client().get_speed()
+        self._raise_for_no_data(sim_speed)
         if not isinstance(sim_speed, (float, int)):
             return sim_speed
 
@@ -63,37 +65,67 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         )
 
     def load_sector(self, sector: props.Sector) -> Optional[str]:
+        assert sector.element, "Expected sector element to be set"
         sector_filename = f"{sector.name}.geojson"
-        sector_path = Settings.DATA_DIR / "sectors" / sector_filename
-        assert sector_path.exists(), "Expected this to have been created by sim proxy"
-        uploaded_filename = self._mc_client().upload_airspace_file(
-            sector_path, sector_filename
-        )
-        if (
-            isinstance(uploaded_filename, dict)
-            and uploaded_filename["code"]["Short Description"]
-            == "A file with the same name already exists"
-        ):
-            self._logger.warning("Sector file already existed, but not replaced")
-            uploaded_filename = sector_filename
-        elif not uploaded_filename.endswith(sector_filename):
-            return f'Unsuccessful upload: "{uploaded_filename}"'
+        source_sector_path = Settings.DATA_DIR / "sectors" / sector_filename
+        assert source_sector_path.exists(), f"Expected that {source_sector_path} exists"
 
-        # TODO(rkm 2020-02-02) Check error handling here
-        resp = self._mc_client().set_airspace_file(uploaded_filename)
-        self._raise_for_no_data(resp)
-        return resp
+        # TODO(rkm 2020-02-02) Temp. Currently can't replace existing files
+        uuid_str = str(uuid.uuid1())[:4]
+        sector_filename = f"{sector.name}-{uuid_str}.geojson"
+
+        # First upload the sector
+        uploaded_filename = self._mc_client().upload_airspace_file(
+            source_sector_path, sector_filename
+        )
+        self._logger.debug(
+            f"{uploaded_filename} <- upload_airspace_file("
+            f"{source_sector_path}, {sector_filename})"
+        )
+        self._raise_for_no_data(uploaded_filename)
+        if not isinstance(uploaded_filename, str):
+            return str(uploaded_filename)
+
+        # Now load it by name
+        loaded_sector = self._mc_client().set_airspace_file(uploaded_filename)
+        self._logger.debug(f"{loaded_sector} <- set_airspace_file({uploaded_filename})")
+        self._raise_for_no_data(loaded_sector)
+        return (
+            None
+            if isinstance(loaded_sector, str)
+            else f"Unsuccessful call to set_airspace_file: {loaded_sector}"
+        )
 
     def load_scenario(self, scenario: props.Scenario) -> Optional[str]:
-        file_name = f"{scenario.name}.json"
-        if scenario.content:
-            with tempfile.NamedTemporaryFile() as tf:
-                json.dump(scenario.content, tf)
-                resp = self._mc_client().upload_scenario_file(tf, file_name)
-            if not resp == file_name:
-                return f'Unsuccessful upload: "{resp}"'
-        resp = self._mc_client().set_scenario_filename(file_name)
-        return None if resp == file_name else f'Unsuccessful request: "{resp}"'
+        assert scenario.content, "Expected scenario content to be populated"
+        scenario_filename = f"{scenario.name}.json"
+        source_scenario_path = Settings.DATA_DIR / "scenarios" / scenario_filename
+        assert (
+            source_scenario_path.exists()
+        ), f"Expected that {source_scenario_path} exists"
+
+        # TODO(rkm 2020-02-02) Temp. Currently can't replace existing files
+        uuid_str = str(uuid.uuid1())[:4]
+        scenario_filename = f"{scenario.name}-{uuid_str}.json"
+
+        # First upload the scenario
+        uploaded_filename = self._mc_client().upload_scenario_file(
+            source_scenario_path, scenario_filename
+        )
+        self._logger.debug(
+            f"{uploaded_filename} <- upload_scenario_file("
+            f"{source_scenario_path}, {scenario_filename})"
+        )
+        if not isinstance(uploaded_filename, str):
+            return str(uploaded_filename)
+
+        # Now load it by name
+        loaded_scenario = self._mc_client().set_scenario_filename(uploaded_filename)
+        self._raise_for_no_data(loaded_scenario)
+        if not isinstance(loaded_scenario, str):
+            return f'Unsuccessful call to set_scenario_filename: "{loaded_scenario}"'
+        self._scenario_start_time = self._parse_start_time(scenario.content)
+        return None
 
     # TODO Assert state is as expected after all of these methods (should be in the
     # response)
@@ -203,7 +235,7 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
             datetime.combine(datetime.today(), datetime.min.time())
             + timedelta(seconds=resp)
         ).strftime("%Y-%m-%d %H:%M:%S")
-        scenario_time = resp - 46_800  # 13 hours in seconds
+        scenario_time = resp - self._scenario_start_time
         return (scenario_time, utc_datetime)
 
     @staticmethod
@@ -217,3 +249,12 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
     @staticmethod
     def _raise_for_no_data(data) -> None:
         assert data is not None, "No data received from the simulator"
+
+    def _parse_start_time(self, data) -> int:
+        start_time = data.get("startTime", None)
+        if start_time is None:
+            self._logger.warning("Start time not found in data")
+            return 0
+        # NOTE(rkm 2020-02-02) Assuming a simple "HH:MM:SS" format
+        assert re.match(r"\d{2}:\d{2}:\d{2}", start_time)
+        return sum(x * int(t) for x, t in zip([3600, 60, 1], start_time.split(":")))
