@@ -87,12 +87,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
 
+        if not loaded_existing_sector:
+            self._save_sector_to_file(sector)
+
         err = self._sim_controls.load_sector(sector)
         if err:
             return err
-
-        if not loaded_existing_sector:
-            self._save_sector_to_file(sector)
 
         self._invalidate_data()
         self.sector = sector
@@ -127,12 +127,12 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
 
+        if not loaded_existing_scenario:
+            self._save_scenario_to_file(scenario)
+
         err = self._sim_controls.load_scenario(scenario)
         if err:
             return err
-
-        if not loaded_existing_scenario:
-            self._save_scenario_to_file(scenario)
 
         self._proxy_aircraft_controls.set_initial_properties(
             self.sector.element, scenario.content
