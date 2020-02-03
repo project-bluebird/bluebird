@@ -93,11 +93,18 @@ def test_load_sector(tmpdir):
 
     # First test uploading a new sector
 
+    # Test error handling from reset
+
+    mock_sim_controls.reset.return_value = "Sim error (reset)"
+    err = proxy_simulator_controls.load_sector(_TEST_SECTOR)
+    assert err == "Sim error (reset)"
+
     # Test error handling from load_sector
 
-    mock_sim_controls.load_sector.return_value = "Sim error"
+    mock_sim_controls.reset.return_value = None
+    mock_sim_controls.load_sector.return_value = "Sim error (load_sector)"
     err = proxy_simulator_controls.load_sector(_TEST_SECTOR)
-    assert err == "Sim error"
+    assert err == "Sim error (load_sector)"
 
     # Test valid response
 
@@ -137,12 +144,19 @@ def test_load_scenario(tmpdir):
 
     # First test uploading a new scenario
 
+    # Test error handling from reset
+
+    mock_sim_controls.reset.return_value = "Sim error (reset)"
+    err = proxy_simulator_controls.load_sector(_TEST_SECTOR)
+    assert err == "Sim error (reset)"
+
     # Test error handling from load_scenario
 
     proxy_simulator_controls.sector = _TEST_SECTOR
-    mock_sim_controls.load_scenario.return_value = "Sim error"
+    mock_sim_controls.reset.return_value = None
+    mock_sim_controls.load_scenario.return_value = "Sim error (load_scenario)"
     err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
-    assert err == "Sim error"
+    assert err == "Sim error (load_scenario)"
 
     # Test valid response
 
@@ -290,20 +304,26 @@ def test_stop():
 def test_step():
     """Tests that ProxySimulatorControls implements step"""
 
-    mock_sim_controls = mock.create_autospec(spec=AbstractSimulatorControls)
-    mock_aircraft_controls = mock.create_autospec(spec=ProxyAircraftControls)
+    mock_sim_controls = mock.Mock()
+    mock_aircraft_controls = mock.Mock()
     proxy_simulator_controls = ProxySimulatorControls(
         mock_sim_controls, mock_aircraft_controls
     )
 
+    # Test error message when no sector set
+
+    res = proxy_simulator_controls.step()
+    assert res == "No scenario set"
+
     # Test error handling from step
-    mock_sim_controls.step = mock.Mock(
-        sepc=AbstractSimulatorControls.step, return_value="Error"
-    )
+
+    proxy_simulator_controls._scenario = "test"
+    mock_sim_controls.step = mock.Mock(return_value="Error")
     res = proxy_simulator_controls.step()
     assert res == "Error"
 
     # Test valid response
+
     mock_sim_controls.properties = _TEST_SIM_PROPERTIES
     mock_sim_controls.step = mock.Mock(
         sepc=AbstractSimulatorControls.step, return_value=None
@@ -378,6 +398,7 @@ def test_store_data(tmpdir):
     # Set the scenario and sector
 
     proxy_simulator_controls.sector = _TEST_SECTOR
+    mock_sim_controls.reset.return_value = None
     mock_sim_controls.load_scenario.return_value = None
     err = proxy_simulator_controls.load_scenario(_TEST_SCENARIO)
     assert not err
