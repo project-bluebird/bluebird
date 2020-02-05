@@ -8,9 +8,7 @@ from semver import VersionInfo
 
 
 class AbstractMetricsProvider(ABC):
-    """
-    ABC for classes which provide metrics to BlueBird
-    """
+    """ABC for classes which provide metrics to BlueBird"""
 
     @abstractmethod
     def __call__(self, metric, *args, **kwargs):

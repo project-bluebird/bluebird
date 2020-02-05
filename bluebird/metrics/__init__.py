@@ -21,7 +21,7 @@ class MetricsProviders:
         self.providers = providers
 
     def get(self, name: str) -> AbstractMetricsProvider:
-        return next((x for x in self.providers if str(x) == name), None)
+        return next((x for x in self.providers if str(x).lower() == name.lower()), None)
 
     def __iter__(self):
         yield from self.providers

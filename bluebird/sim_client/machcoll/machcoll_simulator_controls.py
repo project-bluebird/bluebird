@@ -6,6 +6,7 @@ import re
 import uuid
 from datetime import datetime
 from datetime import timedelta
+from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -33,6 +34,8 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         self._sim_client = sim_client
         self._aircraft_controls = aircraft_controls
         self._mc_metrics_provider = mc_metrics_provider
+        assert str(self._mc_metrics_provider) == "MachColl"
+        self._registered_metrics: List[str] = list(self._mc_metrics_provider.metrics)
         self._logger = logging.getLogger(__name__)
         self._scenario_start_time = 0
 
@@ -187,13 +190,10 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
-        # TODO(RKM 2019-11-24) get the list of metrics to queue, and their args(?)
-        # self._mc_client().queue_metrics_query("metrics.score")
+        self._mc_client().queue_metrics_query(*self._registered_metrics)
         resp = self._mc_client().set_increment()
         self._raise_for_no_data(resp)
-        # self._aircraft_controls.clear_cache() # TOD
-        # TODO(RKM 2019-11-26) Update metrics
-        # self._mc_metrics_provider.update(...)
+        self._mc_metrics_provider.update(self._mc_client().get_metrics_result())
         return None if self._is_success(resp) else str(resp)
 
     def set_speed(self, speed: float) -> Optional[str]:
