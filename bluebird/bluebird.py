@@ -159,9 +159,9 @@ class BlueBird:
 
         err = self._check_timers()
         if err:
-            exc_type, exc_value, exc_traceback = err
+            _, exc_value, exc_traceback = err
             _proc_killer()
-            raise exc_type(exc_value).with_traceback(exc_traceback)
+            raise exc_value.with_traceback(exc_traceback)
 
     def _check_timers(self):
         """
