@@ -19,7 +19,8 @@ class Timer(Thread):
         :param kwargs: Keyword arguments to call the method with
         """
 
-        Thread.__init__(self)
+        self._name = f"{method.__module__}.{method.__name__}"
+        Thread.__init__(self, name=self._name)
         self._event = Event()
         self._cmd = lambda: method(*args, **kwargs)
 
@@ -27,17 +28,16 @@ class Timer(Thread):
         self._sleep_time = 1 / tickrate
 
         self.disabled = False
+        self.started = False
         self._exited = False
-        self._logger = logging.getLogger(
-            f"{__name__}[{method.__module__}.{method.__name__}]"
-        )
+        self._logger = logging.getLogger(f"{__name__}[{self._name}]")
         self.exc_info = None
 
     def run(self):
         """
         Start the timer
         """
-
+        self.started = True
         self._logger.debug("Thread starting")
         try:
             while not self._event.is_set():
@@ -59,11 +59,11 @@ class Timer(Thread):
 
     def stop(self):
         """Stop the timer and ensure the thread is joined"""
-
+        if not self.started:
+            return
         self._event.set()
-
         while not self._exited:
-            break
+            pass
 
     @staticmethod
     def _check_rate(rate):
