@@ -28,7 +28,7 @@ class Provider(AbstractMetricsProvider):
         if metric not in self.metrics:
             raise AttributeError(f"No metric named '{metric}'")
         res = self.metrics[metric]
-        return res if res else f"Metric '{metric}' has no result value"
+        return res if res else f"Metric '{metric}' has no value set"
 
     def __str__(self):
         return "MachColl"
