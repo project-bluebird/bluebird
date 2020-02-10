@@ -1,129 +1,123 @@
 {
-    "type": "FeatureCollection",
-    "features": [
-        {
-            "type": "Feature",
-            "geometry": {},
-            "properties": {
-                "name": "test_sector",
-                "type": "FIR",
-                "children": {
-                    "SECTOR": { "names": ["test_sector"] },
-                    "ROUTE": { "names": ["ASCENSION", "FALLEN"] },
-                    "FIX": {
-                        "names": ["SPIRT", "AIR", "WATER", "EARTH", "FIYRE"]
-                    }
-                }
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "test_sector",
-                "type": "SECTOR",
-                "shape": "I",
-                "origin": [-0.1275, 51.5],
-                "children": {
-                    "SECTOR_VOLUME": { "names": ["4878096944804515372"] },
-                    "ROUTE": { "names": ["ASCENSION", "FALLEN"] }
-                }
-            },
-            "geometry": {}
-        },
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-0.3895, 50.6673],
-                        [-0.3992, 52.3319],
-                        [0.1442, 52.3319],
-                        [0.1345, 50.6673],
-                        [-0.3895, 50.6673]
-                    ]
-                ]
-            },
-            "properties": {
-                "name": "4878096944804515372",
-                "type": "SECTOR_VOLUME",
-                "lower_limit": 50,
-                "upper_limit": 450,
-                "length_nm": 100,
-                "airway_width_nm": 20,
-                "offset_nm": 40,
-                "children": {}
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "ASCENSION",
-                "type": "ROUTE",
-                "children": {
-                    "FIX": {
-                        "names": ["FIYRE", "EARTH", "WATER", "AIR", "SPIRT"]
-                    }
-                }
-            },
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [-0.1275, 50.0017],
-                    [-0.1275, 50.6676],
-                    [-0.1275, 51.5],
-                    [-0.1275, 52.3322],
-                    [-0.1275, 52.9978]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "name": "FALLEN",
-                "type": "ROUTE",
-                "children": {
-                    "FIX": {
-                        "names": ["SPIRT", "AIR", "WATER", "EARTH", "FIYRE"]
-                    }
-                }
-            },
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [-0.1275, 52.9978],
-                    [-0.1275, 52.3322],
-                    [-0.1275, 51.5],
-                    [-0.1275, 50.6676],
-                    [-0.1275, 50.0017]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": { "name": "SPIRT", "type": "FIX" },
-            "geometry": { "type": "Point", "coordinates": [-0.1275, 52.9978] }
-        },
-        {
-            "type": "Feature",
-            "properties": { "name": "AIR", "type": "FIX" },
-            "geometry": { "type": "Point", "coordinates": [-0.1275, 52.3322] }
-        },
-        {
-            "type": "Feature",
-            "properties": { "name": "WATER", "type": "FIX" },
-            "geometry": { "type": "Point", "coordinates": [-0.1275, 51.5] }
-        },
-        {
-            "type": "Feature",
-            "properties": { "name": "EARTH", "type": "FIX" },
-            "geometry": { "type": "Point", "coordinates": [-0.1275, 50.6676] }
-        },
-        {
-            "type": "Feature",
-            "properties": { "name": "FIYRE", "type": "FIX" },
-            "geometry": { "type": "Point", "coordinates": [-0.1275, 50.0017] }
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {},
+      "properties": {
+        "name": "test_sector",
+        "type": "FIR",
+        "children": {
+          "SECTOR": { "names": ["test_sector"] },
+          "ROUTE": { "names": ["ASCENSION", "FALLEN"] },
+          "FIX": { "names": ["SPIRT", "AIR", "WATER", "EARTH", "FIYRE"] }
         }
-    ],
-    "_source": "https://github.com/alan-turing-institute/aviary/blob/1495f77cc6c182200dab8c3786641166ee91c599/aviary/test/conftest.py#L116"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "test_sector",
+        "type": "SECTOR",
+        "shape": "I",
+        "origin": [-0.1275, 51.5],
+        "children": {
+          "SECTOR_VOLUME": { "names": ["4878096944804515372"] },
+          "ROUTE": { "names": ["ASCENSION", "FALLEN"] }
+        }
+      },
+      "geometry": {}
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-0.3895, 50.6673],
+            [-0.3992, 52.3319],
+            [0.1442, 52.3319],
+            [0.1345, 50.6673],
+            [-0.3895, 50.6673]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "4878096944804515372",
+        "type": "SECTOR_VOLUME",
+        "lower_limit": 50,
+        "upper_limit": 450,
+        "length_nm": 100,
+        "airway_width_nm": 20,
+        "offset_nm": 40,
+        "children": {}
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ASCENSION",
+        "type": "ROUTE",
+        "children": {
+          "FIX": { "names": ["FIYRE", "EARTH", "WATER", "AIR", "SPIRT"] }
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.1275, 50.0017],
+          [-0.1275, 50.6676],
+          [-0.1275, 51.5],
+          [-0.1275, 52.3322],
+          [-0.1275, 52.9978]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "FALLEN",
+        "type": "ROUTE",
+        "children": {
+          "FIX": { "names": ["SPIRT", "AIR", "WATER", "EARTH", "FIYRE"] }
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-0.1275, 52.9978],
+          [-0.1275, 52.3322],
+          [-0.1275, 51.5],
+          [-0.1275, 50.6676],
+          [-0.1275, 50.0017]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "SPIRT", "type": "FIX" },
+      "geometry": { "type": "Point", "coordinates": [-0.1275, 52.9978] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "AIR", "type": "FIX" },
+      "geometry": { "type": "Point", "coordinates": [-0.1275, 52.3322] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "WATER", "type": "FIX" },
+      "geometry": { "type": "Point", "coordinates": [-0.1275, 51.5] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "EARTH", "type": "FIX" },
+      "geometry": { "type": "Point", "coordinates": [-0.1275, 50.6676] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "FIYRE", "type": "FIX" },
+      "geometry": { "type": "Point", "coordinates": [-0.1275, 50.0017] }
+    }
+  ],
+  "_source": "https://github.com/alan-turing-institute/aviary/blob/e74671a7e8f43adc98e5c493d9754948c8bbf7b7/aviary/test/conftest.py"
 }
