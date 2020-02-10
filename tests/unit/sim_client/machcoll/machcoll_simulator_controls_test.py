@@ -13,8 +13,16 @@ mc_simulator_controls = pytest.importorskip(
 def test_abstract_class_implemented():
     """Tests that MachCollAircraftControls implements the abstract base class"""
 
+    class FakeProvider:
+        def __str__(self):
+            return "MachColl"
+
+        @property
+        def metrics(self):
+            return []
+
     # Test basic instantiation
-    mc_simulator_controls.MachCollSimulatorControls(None, None, None)
+    mc_simulator_controls.MachCollSimulatorControls(None, None, FakeProvider())
 
     # Test ABC exactly implemented
     assert AbstractSimulatorControls.__abstractmethods__ == {
