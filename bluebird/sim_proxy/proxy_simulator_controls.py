@@ -214,6 +214,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
 
     def _log_sim_props(self):
         """Logs the current SimProperties to the console"""
+        return
         props = self.properties
         if isinstance(props, str):
             self._logger.error(f"Could not get sim properties: {props}")
