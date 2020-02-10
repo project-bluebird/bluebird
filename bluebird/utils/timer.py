@@ -19,7 +19,8 @@ class Timer(Thread):
         :param kwargs: Keyword arguments to call the method with
         """
 
-        Thread.__init__(self)
+        self._name = f"{method.__module__}.{method.__name__}"
+        Thread.__init__(self, name=self._name)
         self._event = Event()
         self._cmd = lambda: method(*args, **kwargs)
 
@@ -28,9 +29,7 @@ class Timer(Thread):
 
         self.disabled = False
         self._exited = False
-        self._logger = logging.getLogger(
-            f"{__name__}[{method.__module__}.{method.__name__}]"
-        )
+        self._logger = logging.getLogger(f"{__name__}[{self._name}]")
         self.exc_info = None
 
     def run(self):
