@@ -21,6 +21,7 @@ from bluebird.settings import Settings
 from bluebird.sim_client import setup_sim_client
 from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.utils.abstract_sim_client import AbstractSimClient
+from bluebird.utils.timer import Timer
 
 
 class BlueBird:
@@ -38,7 +39,7 @@ class BlueBird:
 
         self._cli_args = args
         self._min_sim_version: Optional[VersionInfo] = None
-        self._timers: List = []
+        self._timers: List[Timer] = []
 
         self.sim_proxy: Optional[SimProxy] = None
         self.sim_client: Optional[AbstractSimClient] = None

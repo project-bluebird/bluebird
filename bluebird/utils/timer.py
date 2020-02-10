@@ -60,9 +60,8 @@ class Timer(Thread):
         """Stop the timer and ensure the thread is joined"""
 
         self._event.set()
-
         while not self._exited:
-            break
+            pass
 
     @staticmethod
     def _check_rate(rate):
