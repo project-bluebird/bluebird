@@ -14,7 +14,6 @@ from typing import List
 from typing import Optional
 from typing import Union
 
-import geojson
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import Settings
@@ -258,8 +257,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if sector_file.exists():
             self._logger.warning("Overwriting existing file")
         self._assert_parent_dir_exists(sector_file)
-        with open(sector_file, "w+") as f:
-            geojson.dump(sector.element, f, indent=4)
+        sector.element.write_geojson(str(sector_file))
 
     @staticmethod
     def _scenario_filename(scenario_name: str) -> Path:
