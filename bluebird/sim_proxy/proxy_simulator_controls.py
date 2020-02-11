@@ -17,6 +17,7 @@ from typing import Union
 from aviary.sector.sector_element import SectorElement
 
 from bluebird.settings import Settings
+from bluebird.sim_proxy.episode_logger import EpisodeLogger
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.utils.abstract_simulator_controls import AbstractSimulatorControls
 from bluebird.utils.properties import Scenario
@@ -40,8 +41,10 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self,
         sim_controls: AbstractSimulatorControls,
         proxy_aircraft_controls: ProxyAircraftControls,
+        episode_logger: EpisodeLogger,
     ):
         self._logger = logging.getLogger(__name__)
+        self._episode_logger = episode_logger
         self._timer = Timer(self._log_sim_props, SIM_LOG_RATE)
         self._sim_controls = sim_controls
         self._proxy_aircraft_controls = proxy_aircraft_controls
@@ -122,7 +125,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         if err:
             return err
 
-        err = self.reset()
+        err = self.reset(start_new_log=True)
         if err:
             return err
 
@@ -138,6 +141,7 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         )
         self._invalidate_data()
         self._scenario = scenario
+        # self._episode_logger.restart_episode_log(sim_props)  # TODO
         return None
 
     def start_timers(self) -> List[Timer]:
@@ -145,14 +149,16 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         self._timer.start()
         return [self._timer]
 
+    # TODO(rkm 2020-02-10) Can probably remove all the start functions
     def start(self) -> Optional[str]:
         return self._invalidating_response(self._sim_controls.start())
 
     @timeit("ProxySimulatorControls")
-    def reset(self) -> Optional[str]:
+    def reset(self, start_new_log=False) -> Optional[str]:
         err = self._invalidating_response(self._sim_controls.reset(), clear=True)
         if err:
             return err
+        self._episode_logger.close_episode_log("reset was called")
         self._scenario = None
         return None
 
@@ -163,7 +169,11 @@ class ProxySimulatorControls(AbstractSimulatorControls):
         return self._invalidating_response(self._sim_controls.resume())
 
     def stop(self) -> Optional[str]:
-        return self._invalidating_response(self._sim_controls.stop())
+        err = self._invalidating_response(self._sim_controls.stop())
+        if err:
+            return err
+        self._episode_logger.close_episode_log("stop was called")
+        return None
 
     @timeit("ProxySimulatorControls")
     def step(self) -> Optional[str]:

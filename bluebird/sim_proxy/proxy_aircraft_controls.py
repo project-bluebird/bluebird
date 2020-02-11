@@ -13,6 +13,7 @@ from aviary.sector.route import Route
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.types as types
+from bluebird.sim_proxy.episode_logger import EpisodeLogger
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls
 from bluebird.utils.properties import AircraftProperties
 
@@ -20,6 +21,7 @@ from bluebird.utils.properties import AircraftProperties
 class ProxyAircraftControls(AbstractAircraftControls):
     """Proxy implementation of AbstractAircraftControls"""
 
+    # TODO Move below init
     @property
     def all_properties(self) -> Union[Dict[types.Callsign, AircraftProperties], str]:
         self._logger.debug("all_properties: Accessed")
@@ -50,8 +52,11 @@ class ProxyAircraftControls(AbstractAircraftControls):
                 return err
         return list(self._ac_props.keys())
 
-    def __init__(self, aircraft_controls: AbstractAircraftControls):
+    def __init__(
+        self, aircraft_controls: AbstractAircraftControls, episode_logger: EpisodeLogger
+    ):
         self._logger = logging.getLogger(__name__)
+        self._episode_logger = episode_logger
         self._aircraft_controls = aircraft_controls
 
         self._ac_props: Dict[types.Callsign, Optional[AircraftProperties]] = {}
@@ -66,6 +71,9 @@ class ProxyAircraftControls(AbstractAircraftControls):
         if err:
             return err
         self._ac_props[callsign].cleared_flight_level = flight_level
+        self._episode_logger.log_command(
+            f"set_cleared_fl {callsign} {flight_level} {kwargs}"
+        )
         return None
 
     def set_heading(
@@ -192,6 +200,7 @@ class ProxyAircraftControls(AbstractAircraftControls):
                 continue
             # Match the route name to the waypoints in the scenario data
             aircraft_route_waypoints = [x["fixName"] for x in aircraft["route"]]
+            # TODO(rkm 2020-02-10) Potential StopIteration exception here
             new_props[callsign].route_name = next(
                 x
                 for x in self._routes

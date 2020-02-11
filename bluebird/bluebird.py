@@ -1,12 +1,14 @@
 """
 Contains the BlueBird class
 """
-import logging
+import json
+import logging.config
 import os
 import signal
 import threading
 import time
 import traceback
+from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
@@ -18,10 +20,31 @@ from bluebird.api import FLASK_APP
 from bluebird.api.resources.utils.utils import FLASK_CONFIG_LABEL
 from bluebird.metrics import setup_metrics
 from bluebird.settings import Settings
+from bluebird.settings import time_for_logfile
 from bluebird.sim_client import setup_sim_client
 from bluebird.sim_proxy.sim_proxy import SimProxy
 from bluebird.utils.abstract_sim_client import AbstractSimClient
 from bluebird.utils.timer import Timer
+
+
+def _initialise_logging():
+
+    logs_root = Path(os.getenv("BB_LOGS_ROOT", "logs"))
+    if not logs_root.exists():
+        logs_root.mkdir()
+
+    Settings.INST_LOG_DIR = Path(
+        logs_root, f"{time_for_logfile()}_{Settings.INSTANCE_ID}"
+    )
+    Settings.INST_LOG_DIR.mkdir()
+
+    # Load & set the default logging config
+    with open("bluebird/logging_config.json") as f:
+        default_log_config = json.load(f)
+    default_log_config["handlers"]["debug-file"]["filename"] = (
+        Settings.INST_LOG_DIR / "debug.log"
+    )
+    logging.config.dictConfig(default_log_config)
 
 
 class BlueBird:
@@ -30,7 +53,7 @@ class BlueBird:
     exit_flag: bool = False
 
     def __init__(self, args: Dict[str, Any]):
-
+        _initialise_logging()
         self._logger = logging.getLogger(__name__)
         self._logger.info(
             f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
@@ -151,7 +174,7 @@ class BlueBird:
         flask_thread.start()
 
         try:
-            while flask_thread.isAlive() and not self._check_timers():
+            while flask_thread.is_alive() and not self._check_timers():
                 time.sleep(0.1)
         except KeyboardInterrupt:
             self._logger.info("Ctrl+C - exiting")

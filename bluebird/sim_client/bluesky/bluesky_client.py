@@ -34,8 +34,6 @@ from bluesky.network.client import Client  # noqa: E402
 from bluesky.network.npcodec import decode_ndarray  # noqa: E402
 
 
-CMD_LOG_PREFIX = "C"
-
 # The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
 ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO", b"ROUTEDATA"]
 
@@ -100,8 +98,6 @@ class BlueSkyClient(Client):
     def stop(self):
         """Stop polling for the stream data"""
         self.timer.stop()
-        # TODO(RKM 2019-11-21) Proxy layer should handle this
-        # bluebird.logging.close_episode_log("client was stopped")
 
     def stream(self, name, data, sender_id):
         """Method called to process data received on a stream"""

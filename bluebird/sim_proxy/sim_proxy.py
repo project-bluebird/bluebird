@@ -15,6 +15,7 @@ from semver import VersionInfo
 
 from bluebird.metrics import MetricsProviders
 from bluebird.metrics.abstract_metrics_provider import AbstractMetricsProvider
+from bluebird.sim_proxy.episode_logger import EpisodeLogger
 from bluebird.sim_proxy.proxy_aircraft_controls import ProxyAircraftControls
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls
 from bluebird.utils.abstract_sim_client import AbstractSimClient
@@ -27,6 +28,7 @@ class SimProxy(AbstractSimClient):
     any actions to be taken which are independent of the particular sim client
     """
 
+    # TODO Move all below init
     @property
     def aircraft(self) -> ProxyAircraftControls:
         return self._proxy_aircraft_controls
@@ -43,14 +45,18 @@ class SimProxy(AbstractSimClient):
         self, sim_client: AbstractSimClient, metrics_providers: MetricsProviders
     ):
         self._logger = logging.getLogger(__name__)
-
+        self.episode_logger = EpisodeLogger()
         # The actual sim_client
         self._sim_client: AbstractSimClient = sim_client
 
         # The proxy implementations
-        self._proxy_aircraft_controls = ProxyAircraftControls(self._sim_client.aircraft)
+        self._proxy_aircraft_controls = ProxyAircraftControls(
+            self._sim_client.aircraft, self.episode_logger
+        )
         self._proxy_simulator_controls = ProxySimulatorControls(
-            self._sim_client.simulation, self._proxy_aircraft_controls
+            self._sim_client.simulation,
+            self._proxy_aircraft_controls,
+            self.episode_logger,
         )
 
         self.metrics_providers = metrics_providers

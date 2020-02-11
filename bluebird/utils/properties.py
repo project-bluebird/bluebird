@@ -114,7 +114,7 @@ class AircraftProperties:
     heading: types.Heading
     position: types.LatLon
     requested_flight_level: types.Altitude
-    route_name: str
+    route_name: Optional[str]
     vertical_speed: types.VerticalSpeed
     initial_flight_level: types.Altitude
 
