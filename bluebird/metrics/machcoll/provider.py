@@ -55,7 +55,8 @@ class Provider(AbstractMetricsProvider):
         self._logger.debug(f"Loaded metrics: {', '.join(self.metrics.keys())}")
 
     def update(self, metric: str, result: Optional[Union[str, float]]):
-        if not isinstance(result, float):
+        if not isinstance(result, (float, int)):
             self._logger.error(f"Metric {metric} returned result {result}")
+            self.metrics[metric] = str(result)
             return
         self.metrics[metric] = result
