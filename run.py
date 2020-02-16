@@ -2,6 +2,7 @@
 Entry point for the BlueBird app
 """
 import argparse
+import os
 from typing import Any
 from typing import Dict
 
@@ -12,6 +13,7 @@ from bluebird.settings import Settings
 from bluebird.utils.properties import SimType
 
 _ARG_BOOL_ACTION = "store_true"
+_DEFAULT_MQ_URL = "amqp://guest:guest@localhost:5672/%2F"
 
 
 def _parse_args() -> Dict[str, Any]:
@@ -55,6 +57,8 @@ def _parse_args() -> Dict[str, Any]:
     #     Settings.SIM_MODE = args.sim_mode
 
     if args.sim_type:
+        if args.sim_type == SimType.MachColl and os.environ.get("MQ_URL", None) is None:
+            os.environ["MQ_URL"] = _DEFAULT_MQ_URL
         Settings.SIM_TYPE = args.sim_type
 
     return vars(args)
