@@ -4,6 +4,8 @@ MachColl metrics provider class
 import logging
 from pathlib import Path
 from typing import Dict
+from typing import Optional
+from typing import Union
 
 from semver import VersionInfo
 
@@ -52,6 +54,8 @@ class Provider(AbstractMetricsProvider):
             self.metrics[line.rstrip()] = None
         self._logger.debug(f"Loaded metrics: {', '.join(self.metrics.keys())}")
 
-    def update(self, metrics_result):
-        print(f"Result: {metrics_result}")
-        raise NotImplementedError("update")
+    def update(self, metric: str, result: Optional[Union[str, float]]):
+        if not isinstance(result, float):
+            self._logger.error(f"Metric {metric} returned result {result}")
+            return
+        self.metrics[metric] = result

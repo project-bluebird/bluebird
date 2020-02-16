@@ -190,10 +190,13 @@ class MachCollSimulatorControls(AbstractSimulatorControls):
         return None if self._is_success(resp) else str(resp)
 
     def step(self) -> Optional[str]:
-        self._mc_client().queue_metrics_query("metrics.score")
+        self._mc_client().queue_metrics_query(*self._registered_metrics)
         resp = self._mc_client().set_increment()
         self._raise_for_no_data(resp)
-        self._mc_metrics_provider.update(self._mc_client().get_metrics_result())
+        for metric in self._registered_metrics:
+            self._mc_metrics_provider.update(
+                metric, self._mc_client().get_metrics_result(metric)
+            )
         return None if self._is_success(resp) else str(resp)
 
     def set_speed(self, speed: float) -> Optional[str]:
