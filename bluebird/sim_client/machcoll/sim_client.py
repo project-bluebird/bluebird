@@ -56,11 +56,9 @@ class SimClient(AbstractSimClient):
 
     @property
     def mc_client(self):
-        client = (
+        return (
             self._mc_client if current_thread() == main_thread() else self._mc_bg_client
         )
-        self._logger.debug(f"Client is {client}")
-        return client
 
     def __init__(self, metrics_providers: MetricsProviders):
         self._mc_client = None
