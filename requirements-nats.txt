@@ -1,2 +1,2 @@
 
-nats.mc-client==2020.1.27b392
+nats.mc-client
