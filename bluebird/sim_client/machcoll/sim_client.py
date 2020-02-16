@@ -52,7 +52,7 @@ class SimClient(AbstractSimClient):
 
     @property
     def sim_version(self) -> VersionInfo:
-        return self._client_version
+        return self._server_version
 
     @property
     def mc_client(self):
@@ -63,7 +63,7 @@ class SimClient(AbstractSimClient):
     def __init__(self, metrics_providers: MetricsProviders):
         self._mc_client = None
         self._mc_bg_client = None
-        self._client_version: VersionInfo = None
+        self._server_version: VersionInfo = None
         self._logger = logging.getLogger(__name__)
         self._aircraft_controls = MachCollAircraftControls(self)
         self._mc_metrics_provider = metrics_providers.get("MachColl")
@@ -81,10 +81,10 @@ class SimClient(AbstractSimClient):
         if not self._mc_client.get_state():
             raise TimeoutError("Could not connect to the MachColl server")
 
-        version_dict = self._mc_client.compare_api_version()
-        self._client_version = VersionInfo.parse(version_dict["This client version"])
-        self._mc_metrics_provider.set_version(self._client_version)
-        self._logger.info(f"MCClientMetrics connected. Version: {self._client_version}")
+        server_version = self._mc_client.get_server_version()
+        self._server_version = VersionInfo.parse(server_version)
+        self._mc_metrics_provider.set_version(self._server_version)
+        self._logger.info(f"MCClientMetrics connected. Version: {self._server_version}")
 
     def start_timers(self) -> List[Timer]:
         # NOTE(RKM 2019-11-18) MCClientMetrics is passive for now - we don't have any
@@ -99,8 +99,8 @@ class SimClient(AbstractSimClient):
             self._mc_client.close_mq()
             self._mc_bg_client.close_mq()
 
-        # NOTE: Using the presence of _client_version to infer that we have a connection
-        if not self._client_version:
+        # NOTE: Using the presence of _server_version to infer that we have a connection
+        if not self._server_version:
             return True
 
         # TODO(RKM 2019-11-24) Re-enable this once the sandbox mode is fixed
