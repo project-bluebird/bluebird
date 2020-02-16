@@ -45,5 +45,6 @@ services:
       - 5001:5001
     environment:
       - PYTHONUNBUFFERED=1
+      - MQ_URL="amqp://guest:guest@localhost:5672/%2F"
     command: python ./run.py --sim-type=machcoll --sim-host=machcoll
     restart: unless-stopped
