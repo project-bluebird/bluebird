@@ -3,6 +3,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
 ![License](https://img.shields.io/github/license/alan-turing-institute/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 # BlueBird
 
