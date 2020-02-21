@@ -17,6 +17,7 @@ services:
       - 5322:5322
     environment:
       - PYTHONUNBUFFERED=1
+    restart: unless-stopped
   machcoll:
     container_name: machcoll_integration
     image: machcoll-img
