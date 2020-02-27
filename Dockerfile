@@ -21,6 +21,9 @@ RUN if [ ! -z $NATS_PYPI_INDEX ]; then \
 COPY ./bluesky/bluesky ./bluesky/bluesky
 COPY .env run.py VERSION ./
 COPY ./bluebird ./bluebird
+COPY wait-for-it.sh ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh
+
 RUN find . -type d -name '__pycache__' -prune -exec rm -r {} \;
 
 ENV FLASK_ENV=development
