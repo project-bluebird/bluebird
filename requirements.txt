@@ -7,6 +7,9 @@ python-dotenv == 0.10.*
 pyproj == 2.2.*
 jsonschema
 
+pika
+requests
+
 # Required by BlueSky. Versions unknown
 matplotlib
 numpy
