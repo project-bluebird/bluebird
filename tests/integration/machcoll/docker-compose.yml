@@ -10,7 +10,7 @@ services:
       - 15672:15672
   metrics:
     container_name: machcoll_metrics_integration
-    image: nats-metrics-img:master-9a39559
+    image: nats-metrics-img
     depends_on:
       - rabbitmq
     ports:
@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
   machcoll:
     container_name: machcoll_integration
-    image: machcoll-img:dev-1bea126
+    image: machcoll-img
     depends_on:
       - metrics
     ports:
