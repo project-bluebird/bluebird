@@ -46,6 +46,5 @@ services:
       - 5001:5001
     environment:
       - PYTHONUNBUFFERED=1
-      - MQ_URL="amqp://guest:guest@localhost:5672/%2F"
-    command: sh -c "./wait-for-it.sh --timeout=0 machcoll:5321 && python ./run.py --sim-type=machcoll"
+    command: sh -c "./wait-for-it.sh --timeout=0 machcoll:5321 && python ./run.py --sim-type=machcoll --sim-host=machcoll"
     restart: unless-stopped
