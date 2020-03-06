@@ -1,2 +1,5 @@
 
-nats.mc_client==2020.2.27.dev5202
+pika
+requests
+
+nats.mc_client==2020.3.3.dev5369
