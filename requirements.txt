@@ -9,7 +9,7 @@ jsonschema
 # Required by BlueSky. Versions unknown
 matplotlib
 numpy
-msgpack
+msgpack>=1.0.0
 zmq
 
 # TODO: Eventually this should be download from PyPi

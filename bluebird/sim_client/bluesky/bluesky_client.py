@@ -163,7 +163,7 @@ class BlueSkyClient(Client):
                 self.sender_id = route[0]
                 route.reverse()
                 pydata = (
-                    msgpack.unpackb(data, object_hook=decode_ndarray, encoding="utf-8")
+                    msgpack.unpackb(data, object_hook=decode_ndarray, raw=False)
                     if data
                     else None
                 )
@@ -224,9 +224,7 @@ class BlueSkyClient(Client):
 
                 strmname = msg[0][:-5]
                 sender_id = msg[0][-5:]
-                pydata = msgpack.unpackb(
-                    msg[1], object_hook=decode_ndarray, encoding="utf-8"
-                )
+                pydata = msgpack.unpackb(msg[1], object_hook=decode_ndarray, raw=False)
 
                 self.stream(strmname, pydata, sender_id)
 
