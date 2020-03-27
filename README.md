@@ -3,10 +3,13 @@
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
 ![License](https://img.shields.io/github/license/alan-turing-institute/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 # BlueBird
 
-BlueBird is a web API for air traffic simulators. The only open-source simulator currently supported is [BlueSky](https://github.com/alan-turing-institute/bluesky).
+BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/alan-turing-institute/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
+
+The currently supported open-source simulator is [BlueSky](https://github.com/alan-turing-institute/bluesky).
 
 ## Usage
 
