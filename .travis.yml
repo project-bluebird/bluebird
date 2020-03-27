@@ -21,7 +21,7 @@ install:
   - pip install --force-reinstall --no-cache-dir git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
 
 script:
-  - coverage run -m pytest -vrs --ignore=./tests/integration ./tests
+  - coverage run -m pytest -rs --ignore=./tests/integration ./tests
   # Pre-build the BlueBird docker image
   - docker build --quiet .
   # TMP
