@@ -1,4 +1,7 @@
 ---
+
+# NOTE(rkm 2020-03-27) This file is only intended for the integration tests and should not be modified
+
 version: "3.7"
 
 services:
@@ -30,8 +33,6 @@ services:
       - MC_SCENARIO_FILENAME
       - MC_AIRSPACE_FILENAME
     restart: unless-stopped
-  # NOTE(rkm 2020-01-31) For debugging, you can uncomment this section and use this as a
-  # standard docker-compose file
   bluebird:
     container_name: bluebird_integration
     build:
