@@ -2,4 +2,4 @@
 pika
 requests
 
-nats.mc_client==2020.3.3.dev5369
+nats.mc-client==2020.3.9.dev5575
