@@ -2,7 +2,6 @@
 Entry point for the BlueBird app
 """
 import argparse
-import os
 from typing import Any
 from typing import Dict
 
