@@ -1,4 +1,7 @@
 ---
+
+# NOTE(rkm 2020-03-27) This file is only intended for the integration tests and should not be modified
+
 version: "3.7"
 
 services:

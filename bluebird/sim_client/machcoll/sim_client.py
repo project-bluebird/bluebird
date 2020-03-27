@@ -72,6 +72,9 @@ class SimClient(AbstractSimClient):
         )
 
     def connect(self, timeout: int = 1) -> None:
+        self._logger.info(
+            f"Creating MCClientMetrics. MQ_URL is: {os.environ['MQ_URL']}"
+        )
         self._mc_client = MCClientMetrics(host=Settings.SIM_HOST, port=Settings.MC_PORT)
         self._mc_bg_client = MCClientMetrics(
             host=Settings.SIM_HOST, port=Settings.MC_PORT
