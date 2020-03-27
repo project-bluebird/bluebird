@@ -1,5 +1,5 @@
 
+# NOTE(rkm 2020-03-27) "pip install nats.mc-client" does not currently include pika
 pika
-requests
 
 nats.mc-client==2020.3.9.dev5575
