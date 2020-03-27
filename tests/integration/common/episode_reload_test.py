@@ -2,9 +2,7 @@
 Tests for the episode reloading
 """
 import pytest
-import requests
 
-import tests.integration
 
 def test_episode_reload_basic():
     """
