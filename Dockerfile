@@ -24,7 +24,7 @@ RUN if [ ! -z $NATS_PYPI_INDEX ]; then \
         echo Not building with support for MachColl ;\
     fi
 
-COPY ./bluesky/bluesky ./bluesky/bluesky
+#COPY ./bluesky/bluesky ./bluesky/bluesky
 COPY .env run.py VERSION ./
 COPY ./bluebird ./bluebird
 COPY wait-for-it.sh ./wait-for-it.sh
