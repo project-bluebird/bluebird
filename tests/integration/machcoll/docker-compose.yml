@@ -38,7 +38,7 @@ services:
     build:
       args:
         - NATS_PYPI_INDEX=$NATS_PYPI_INDEX
-      context: ../../../
+      context: ../../../scripts/machcoll
     depends_on:
       - machcoll
     volumes:
