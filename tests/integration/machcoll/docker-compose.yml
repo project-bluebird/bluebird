@@ -47,5 +47,6 @@ services:
       - 5001:5001
     environment:
       - PYTHONUNBUFFERED=1
-    command: sh -c "./wait-for-it.sh --timeout=0 machcoll:5321 && python ./run.py --sim-type=machcoll --sim-host=machcoll"
+      - MQ_URL="amqp://guest:guest@rabbitmq:5672"
+    command: sh -c "./wait-for-it.sh --timeout=60 machcoll:5321 && python ./run.py --sim-type=machcoll --sim-host=machcoll"
     restart: unless-stopped
