@@ -7,6 +7,8 @@ RUN  apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-nats.txt .
+COPY wait-for-it.sh ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh
 
 ARG NATS_PYPI_INDEX
 ARG PYPIPWD_PORT
