@@ -18,17 +18,13 @@ before_install:
 
 install:
   - pip install -r requirements.txt
+  # TODO(rkm 2020-04-26) Always ensures we have the latest Aviary version. Remove this once it's available on PyPI
   - pip install --force-reinstall --no-cache-dir git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
 
 script:
   - coverage run -m pytest -rs --ignore=./tests/integration ./tests
   # Pre-build the BlueBird docker image
   - docker build --quiet .
-  # TMP
   - pytest -rs ./tests/integration/bluesky/happy_path_test.py
-  # - coverage run -m pytest -vrs ./tests/integration
   # Just print the results for now
   - coverage report
-# TODO(RKM 2019-11-23) Re-enable after integration tests passing
-# after_success:
-#   - bash $BLUEBIRD_HOME/.travis-build.sh

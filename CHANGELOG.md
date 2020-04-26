@@ -12,14 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - 2020-04-26
 
+NOTE: This is a major rewrite of the application
+
 ### Added
 
 - Added support for the MachColl simulator
+- Added support for uploading scenario and sector definitions
+- Added metrics endpoints
+- Require BlueSky at v1.4.1 or greater
+- Added [Aviary](https://github.com/alan-turing-institute/aviary)
 - Added [black](https://black.readthedocs.io/en/stable/index.html) formatter to requirements and CI script
 - Added datacalsses to simplify handling of physical units
+- Added pre-commit
 
 ### Changed
 
+- Changes to the API can be found [here](docs/api-v2-changes.md)
 - Python 3.7+ is now required
 - Changed `indent-string` from tabs to 4 spaces in `.pylintrc`
 - Replaced underscores with dashes in all of the CLI options
