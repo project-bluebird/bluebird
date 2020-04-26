@@ -1,27 +1,44 @@
 """
 Provides logic for the DIRECT API endpoint
 """
-
+# TODO Could also specify a target altitude here
+from flask_restful import reqparse
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.types import Callsign
 
-REQ_ARGS = ['waypoint']
-PARSER = generate_arg_parser(REQ_ARGS)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+)
+_PARSER.add_argument("waypoint", type=str, location="json", required=True)
 
 
 class Direct(Resource):
-	"""
-	Contains logic for the DIRECT endpoint
-	"""
+    """Contains logic for the DIRECT endpoint"""
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request contains an existing aircraft ID, then a request is sent
-		to move directly to the specified waypoint. The specified waypoint must exist on the
-		aircraft's route.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Requests that the specified aircraft proceeds immediately to the specified
+        waypoint
+        """
 
-		return process_ac_cmd('DIRECT', PARSER, REQ_ARGS)
+        req_args = utils.parse_args(_PARSER)
+        waypoint_name = req_args["waypoint"]
+
+        if not waypoint_name:
+            return responses.bad_request_resp("Waypoint name must be specified")
+
+        callsign = req_args[utils.CALLSIGN_LABEL]
+
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
+        if resp:
+            return resp
+
+        err = utils.sim_proxy().aircraft.direct_to_waypoint(callsign, waypoint_name)
+
+        return responses.checked_resp(err)

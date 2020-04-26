@@ -283,4 +283,4 @@ pip-selfcheck.json
 .idea/
 .vscode/
 !tests/**/*.log
-
+data/

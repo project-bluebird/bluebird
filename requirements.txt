@@ -4,10 +4,13 @@ flask-restful == 0.3.*
 flask-cors == 3.0.*
 semver == 2.8.*
 python-dotenv == 0.10.*
-pyproj == 2.2.*
+jsonschema
 
 # Required by BlueSky. Versions unknown
 matplotlib
 numpy
-msgpack
+msgpack>=1.0.0
 zmq
+
+# TODO: Eventually this should be download from PyPi
+git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary

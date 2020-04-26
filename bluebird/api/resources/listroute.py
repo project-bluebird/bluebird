@@ -1,88 +1,50 @@
 """
 Provides logic for the LISTROUTE (list route) API endpoint
 """
+# NOTE(RKM 2019-11-19) Only the waypoint names are currently returned. Do we want to
+# (optionally) also return their full lat/lon?
+from flask_restful import reqparse
+from flask_restful import Resource
 
-import logging
-
-import re
-from flask import jsonify
-from flask_restful import Resource, reqparse
-
-import bluebird.cache
-import bluebird.client
-from bluebird.api.resources.utils import check_acid
-
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('acid', type=str, location='args', required=True)
-
-_LOGGER = logging.getLogger('bluebird')
-
-_ROUTE_RE = re.compile(r'^(\*?)(\w*):((?:-|.)*)/((?:-|\d)*)$')
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.types import Callsign
 
 
-def parse_route_data(route_data):
-	"""
-	Parse a list of strings containing route data into a keyed dictionary
-	:param route_data:
-	:return:
-	"""
-
-	parsed = []
-	for line in map(lambda s: s.replace(" ", ""), route_data):
-		match = _ROUTE_RE.match(line)
-		if not match:
-			return line
-		req_alt = match.group(3) if not '-' in match.group(3) else None
-		req_spd = int(match.group(4)) if not '-' in match.group(4) else None
-		parsed.append(
-						{'is_current': bool(match.group(1)), 'wpt_name': match.group(2), 'req_alt': req_alt,
-						 'req_spd': req_spd})
-	return parsed
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="args", required=True
+)
 
 
 class ListRoute(Resource):
-	"""
-	Contains logic for the LISTROUTE endpoint
-	"""
+    """Contains logic for the LISTROUTE endpoint"""
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then information about its route (FMS flightplan) is returned.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """
+        Logic for GET events. If the request contains an identifier to an existing
+        aircraft, then information about its route (FMS flightplan) is returned
+        """
 
-		parsed = PARSER.parse_args()
-		acid = parsed['acid']
+        req_args = utils.parse_args(_PARSER)
+        callsign = req_args[utils.CALLSIGN_LABEL]
 
-		resp = check_acid(acid)
-		if resp is not None:
-			return resp
+        resp = utils.check_exists(utils.sim_proxy(), callsign)
+        if resp:
+            return resp
 
-		cmd_str = f'LISTRTE {acid}'
-		_LOGGER.debug(f'Sending stack command: {cmd_str}')
-		reply = bluebird.client.CLIENT_SIM.send_stack_cmd(cmd_str, response_expected=True)
+        route_info = utils.sim_proxy().aircraft.route(callsign)
 
-		if not reply:
-			resp = jsonify('Error: No route data received from BlueSky')
-			resp.status_code = 500
-			return resp
+        if not isinstance(route_info, tuple):
+            if route_info == "Aircraft has no route":
+                return responses.bad_request_resp(route_info)
+            return responses.internal_err_resp(route_info)
 
-		if not isinstance(reply, list):
-			resp = jsonify(f'Simulation returned: {reply}')
-			resp.status_code = 500
-			return resp
-
-		parsed_route = parse_route_data(reply)
-
-		if not isinstance(parsed_route, list):
-			resp = jsonify(f'Error: Could not parse route entry {parsed_route}')
-			resp.status_code = 500
-			return resp
-
-		sim_state = bluebird.cache.SIM_STATE
-
-		resp = jsonify({'route': parsed_route, 'acid': acid, 'sim_t': sim_state.sim_t})
-		resp.status_code = 200
-		return resp
+        data = {
+            utils.CALLSIGN_LABEL: str(callsign),
+            "route_name": route_info[0],
+            "next_waypoint": route_info[1],
+            "route_waypoints": route_info[2],
+        }
+        return responses.ok_resp(data)

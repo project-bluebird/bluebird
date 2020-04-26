@@ -1,7 +1,7 @@
 
 # BlueBird Simulator Modes
 
-BlueBird can be set to run in one of two modes. The mode can be set when the app is launched with the `--sim_mode` CLI argument. The mode can also be changed during operation with the `SIMMODE` endpoint. 
+BlueBird can be set to run in one of two modes. The mode can be set when the app is launched with the `--sim_mode` CLI argument. The mode can also be changed during operation with the `SIMMODE` endpoint.
 
 ## `Sandbox` mode
 

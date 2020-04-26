@@ -2,14 +2,16 @@
 Main test configuration
 """
 
-PYTEST_PLUGINS = ["docker_compose"]
-
 
 def pytest_addoption(parser):
-	"""
-	Add CLI option to force running of integration tests outside of a CI environment
-	:param parser:
-	:return:
-	"""
+    """Add extra CLI options for integration testing"""
 
-	parser.addoption('--run-integration', action='store_true')
+    # TODO(RKM 2019-12-31) Update docs
+    parser.addoption("--run-integration", action="store_true")
+    parser.addoption("--docker-host", action="store")
+    parser.addoption(
+        "--integration-sim",
+        action="store",
+        default="bluesky",
+        choices=["bluesky", "machcoll"],
+    )

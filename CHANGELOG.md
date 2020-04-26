@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [2.0.0] - 2020-04-26
+
+NOTE: This is a major rewrite of the application
+
+### Added
+
+- Added support for the MachColl simulator
+- Added support for uploading scenario and sector definitions
+- Added metrics endpoints
+- Require BlueSky at v1.4.1 or greater
+- Added [Aviary](https://github.com/alan-turing-institute/aviary)
+- Added [black](https://black.readthedocs.io/en/stable/index.html) formatter to requirements and CI script
+- Added datacalsses to simplify handling of physical units
+- Added pre-commit
+
+### Changed
+
+- Changes to the API can be found [here](docs/api-v2-changes.md)
+- Python 3.7+ is now required
+- Changed `indent-string` from tabs to 4 spaces in `.pylintrc`
+- Replaced underscores with dashes in all of the CLI options
+
 ## [1.3.0] - 2019-09-24
 
 ### Added
@@ -31,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed static page which rendered and served the README markdown file
 - Removed the markdown pip dependency
- 
+
 
 ## [1.2.1] - 2019-06-11
 
@@ -94,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2019-04-17 - PR [#51](https://github.com/alan-turing-institute/bluebird/pull/51)
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
-[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/1.3.0...develop
+[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/2.0.0...develop
+[2.0.0]: https://github.com/alan-turing-institute/bluebird/compare/1.3.0...2.0.0
 [1.3.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...1.3.0
 [1.2.1]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/alan-turing-institute/bluebird/compare/1.1.3...1.2.0

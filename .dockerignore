@@ -20,10 +20,10 @@ __pycache__/
 .idea
 
 # Custom
+data/
 docs/
 logs/
 scripts/
-tests/
 venv/
 
 # Ignore all BlueSky content other than the code and the default scenarios

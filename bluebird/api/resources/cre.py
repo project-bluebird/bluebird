@@ -1,36 +1,63 @@
 """
 Provides logic for the CRE (create aircraft) API endpoint
 """
+from http import HTTPStatus
 
-from flask import jsonify
+from flask_restful import reqparse
 from flask_restful import Resource
 
-from bluebird.api.resources.utils import generate_arg_parser, process_ac_cmd
-from bluebird.cache import AC_DATA
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.types import Altitude
+from bluebird.utils.types import Callsign
+from bluebird.utils.types import GroundSpeed
+from bluebird.utils.types import Heading
+from bluebird.utils.types import LatLon
 
-REQ_ARGS = ['type', 'lat', 'lon', 'hdg', 'alt', 'spd']
-PARSER = generate_arg_parser(REQ_ARGS)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="json", required=True
+)
+_PARSER.add_argument("type", type=str, location="json", required=True)
+_PARSER.add_argument("lat", type=float, location="json", required=True)
+_PARSER.add_argument("lon", type=float, location="json", required=True)
+_PARSER.add_argument("hdg", type=Heading, location="json", required=True)
+_PARSER.add_argument("alt", type=Altitude, location="json", required=True)
+_PARSER.add_argument("gspd", type=GroundSpeed, location="json", required=True)
 
 
 class Cre(Resource):
-	"""
-	BlueSky CRE (create aircraft) command
-	"""
+    """CRE (create aircraft) command"""
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. If the request contains valid aircraft information, then a request is
-		sent to the simulator to create it.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """
+        Logic for POST events. If the request contains valid aircraft information, then
+        a request is sent to the simulator to create it
+        """
 
-		parsed = PARSER.parse_args(strict=True)
-		acid = parsed['acid']
+        req_args = utils.parse_args(_PARSER)
+        callsign = req_args[utils.CALLSIGN_LABEL]
 
-		if AC_DATA.contains(acid):
-			resp = jsonify('Aircraft {} already exists'.format(acid))
-			resp.status_code = 400
-			return resp
+        resp = utils.check_exists(utils.sim_proxy(), callsign, negate=True)
+        if resp:
+            return resp
 
-		return process_ac_cmd('CRE', PARSER, REQ_ARGS, [], assert_exists=False, success_code=201)
+        position_or_resp = utils.try_parse_lat_lon(req_args)
+        if not isinstance(position_or_resp, LatLon):
+            return position_or_resp
+
+        if not req_args["type"]:
+            return responses.bad_request_resp("Aircraft type must be specified")
+
+        err = utils.sim_proxy().aircraft.create(
+            callsign,
+            req_args["type"],
+            position_or_resp,
+            req_args["hdg"],
+            req_args["alt"],
+            req_args["gspd"],
+        )
+
+        return responses.checked_resp(err, HTTPStatus.CREATED)

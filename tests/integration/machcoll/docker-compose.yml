@@ -1,0 +1,52 @@
+---
+
+# NOTE(rkm 2020-03-27) This file is only intended for the integration tests and should not be modified
+
+version: "3.7"
+
+services:
+  rabbitmq:
+    container_name: rabbitmq_integration
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+  metrics:
+    container_name: machcoll_metrics_integration
+    image: nats-metrics-img
+    depends_on:
+      - rabbitmq
+    ports:
+      - 5322:5322
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+  machcoll:
+    container_name: machcoll_integration
+    image: machcoll-img
+    depends_on:
+      - metrics
+    ports:
+      - 5321:5321
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MC_SCENARIO_FILENAME
+      - MC_AIRSPACE_FILENAME
+    restart: unless-stopped
+  bluebird:
+    container_name: bluebird_integration
+    build:
+      args:
+        - NATS_PYPI_INDEX=$NATS_PYPI_INDEX
+      context: ../../../scripts/machcoll
+    depends_on:
+      - machcoll
+    volumes:
+      - /usr/src/app/logs/ # Prevents any local logs being copied to the container
+    ports:
+      - 5001:5001
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MQ_URL="amqp://guest:guest@rabbitmq:5672"
+    command: sh -c "./wait-for-it.sh --timeout=60 machcoll:5321 && python ./run.py --sim-type=machcoll --sim-host=machcoll"
+    restart: unless-stopped

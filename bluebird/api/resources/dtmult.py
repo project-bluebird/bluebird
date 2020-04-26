@@ -1,47 +1,31 @@
 """
 Provides logic for the DTMULT API endpoint
 """
+from flask_restful import reqparse
+from flask_restful import Resource
 
-from flask import jsonify
-from flask_restful import Resource, reqparse
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
 
-import bluebird.client as bb_client
-from bluebird.cache import AC_DATA
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('multiplier', type=float, location='json', required=True)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("multiplier", type=float, location="json", required=True)
 
 
 class DtMult(Resource):
-	"""
-	BlueSky DTMULT command
-	"""
+    """DTMULT command"""
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. Sets the speed multiplier for the simulation
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """Logic for POST events. Sets the speed multiplier for the simulation"""
 
-		parsed = PARSER.parse_args(strict=True)
-		mult = round(parsed['multiplier'], 2)
+        req_args = utils.parse_args(_PARSER)
+        multiplier = round(req_args["multiplier"], 2)
 
-		if mult <= 0:
-			resp = jsonify('Multiplier must be greater than 0')
-			resp.status_code = 400
-			return resp
+        if multiplier <= 0:
+            return responses.bad_request_resp("Multiplier must be greater than 0")
 
-		cmd = f'DTMULT {mult}'
-		err = bb_client.CLIENT_SIM.send_stack_cmd(cmd)
+        # TODO Check if we still need to keep track of step_dt in the client
+        err = utils.sim_proxy().simulation.set_speed(multiplier)
 
-		if not err:
-			AC_DATA.set_log_rate(mult)
-			resp = jsonify('Simulation speed changed')
-			resp.status_code = 200
-		else:
-			resp = jsonify(f'Could not change speed: {err}')
-			resp.status_code = 500
-
-		bb_client.CLIENT_SIM.step_dt = mult
-		return resp
+        return responses.checked_resp(err)

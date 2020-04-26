@@ -1,51 +1,54 @@
 """
 Provides logic for the 'eplog' (episode log file) API endpoint
 """
+# TODO(rkm 2020-01-12) Remove the close_ep arg - mixed concerns
+from flask_restful import reqparse
+from flask_restful import Resource
 
-import os
-
-from flask import jsonify
-from flask_restful import Resource, reqparse
-
-import bluebird.client as bb_client
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
 import bluebird.logging as bb_logging
+from bluebird.settings import in_agent_mode
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('close_ep', type=bool, location='args', required=False)
+
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("close_ep", type=bool, location="args", required=False)
 
 
 class EpLog(Resource):
-	"""
-	Contains logic for the eplog endpoint
-	"""
+    """Contains logic for the EPLOG endpoint"""
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """Logic for GET events. Returns the current episode ID and log content"""
 
-		parsed = PARSER.parse_args(strict=True)
-		close_ep = not parsed['close_ep'] is None
+        req_args = utils.parse_args(_PARSER)
+        close_ep = req_args.get("close_ep", False)
 
-		ep_file_path = bb_logging.EP_FILE
+        if not in_agent_mode():
+            return responses.bad_request_resp(
+                "Episode data only recorded when in Agent mode"
+            )
 
-		if not ep_file_path:
-			resp = jsonify('Error: No episode being recorded')
-			resp.status_code = 404
-			return resp
+        ep_file_path = bb_logging.EP_FILE
 
-		if close_ep:
-			err = bb_client.CLIENT_SIM.reset_sim()
-			if err:
-				resp = jsonify(f'Could not reset simulation: {err}')
-				resp.status_code = 500
-				return resp
+        if not ep_file_path:
+            return responses.bad_request_resp("No episode being recorded")
 
-		full_ep_file = os.path.join(os.getcwd(), ep_file_path)
-		lines = tuple(line.rstrip('\n') for line in open(full_ep_file))
+        if close_ep:
+            err = utils.sim_proxy().simulation.reset()
+            if err:
+                return responses.internal_err_resp(f"Couldn't reset simulation: {err}")
 
-		resp = jsonify({'cur_ep_id': bb_logging.EP_ID, 'cur_ep_file': full_ep_file, 'lines': lines})
-		resp.status_code = 200
-		return resp
+        if not ep_file_path.exists():
+            return responses.internal_err_resp(f"Could not find episode file")
+
+        lines = list(line.rstrip("\n") for line in open(ep_file_path))
+
+        data = {
+            "cur_ep_id": bb_logging.EP_ID,
+            "cur_ep_file": str(ep_file_path.absolute()),
+            "log": lines,
+        }
+
+        return responses.ok_resp(data)

@@ -1,86 +1,48 @@
 """
-Provides logic for the scenario (create scenario) API endpoint
+Provides logic for the scenario endpoint
 """
+from http import HTTPStatus
 
-import logging
+from flask_restful import reqparse
+from flask_restful import Resource
 
-from flask import jsonify
-from flask_restful import Resource, reqparse
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.utils.properties import Scenario as ScenarioWrapper
+from bluebird.utils.scenario_validation import validate_json_scenario
 
-import bluebird.cache as bb_cache
-import bluebird.client as bb_client
-from bluebird.api.resources.utils import validate_scenario, wait_until_eq
-from bluebird.logging import store_local_scn
-
-_LOGGER = logging.getLogger('bluebird')
-
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('scn_name', type=str, location='json', required=True)
-PARSER.add_argument('content', type=str, location='json', required=True, action='append')
-PARSER.add_argument('start_new', type=bool, location='json', required=False)
-PARSER.add_argument('start_dtmult', type=float, location='json', required=False)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument("name", type=str, location="json", required=True)
+_PARSER.add_argument("content", type=dict, location="json", required=False)
 
 
 class Scenario(Resource):
-	"""
-	Contains logic for the scenario endpoint
-	"""
+    """Contains logic for the scenario endpoint"""
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """Logic for POST events"""
 
-		parsed = PARSER.parse_args()
+        req_args = utils.parse_args(_PARSER)
 
-		scn_name = scn_base = parsed['scn_name']
+        if not utils.sim_proxy().simulation.sector:
+            return responses.bad_request_resp(
+                "A sector definition is required before uploading a scenario"
+            )
 
-		if not scn_name.endswith('.scn'):
-			scn_name += '.scn'
+        # TODO(rkm 2020-01-12) Should never include the file extension
+        name = req_args["name"]
+        if not name:
+            return responses.bad_request_resp("Scenario name must be provided")
 
-		if scn_name.startswith('scenario'):
-			scn_name = scn_name[len('scenario') + 1:]
+        content = req_args["content"]
 
-		content = parsed['content']
-		err = validate_scenario(content)
+        if content:
+            err = validate_json_scenario(content)
+            if err:
+                return responses.bad_request_resp(f"Invalid scenario content: {err}")
 
-		if err:
-			resp = jsonify(f'Invalid scenario content: {err}')
-			resp.status_code = 400
-			return resp
+        scenario = ScenarioWrapper(name, content)
+        err = utils.sim_proxy().simulation.load_scenario(scenario)
 
-		store_local_scn(scn_name, content)
-
-		err = bb_client.CLIENT_SIM.upload_new_scenario(scn_name, content)
-
-		if err:
-			resp = jsonify(f'Error uploading scenario: {err}')
-			resp.status_code = 500
-
-		elif parsed['start_new']:
-
-			dtmult = parsed['start_dtmult'] if parsed['start_dtmult'] else 1.0
-			err = bb_client.CLIENT_SIM.load_scenario(scn_name, speed=dtmult)
-
-			if err:
-				resp = jsonify(f'Could not start scenario after upload: {err}')
-				resp.status_code = 500
-				return resp
-
-			if not wait_until_eq(bb_cache.AC_DATA.store, True):
-				resp = jsonify(
-								'No aircraft data received after loading. Scenario might not contain any '
-								'aircraft')
-				resp.status_code = 500
-				return resp
-
-			resp = jsonify(f'Scenario {scn_base} uploaded and started')
-			resp.status_code = 200
-
-		else:
-			resp = jsonify(f'Scenario {scn_base} uploaded')
-			resp.status_code = 201
-
-		return resp
+        return responses.checked_resp(err, HTTPStatus.CREATED)

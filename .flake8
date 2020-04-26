@@ -1,0 +1,9 @@
+
+[flake8]
+
+# https://github.com/psf/black
+max-line-length = 88
+
+# Ignoring:
+# W503 - Whitespace before ':'
+ignore =  W503

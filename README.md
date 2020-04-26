@@ -1,52 +1,50 @@
 
 [![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/alan-turing-institute/bluebird)
+![Python Version](https://img.shields.io/badge/python-3.7-blue)
+![License](https://img.shields.io/github/license/alan-turing-institute/bluebird)
+![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 # BlueBird
 
-BlueBird is a web API for air traffic simulators.
+BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/alan-turing-institute/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
 
-Currently supports:
-
-- [BlueSky](https://github.com/alan-turing-institute/bluesky)
-
-Future:
-
-- NATS Machine College 😊
-
+The currently supported open-source simulator is [BlueSky](https://github.com/alan-turing-institute/bluesky).
 
 ## Usage
 
 ### Running locally
 
-To run locally, first start a BlueSky simulation, then:
+To run locally, first start a supported simulation server, then:
 
 ```bash
-> ./install.sh [--dev] [<venv_name>]
-> source <venv_name>/bin/activate
-(venv) > python ./run.py [--bluesky_host=<address>] [--sim_mode=<mode>] [--reset_sim] [--log_rate=<rate>]
+$ ./install.sh [--dev] [<venv_name>]
+$ source <venv_name>/bin/activate
+(venv) > python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
 ```
 
 Notes:
+
 - the `--dev` option will also install dependencies needed for developing BlueBird
-- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--bluesky_host` option to run.py.
-- If passed, `--reset_sim` will reset the simulation on connection
-- If passed, `--sim_mode` will start the simulation in a specific [mode](docs/SimulatorModes.md). 
+- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
+- If passed, `--reset-sim` will reset the simulation on connection
+- If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
 
 ### Running with Docker
 
 BlueBird can also be run through Docker. Easiest way is to run with docker-compose:
 
 ```bash
-> docker-compose up -d
+$ docker-compose up -d
 ```
 
-This will also pull and start a BlueSky simulation.
+This will also pull and start a BlueSky simulator container.
 
-You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host, and the `sandbox` mode by default. These can be overridden with environment variables:
+You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host. This can be overridden with environment variable:
 
 ```bash
-> docker run --rm -e BS_HOST="1.2.3.4" -e SIM_MODE="agent" turinginst/bluebird:latest 
-``` 
+$ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
+```
 
 ### API Endpoints
 
@@ -62,7 +60,8 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The rate at which aircraft data is logged to the episode files is configurable with the `SIM_LOG_RATE` variable in the settings. This value represents the frequency of logging in terms of the simulator time. This can be set at startup with the `--log_rate` option.
+# TODO(rkm 2020-01-20) Implement this
+The episode file is only recorded for Agent mode.
 
 The timestamps of the `logs/*` directories are the start times of the BlueBird app, whereas the timestamps in the episode file names are the start of each episode.
 
@@ -73,7 +72,8 @@ The timestamps of the `logs/*` directories are the start times of the BlueBird a
 To install development packages, pass the `--dev` option to the install script. Or if you have already created a virtual environment:
 
 ```bash
-> pip install -r requirements-dev.txt
+$ pip install -r requirements-dev.txt
+$ pre-commit install
 ```
 
 ### Testing
@@ -81,41 +81,25 @@ To install development packages, pass the `--dev` option to the install script. 
 The unit test suite can be run with:
 
 ```bash
-> pytest [<optional-arguments>] tests
+$ pytest [<optional-arguments>] tests
 ```
 
 You can also pass paths to individual modules or tests:
 
 ```bash
-> pytest [<optional-arguments>] tests/unit/test_api_commands.py::test_pos_command
+$ pytest [<optional-arguments>] <test-file>::<test-name>
 ```
 
-Integration tests with BlueSky will only be run in a CI environment, unless forced with the following flag:
+Integration tests can run with each supported simulator, however they will only be run in a CI environment unless forced with the `--run-integration` flag.
 
-```bash
-> pytest tests/integration --run-integration
-```
+Integration tests require Docker to run. To specify a different docker daemon host than localhost, you can pass `--docker-host=<host address>:<port>`. This can be useful when testing if you don't have Docker locally installed, or if the images required for testing are only available on a remote host.
 
-Integration tests require Docker to run.
+The default integration simulator is BlueSky. To test against a different simulator, specify it with the `--integration-sim=<sim name>` option.
 
-### Code Style
+### Code Quality
 
-Linting can be run with the included `.pylintrc` file:
+BlueBird uses [pre-commit] to help ensure code quality and correctness. Once installed, this automatically runs as part of the git commit process.
 
-```bash
-> pylint --rcfile=.pylintrc [--enable=<msg>] <package or module>
-```
+---
 
-The .pylintrc contains some useful configuration for linting. Specific warnings can be re-enabled with the `--enable`
-option. E.g. to view all TODO notes (which are disabled in our config), use `--enable=fixme`.
-
-You can also pass paths to individual modules or packages. If using pylint as part of a bash script, then you may wish
-to use [pylint-exit](https://github.com/jongracecox/pylint-exit) to interpret the exit code correctly. Usage example:
-
-```bash
-pylint [<optional-arguments>] ./bluebird || pylint-exit $?
-if [ $? -ne 0 ]; then
-  echo "An error occurred while running pylint." >&2
-  exit 1
-fi
-```
+[pre-commit]: https://pre-commit.com

@@ -1,43 +1,64 @@
 """
-Provides logic for the POST (position) API endpoint
+Provides logic for the POS (position) API endpoint
 """
+from flask_restful import reqparse
+from flask_restful import Resource
 
-from flask import jsonify
-from flask_restful import Resource, reqparse
+import bluebird.api.resources.utils.responses as responses
+import bluebird.api.resources.utils.utils as utils
+from bluebird.api.resources.utils.responses import internal_err_resp
+from bluebird.utils.properties import AircraftProperties
+from bluebird.utils.properties import SimProperties
+from bluebird.utils.types import Callsign
 
-from bluebird.api.resources.utils import check_acid
-from bluebird.cache import AC_DATA
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('acid', type=str, location='args', required=True)
+_PARSER = reqparse.RequestParser()
+_PARSER.add_argument(
+    utils.CALLSIGN_LABEL, type=Callsign, location="args", required=False
+)
 
 
 class Pos(Resource):
-	"""
-	BlueSky POS (position) command
-	"""
+    """POS (position) command"""
 
-	@staticmethod
-	def get():
-		"""
-		Logic for GET events. If the request contains an identifier to an existing aircraft,
-		then information about that aircraft is returned. Otherwise returns a 404.
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def get():
+        """Logic for GET events. Returns properties for the specified aircraft"""
 
-		parsed = PARSER.parse_args()
-		acid = parsed['acid']
+        req_args = utils.parse_args(_PARSER)
+        callsign = req_args[utils.CALLSIGN_LABEL]
 
-		if acid.upper() == 'ALL':
-			if not AC_DATA.store:
-				resp = jsonify('No aircraft in the simulation')
-				resp.status_code = 400
-				return resp
-		else:
-			resp = check_acid(acid)
-			if resp is not None:
-				return resp
+        sim_props = utils.sim_proxy().simulation.properties
+        if not isinstance(sim_props, SimProperties):
+            return responses.internal_err_resp(sim_props)
 
-		resp = jsonify(AC_DATA.get(acid))
-		resp.status_code = 200
-		return resp
+        if callsign:
+            resp = utils.check_exists(utils.sim_proxy(), callsign)
+            if resp:
+                return resp
+
+            props = utils.sim_proxy().aircraft.properties(callsign)
+            if not isinstance(props, AircraftProperties):
+                return internal_err_resp(props)
+
+            data = utils.convert_aircraft_props(props)
+            data.update({"scenario_time": sim_props.scenario_time})
+
+            return responses.ok_resp(data)
+
+        # else: get_all_properties
+
+        props = utils.sim_proxy().aircraft.all_properties
+        if isinstance(props, str):
+            return responses.internal_err_resp(
+                f"Couldn't get the aircraft properties: {props}"
+            )
+        if not props:
+            return responses.bad_request_resp("No aircraft in the simulation")
+
+        data = {}
+        for prop in props.values():
+            data.update(utils.convert_aircraft_props(prop))
+        data["scenario_time"] = sim_props.scenario_time
+
+        return responses.ok_resp(data)

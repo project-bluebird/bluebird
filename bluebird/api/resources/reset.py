@@ -1,32 +1,19 @@
 """
 Provides logic for the RESET API endpoint
 """
-
-from flask import jsonify
 from flask_restful import Resource
 
-import bluebird.client as bb_client
+import bluebird.api.resources.utils.responses as properties
+import bluebird.api.resources.utils.utils as utils
 
 
 class Reset(Resource):
-	"""
-	BlueSky RESET command
-	"""
+    """RESET command"""
 
-	@staticmethod
-	def post():
-		"""
-		Logic for POST events. Resets and clears the simulation
-		:return: :class:`~flask.Response`
-		"""
+    @staticmethod
+    def post():
+        """Logic for POST events. Resets and clears the simulation"""
 
-		err = bb_client.CLIENT_SIM.reset_sim()
+        err = utils.sim_proxy().simulation.reset()
 
-		if not err:
-			resp = jsonify('Simulation reset')
-			resp.status_code = 200
-		else:
-			resp = jsonify(f'Simulation not reset: {err}')
-			resp.status_code = 500
-
-		return resp
+        return properties.checked_resp(err)

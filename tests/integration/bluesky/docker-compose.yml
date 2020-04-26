@@ -1,0 +1,28 @@
+---
+
+# NOTE(rkm 2020-03-27) This file is only intended for the integration tests and should not be modified
+
+version: "3.7"
+
+services:
+  bluesky:
+    container_name: bluesky_integration
+    image: turinginst/bluesky:${BS_MIN_VERSION}
+    expose:
+      - 9000
+      - 9001
+    environment:
+      - PYTHONUNBUFFERED=1
+  bluebird:
+    container_name: bluebird_integration
+    depends_on:
+      - bluesky
+    build:
+      context: ../../../
+    volumes:
+      - /usr/src/app/logs/ # Prevents any local logs being copied to the container
+    ports:
+      - 5001:5001
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python ./run.py --sim-host=bluesky
