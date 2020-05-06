@@ -58,7 +58,10 @@ class Settings:
     SIM_MODE: SimMode = SimMode.Agent
     SIM_TYPE: SimType = SimType.BlueSky
 
-    # TODO Move to subclass
+    # BlueSky settings
     BS_EVENT_PORT: int = 9000
     BS_STREAM_PORT: int = 9001
+    BS_STREAM_TIMEOUT: int = 5
+
+    # MachColl settings
     MC_PORT: int = 5321

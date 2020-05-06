@@ -17,6 +17,7 @@ from typing import Optional
 import msgpack
 import zmq
 
+from bluebird.settings import Settings
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 
@@ -47,8 +48,6 @@ IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 
 # Tuple of strings which should not be considered error responses from BlueSky
 IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
-
-MAX_STREAM_TIME = 5
 
 
 class BlueSkyClient(Client):
@@ -233,7 +232,7 @@ class BlueSkyClient(Client):
             # TODO(RKM 2019-11-26) This should probably be based on the stream frequency
             if self._last_stream_time:
                 time_diff = time.time() - self._last_stream_time
-                if time_diff > MAX_STREAM_TIME:
+                if time_diff > Settings.BS_STREAM_TIMEOUT:
                     raise TimeoutError(
                         f"Lost connection to BlueSky (time_diff={time_diff:.2f})"
                     )
