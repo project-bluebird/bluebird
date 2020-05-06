@@ -48,6 +48,8 @@ IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 # Tuple of strings which should not be considered error responses from BlueSky
 IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
 
+MAX_STREAM_TIME = 5
+
 
 class BlueSkyClient(Client):
     """Client class for the BlueSky simulator"""
@@ -229,8 +231,12 @@ class BlueSkyClient(Client):
                 self.stream(strmname, pydata, sender_id)
 
             # TODO(RKM 2019-11-26) This should probably be based on the stream frequency
-            if self._last_stream_time and time.time() - self._last_stream_time > 2:
-                raise TimeoutError("Lost connection to BlueSky")
+            if self._last_stream_time:
+                time_diff = time.time() - self._last_stream_time
+                if time_diff > MAX_STREAM_TIME:
+                    raise TimeoutError(
+                        f"Lost connection to BlueSky (time_diff={time_diff:.2f})"
+                    )
 
             return True
 
