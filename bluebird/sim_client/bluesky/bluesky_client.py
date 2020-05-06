@@ -17,6 +17,7 @@ from typing import Optional
 import msgpack
 import zmq
 
+from bluebird.settings import Settings
 from bluebird.utils.timer import Timer
 from bluebird.utils.timeutils import timeit
 
@@ -229,8 +230,12 @@ class BlueSkyClient(Client):
                 self.stream(strmname, pydata, sender_id)
 
             # TODO(RKM 2019-11-26) This should probably be based on the stream frequency
-            if self._last_stream_time and time.time() - self._last_stream_time > 2:
-                raise TimeoutError("Lost connection to BlueSky")
+            if self._last_stream_time:
+                time_diff = time.time() - self._last_stream_time
+                if time_diff > Settings.BS_STREAM_TIMEOUT:
+                    raise TimeoutError(
+                        f"Lost connection to BlueSky (time_diff={time_diff:.2f})"
+                    )
 
             return True
 
