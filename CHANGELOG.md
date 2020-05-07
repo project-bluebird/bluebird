@@ -8,7 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+### Fixed
+
+- Fixed bug in parsing of altitudes from scenario JSON
+
+### Changed
+
+- Increase BlueSky stream timeout to 5s (#93)
 
 ## [2.0.0] - 2020-04-26
 
