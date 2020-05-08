@@ -112,11 +112,11 @@ class AircraftProperties:
     cleared_flight_level: types.Altitude
     ground_speed: types.GroundSpeed
     heading: types.Heading
+    initial_flight_level: types.Altitude
     position: types.LatLon
     requested_flight_level: types.Altitude
     route_name: str
     vertical_speed: types.VerticalSpeed
-    initial_flight_level: types.Altitude
 
     def __post_init__(self):
         assert self.aircraft_type, "Aircraft type must be defined"
@@ -129,15 +129,16 @@ class AircraftProperties:
         """
         return cls(
             aircraft_type=data["type"],
-            altitude=types.Altitude(data["currentFlightLevel"]),
+            altitude=types.Altitude(f"FL{data['currentFlightLevel']}"),
             callsign=types.Callsign(data["callsign"]),
-            cleared_flight_level=types.Altitude(data["clearedFlightLevel"]),
+            cleared_flight_level=types.Altitude(f"FL{data['clearedFlightLevel']}"),
             ground_speed=None,
             # TODO(rkm 2020-01-22) Check if we should know the initial heading here
             heading=None,
+            initial_flight_level=types.Altitude(f"FL{data['currentFlightLevel']}"),
+            # NOTE(rkm 2020-05-07) Assumes [lon, lat]
             position=types.LatLon(data["startPosition"][1], data["startPosition"][0]),
-            requested_flight_level=types.Altitude(data["requestedFlightLevel"]),
+            requested_flight_level=types.Altitude(f"FL{data['requestedFlightLevel']}"),
             route_name=None,
             vertical_speed=None,
-            initial_flight_level=types.Altitude(data["currentFlightLevel"]),
         )

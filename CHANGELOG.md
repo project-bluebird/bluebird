@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [2.0.1] - 2020-05-08
+
+### Fixed
+
+- Fixed bug in parsing of altitudes from scenario JSON
+
+### Changed
+
+- Increase BlueSky stream timeout to 5s (#93)
+
 ## [2.0.0] - 2020-04-26
 
 NOTE: This is a major rewrite of the application
@@ -118,7 +128,8 @@ NOTE: This is a major rewrite of the application
 ## [1.1.0] - 2019-04-17 - PR [#51](https://github.com/alan-turing-institute/bluebird/pull/51)
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
-[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/2.0.0...develop
+[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/2.0.1...develop
+[2.0.1]: https://github.com/alan-turing-institute/bluebird/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/alan-turing-institute/bluebird/compare/1.3.0...2.0.0
 [1.3.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...1.3.0
 [1.2.1]: https://github.com/alan-turing-institute/bluebird/compare/1.2.0...1.2.1
