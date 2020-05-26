@@ -33,7 +33,8 @@ class BlueBird:
 
         self._logger = logging.getLogger(__name__)
         self._logger.info(
-            f"BlueBird init - sim type: {Settings.SIM_TYPE.name}, "
+            f"Starting BlueBird version {Settings.VERSION}. "
+            f"Sim type: {Settings.SIM_TYPE.name}, "
             f"mode: {Settings.SIM_MODE.name}"
         )
 
