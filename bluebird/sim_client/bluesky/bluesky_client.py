@@ -26,9 +26,11 @@ from bluebird.utils.timeutils import timeit
 _BS_PATH = os.getenv("BS_PATH", None)
 assert _BS_PATH, "Expected BS_PATH to be set. Check your .env file"
 _BS_PATH = Path(_BS_PATH)
-assert _BS_PATH.is_dir() and "bluesky" in os.listdir(
-    _BS_PATH
-), "Expected BS_PATH to point to the root BlueSky directory"
+assert _BS_PATH.is_dir() and "bluesky" in os.listdir(_BS_PATH), (
+    "Expected BS_PATH to point to the root BlueSky directory. If this is your "
+    "first time running BlueBird, try running this inside the root directory: "
+    "'git submodule update --init'."
+)
 sys.path.append(str(_BS_PATH.resolve()))
 
 from bluesky.network.client import Client  # noqa: E402
