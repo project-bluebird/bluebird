@@ -2,8 +2,7 @@
 Package for API resource tests
 """
 import datetime
-
-import mock
+from unittest import mock
 
 import bluebird.utils.properties as props
 import bluebird.utils.types as types

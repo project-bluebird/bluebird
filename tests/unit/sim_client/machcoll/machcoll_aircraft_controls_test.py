@@ -1,7 +1,8 @@
 """
 Tests for MachCollAircraftControls
 """
-import mock
+from unittest import mock
+
 import pytest
 
 from bluebird.utils.abstract_aircraft_controls import AbstractAircraftControls

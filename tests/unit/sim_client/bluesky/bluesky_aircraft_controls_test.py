@@ -1,7 +1,7 @@
 """
 Tests for BlueSkyAircraftControls
 """
-import mock
+from unittest import mock
 
 from bluebird.sim_client.bluesky.bluesky_aircraft_controls import (
     BlueSkyAircraftControls,

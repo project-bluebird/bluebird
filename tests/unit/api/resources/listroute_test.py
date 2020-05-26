@@ -2,8 +2,7 @@
 Tests for the LISTROUTE endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 import bluebird.api as api
 import bluebird.api.resources.utils.utils as utils

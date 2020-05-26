@@ -6,9 +6,9 @@ import json
 import logging
 from io import StringIO
 from pathlib import Path
+from unittest import mock
 
 import geojson
-import mock
 from aviary.sector.sector_element import SectorElement
 
 import bluebird.utils.properties as props
@@ -418,9 +418,9 @@ def test_store_data(tmpdir):
     assert not err
 
     with open(tmpdir / "sectors" / ".last_sector") as f:
-        assert f.read() == f"test-sector\n"
+        assert f.read() == "test-sector\n"
 
     # Assert .last_scenario created
 
     with open(tmpdir / "scenarios" / ".last_scenario") as f:
-        assert f.read() == f"test-scenario\n"
+        assert f.read() == "test-scenario\n"

@@ -2,8 +2,7 @@
 Tests for the OP endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 import bluebird.settings as settings
 from bluebird.utils.properties import SimMode

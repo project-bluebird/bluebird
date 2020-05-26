@@ -106,7 +106,7 @@ def test_log_reload_from_lines(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    lines = tuple(open(TEST_EPISODE_LOG, "r"))
+    lines = tuple(open(TEST_EPISODE_LOG))
 
     data = {"lines": lines, "time": 123}
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)
@@ -179,7 +179,7 @@ def test_log_reload_invalid_time(test_flask_client):
     resp = test_flask_client.post(API_PREFIX + "/seed", json={"value": 1234})
     assert resp.status_code == 200, "Expected the seed to be set"
 
-    lines = tuple(open(TEST_EPISODE_LOG, "r"))
+    lines = tuple(open(TEST_EPISODE_LOG))
 
     data = {"lines": lines, "time": 999}
     resp = test_flask_client.post(API_PREFIX + "/loadlog", json=data)

@@ -154,7 +154,7 @@ def integration_test_wrapper(pre_integration_setup, request):
         _print_container_logs(project, restart_t)
         raise
 
-    print(f"\n=== New test ===")
+    print("\n=== New test ===")
 
     yield  # Run the test
 

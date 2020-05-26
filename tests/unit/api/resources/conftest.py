@@ -1,7 +1,8 @@
 """
 Configuration for the api tests
 """
-import mock
+from unittest import mock
+
 import pytest
 
 import bluebird.api as bluebird_api

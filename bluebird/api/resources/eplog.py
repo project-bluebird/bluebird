@@ -41,7 +41,7 @@ class EpLog(Resource):
                 return responses.internal_err_resp(f"Couldn't reset simulation: {err}")
 
         if not ep_file_path.exists():
-            return responses.internal_err_resp(f"Could not find episode file")
+            return responses.internal_err_resp("Could not find episode file")
 
         lines = list(line.rstrip("\n") for line in open(ep_file_path))
 

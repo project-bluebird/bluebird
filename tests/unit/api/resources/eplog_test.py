@@ -3,8 +3,7 @@ Tests for the EPLOG endpoint
 """
 from http import HTTPStatus
 from pathlib import Path
-
-import mock
+from unittest import mock
 
 import bluebird.logging as bb_logging
 from tests.data import TEST_EPISODE_LOG

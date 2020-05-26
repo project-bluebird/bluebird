@@ -2,8 +2,8 @@
 Tests functionality of the bluebird.api.resources.utils package
 """
 from http import HTTPStatus
+from unittest import mock
 
-import mock
 from flask import Response
 from flask_restful import reqparse
 from flask_restful import Resource
