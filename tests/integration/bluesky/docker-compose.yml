@@ -23,6 +23,7 @@ services:
       - /usr/src/app/logs/ # Prevents any local logs being copied to the container
     ports:
       - 5001:5001
+    restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
     command: python ./run.py --sim-host=bluesky

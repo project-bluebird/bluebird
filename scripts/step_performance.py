@@ -7,7 +7,7 @@ import time
 import requests
 
 
-API_URL_BASE = f"http://localhost:5001/api/v1"
+API_URL_BASE = "http://localhost:5001/api/v1"
 
 
 def measure_step(max_steps, multiplier):

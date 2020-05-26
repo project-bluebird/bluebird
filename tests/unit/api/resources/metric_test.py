@@ -2,8 +2,7 @@
 Tests for the METRIC and METRICPROVIDERS endpoints
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 import bluebird.api.resources.utils.utils as utils
 from tests.unit.api.resources import endpoint_path
@@ -39,7 +38,7 @@ def test_metric_get(test_flask_client):
         resp = test_flask_client.get(_ENDPOINT_PATH)
         assert resp.status_code == HTTPStatus.BAD_REQUEST
 
-        arg_str = f"name=&"
+        arg_str = "name=&"
         resp = test_flask_client.get(f"{_ENDPOINT_PATH}?{arg_str}")
         assert resp.status_code == HTTPStatus.BAD_REQUEST
         assert resp.data.decode() == "Metric name must be specified"
@@ -49,7 +48,7 @@ def test_metric_get(test_flask_client):
         sim_proxy_mock.metrics_providers = mock.Mock()
         sim_proxy_mock.metrics_providers.get.return_value = None
 
-        arg_str = f"provider=TestProvider&name=TEST&"
+        arg_str = "provider=TestProvider&name=TEST&"
 
         resp = test_flask_client.get(f"{_ENDPOINT_PATH}?{arg_str}")
         assert resp.status_code == HTTPStatus.BAD_REQUEST

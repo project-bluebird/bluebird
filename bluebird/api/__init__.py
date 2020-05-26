@@ -23,10 +23,12 @@ class BlueBirdApi(Api):
         super().__init__(*args, **kwargs)
 
 
+_PREFIX = f"/api/v{Settings.API_VERSION}"
+
 # Create the Flask app & API, with the given prefix
 FLASK_APP = Flask(__name__)
 CORS(FLASK_APP)
-FLASK_API = BlueBirdApi(FLASK_APP, prefix="/api/v" + str(Settings.API_VERSION))
+FLASK_API = BlueBirdApi(FLASK_APP, prefix=_PREFIX)
 
 # Add hooks to log request response data
 
@@ -36,6 +38,13 @@ LOGGER = logging.getLogger(__name__)
 @FLASK_APP.before_request
 def before_req():
     """Method called before every request is handled"""
+
+    if _PREFIX not in request.url:
+        return (
+            f"The current API prefix ('{_PREFIX}') was not found in your request. "
+            "Please check that you are running the expected version of BlueBird.",
+            404,
+        )
 
     json = request.get_json()
     json = re.sub(r"\s+", " ", str(json)).replace("\\n", "") if json else ""

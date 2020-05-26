@@ -2,8 +2,7 @@
 Tests for the RESET endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 from tests.unit.api.resources import endpoint_path
 from tests.unit.api.resources import patch_utils_path

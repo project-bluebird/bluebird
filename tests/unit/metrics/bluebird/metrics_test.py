@@ -1,7 +1,8 @@
 """
 Tests for BlueBird's built-in metrics (provided by Aviary)
 """
-import mock
+from unittest import mock
+
 import pytest
 
 import bluebird.metrics.bluebird.metrics as metrics

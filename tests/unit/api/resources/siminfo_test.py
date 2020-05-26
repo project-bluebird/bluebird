@@ -2,8 +2,7 @@
 Tests for the SIMINFO endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 from bluebird.settings import Settings
 from bluebird.utils.types import Callsign

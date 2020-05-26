@@ -2,8 +2,8 @@
 Tests for the ProxyAircraftControls class
 """
 import copy
+from unittest import mock
 
-import mock
 import pytest
 from aviary.sector.sector_element import SectorElement
 

@@ -2,8 +2,7 @@
 Tests for the SCENARIO endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 import bluebird.api.resources.utils.utils as utils
 from bluebird.sim_proxy.proxy_simulator_controls import ProxySimulatorControls

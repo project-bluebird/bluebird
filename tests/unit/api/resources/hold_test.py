@@ -2,8 +2,7 @@
 Tests for the HOLD endpoint
 """
 from http import HTTPStatus
-
-import mock
+from unittest import mock
 
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimMode

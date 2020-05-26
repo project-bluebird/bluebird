@@ -139,7 +139,7 @@ class LoadLog(Resource):
                 return responses.bad_request_resp(
                     f'Could not find episode file {req_args["filename"]}'
                 )
-            with open(req_args["filename"], "r") as log_file:
+            with open(req_args["filename"]) as log_file:
                 lines = list(log_file)
         else:
             lines = req_args["lines"]
@@ -161,7 +161,7 @@ class LoadLog(Resource):
 
         if target_time > last_time:
             return responses.bad_request_resp(
-                f"Error: Target time was greater than the latest time in the log"
+                "Error: Target time was greater than the latest time in the log"
             )
 
         # err = validate_scenario(parsed_scn["lines"])
@@ -218,7 +218,7 @@ class LoadLog(Resource):
                 return responses.internal_err_resp(f"Could not step simulations: {err}")
 
         else:
-            _LOGGER.debug(f"Simulation already at required time")
+            _LOGGER.debug("Simulation already at required time")
 
         # Reset DTMULT to the previous value
         err = sim_proxy().simulation.set_speed(prev_dt)

@@ -4,8 +4,8 @@ Tests for BlueSkySimulatorControls
 import json
 from datetime import datetime
 from io import StringIO
+from unittest import mock
 
-import mock
 import pytest
 from aviary.sector.sector_element import SectorElement
 

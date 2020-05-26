@@ -1,7 +1,8 @@
 """
 Test configuration for all unit tests
 """
-import mock
+from unittest import mock
+
 import pytest
 
 
@@ -21,4 +22,4 @@ def log_break():
 
     # Runs after each test
 
-    print(f"\n=== New test ===")
+    print("\n=== New test ===")
