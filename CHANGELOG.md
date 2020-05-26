@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [2.0.2] - 2020-05-26
+
+## Changed
+
+- Print BlueBird version on startup to help debugging
+- Ran pre-commit autoupdate and applied changes from pyupgrade and flake8
+- Improve error message returned when BlueSky submodule not initialised
+- Return a more useful 404 message if the wrong API version is specified
+
 ## [2.0.1] - 2020-05-08
 
 ### Fixed
@@ -128,7 +137,8 @@ NOTE: This is a major rewrite of the application
 ## [1.1.0] - 2019-04-17 - PR [#51](https://github.com/alan-turing-institute/bluebird/pull/51)
 ## [1.0.0] - 2019-03-26 - PR [#47](https://github.com/alan-turing-institute/bluebird/pull/47)
 
-[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/2.0.1...develop
+[Unreleased]: https://github.com/alan-turing-institute/bluebird/compare/2.0.2...develop
+[2.0.2]: https://github.com/alan-turing-institute/bluebird/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/alan-turing-institute/bluebird/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/alan-turing-institute/bluebird/compare/1.3.0...2.0.0
 [1.3.0]: https://github.com/alan-turing-institute/bluebird/compare/1.2.1...1.3.0
