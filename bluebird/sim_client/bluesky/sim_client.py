@@ -62,7 +62,9 @@ class SimClient(AbstractSimClient):
 
     def connect(self, timeout=1) -> None:
         self._logger.debug(
-            f"Connecting to BlueSky at {Settings.SIM_HOST}, event_port={Settings.BS_EVENT_PORT}, stream_port={Settings.BS_STREAM_PORT}"
+            f"Connecting to BlueSky at {Settings.SIM_HOST}, "
+            f"event_port={Settings.BS_EVENT_PORT}, "
+            f"stream_port={Settings.BS_STREAM_PORT}"
         )
         self._client.connect(
             Settings.SIM_HOST,
