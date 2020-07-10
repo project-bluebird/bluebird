@@ -2,6 +2,7 @@
 BlueSky simulation client class
 """
 # TODO: Need to re-add the tests for string parsing/units from the old API tests
+import logging
 import os
 from typing import List
 
@@ -51,6 +52,7 @@ class SimClient(AbstractSimClient):
         return self._client.host_version
 
     def __init__(self, **kwargs):
+        self._logger = logging.getLogger(__name__)
         self._client = BlueSkyClient()
         self._aircraft_controls = BlueSkyAircraftControls(self._client)
         self._sim_controls = BlueSkySimulatorControls(self._client)
@@ -59,6 +61,9 @@ class SimClient(AbstractSimClient):
         return self._client.start_timers()
 
     def connect(self, timeout=1) -> None:
+        self._logger.debug(
+            f"Connecting to BlueSky at {Settings.SIM_HOST}, event_port={Settings.BS_EVENT_PORT}, stream_port={Settings.BS_STREAM_PORT}"
+        )
         self._client.connect(
             Settings.SIM_HOST,
             event_port=Settings.BS_EVENT_PORT,

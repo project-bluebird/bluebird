@@ -59,8 +59,8 @@ class Settings:
     SIM_TYPE: SimType = SimType.BlueSky
 
     # BlueSky settings
-    BS_EVENT_PORT: int = 9000
-    BS_STREAM_PORT: int = 9001
+    BS_EVENT_PORT: int = int(os.getenv("BS_EVENT_PORT", 9000))
+    BS_STREAM_PORT: int = int(os.getenv("BS_STREAM_PORT", 9001))
     BS_STREAM_TIMEOUT: int = 5
 
     # MachColl settings
