@@ -333,12 +333,13 @@ class BlueSkyClient(Client):
 
     def _await_reset_confirmation(self):
         """Checks if a reset confirmation is received before the timeout"""
-        time.sleep(1)
-        return (
-            "Did not receive reset confirmation in time"
-            if not self._reset_flag
-            else None
-        )
+
+        timeout = time.time() + Settings.BS_TIMEOUT
+        while time.time() < timeout:
+            time.sleep(0.1)
+            if self._reset_flag:
+                return None
+        return "Did not receive reset confirmation in time"
 
     def quit(self):
         """Sends a shutdown message to the simulation server"""

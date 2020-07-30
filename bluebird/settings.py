@@ -40,6 +40,7 @@ class Settings:
         SIM_TYPE:           The simulator type
         BS_EVENT_PORT:      BlueSky event port
         BS_STREAM_PORT:     BlueSky stream port
+        BS_TIMEOUT:         Max. time to wait for BlueSky to respond
         MC_PORT:            MachineCollege port
     """
 
@@ -62,6 +63,7 @@ class Settings:
     BS_EVENT_PORT: int = int(os.getenv("BS_EVENT_PORT", 9000))
     BS_STREAM_PORT: int = int(os.getenv("BS_STREAM_PORT", 9001))
     BS_STREAM_TIMEOUT: int = 5
+    BS_TIMEOUT: int = 10
 
     # MachColl settings
     MC_PORT: int = 5321
