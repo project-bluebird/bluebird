@@ -47,7 +47,7 @@ class Settings:
     VERSION: VersionInfo = _VERSION
     API_VERSION: int = _VERSION.major
     FLASK_DEBUG: bool = True
-    PORT: int = 5001
+    PORT: int = int(os.getenv("BB_PORT", 5001))
 
     DATA_DIR = Path("data")
 
