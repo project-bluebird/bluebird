@@ -78,7 +78,6 @@ class BlueSkyClient(Client):
 
         self._have_connection = False
         self._reset_flag = False
-        self._step_flag = False
         self._echo_data = []
         self._scn_response = None
         self._awaiting_exit_resp = False
@@ -197,7 +196,9 @@ class BlueSkyClient(Client):
                         self._echo_data.append(text)
 
                 elif eventname == b"STEP":
-                    self._step_flag = True
+                    # NOTE(rkm 2020-08-14) No longer need to handle this response since
+                    # we check for the actual sim time being stepped (via SIMINFO)
+                    pass
 
                 elif eventname == b"RESET":
                     self._reset_flag = True
@@ -302,23 +303,16 @@ class BlueSkyClient(Client):
 
         init_t = self._sim_info_data[2]
 
-        self._step_flag = False
         self.send_event(b"STEP")
 
         # Wait for the STEP response, and for the sim_t to have advanced
         wait_t = 1 / POLL_RATE
-        total_t = 0
-        while not self._step_flag:
-            new_t = self._sim_info_data[2]
-            if new_t > init_t:
-                return None
+        timeout = time.time() + Settings.BS_TIMEOUT
+        while time.time() < timeout:
             time.sleep(wait_t)
-            total_t += wait_t
-            if total_t >= 5:
-                return (
-                    f"Error: Step command failed (step_flag={self._step_flag} "
-                    f"init_t={init_t} new_t={new_t})"
-                )
+            if self._sim_info_data[2] > init_t:
+                return None
+        return f"Error: Step command timed-out waiting for time to advance"
 
     def reset_sim(self) -> Optional[str]:
         """Resets the BlueSky sim and handles the response"""
