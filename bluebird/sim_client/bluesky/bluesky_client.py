@@ -312,7 +312,7 @@ class BlueSkyClient(Client):
             time.sleep(wait_t)
             if self._sim_info_data[2] > init_t:
                 return None
-        return f"Error: Step command timed-out waiting for time to advance"
+        return "Error: Step command timed-out waiting for time to advance"
 
     def reset_sim(self) -> Optional[str]:
         """Resets the BlueSky sim and handles the response"""
