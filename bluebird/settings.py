@@ -1,7 +1,6 @@
 """
 Default settings for the BlueBird app
 """
-# TODO Rename SIM_MODE
 import functools
 import logging
 import os

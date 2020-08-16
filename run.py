@@ -72,7 +72,6 @@ def _parse_args() -> Dict[str, Any]:
 
 
 def ensure_settings(config: Path) -> None:
-    # TODO(rkm 2020-08-16) Currently this will always override any env vars
     if not config.is_file():
         # If config is the default, and it does not exist, then create it
         if config == _DEFAULT_CONFIG_PATH:

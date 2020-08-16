@@ -38,19 +38,17 @@ from bluesky.network.client import Client  # noqa: E402
 from bluesky.network.npcodec import decode_ndarray  # noqa: E402
 
 
-CMD_LOG_PREFIX = "C"
-
 # The BlueSky streams we subscribe to. 'ROUTEDATA' is also available
-ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO", b"ROUTEDATA"]
+_ACTIVE_NODE_TOPICS = [b"ACDATA", b"SIMINFO", b"ROUTEDATA"]
 
 # Same rate as GuiClient polls for its data
-POLL_RATE = 50  # Hz
+_POLL_RATE = 50  # Hz
 
 # Events which should be ignored
-IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
+_IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 
 # Tuple of regexes used to match responses from BlueSky that we can ignore
-IGNORED_RESPONSES_RE = (
+_IGNORED_RESPONSES_RE = (
     re.compile("AREA"),
     re.compile("BlueSky Console Window"),
     re.compile("DEFWPT:.*added to navdb"),
@@ -72,14 +70,14 @@ class BlueSkyClient(Client):
         return deepcopy(self._sim_info_data)
 
     def __init__(self):
-        super().__init__(ACTIVE_NODE_TOPICS)
+        super().__init__(_ACTIVE_NODE_TOPICS)
         self._logger = logging.getLogger(__name__)
         self._aircraft_stream_data = {}
         self._sim_info_data: List = []
         self._route_data: Dict[str, Any] = {}
 
         # Continually poll for the sim state
-        self.timer = Timer(self.receive, POLL_RATE)
+        self.timer = Timer(self.receive, _POLL_RATE)
 
         # self.seed = None
         # self.step_dt = 1
@@ -138,7 +136,7 @@ class BlueSkyClient(Client):
         self._logger.debug(f"STACKCMD: {data}")
         self.send_event(b"STACKCMD", data, target)
 
-        time.sleep(25 / POLL_RATE)
+        time.sleep(25 / _POLL_RATE)
 
         if response_expected and self._echo_data:
             # NOTE(rkm 2020-08-14) Return a copy of the current list
@@ -179,7 +177,7 @@ class BlueSkyClient(Client):
 
                 self._logger.debug(f"EVT :: {eventname} :: {pydata}")
 
-                if eventname in IGNORED_EVENTS:
+                if eventname in _IGNORED_EVENTS:
                     self._logger.debug(f"Ignored event {eventname}")
 
                 # TODO Is this case relevant here?
@@ -194,7 +192,7 @@ class BlueSkyClient(Client):
 
                 elif eventname == b"ECHO":
                     text = pydata["text"]
-                    if not any(reg.match(text) for reg in IGNORED_RESPONSES_RE):
+                    if not any(reg.match(text) for reg in _IGNORED_RESPONSES_RE):
                         self._echo_data.append(text)
                     else:
                         self._logger.debug(f"Ignored echo text '{text}'")
@@ -259,7 +257,7 @@ class BlueSkyClient(Client):
         data = json.dumps({"name": name, "lines": lines})
         self.send_event(b"SCENARIO", data)
 
-        time.sleep(25 / POLL_RATE)
+        time.sleep(25 / _POLL_RATE)
 
         resp = self._scn_response
         if resp == "Ok":
@@ -310,7 +308,7 @@ class BlueSkyClient(Client):
         self.send_event(b"STEP")
 
         # Wait for the STEP response, and for the sim_t to have advanced
-        wait_t = 1 / POLL_RATE
+        wait_t = 1 / _POLL_RATE
         timeout = time.time() + Settings.BS_TIMEOUT
         while time.time() < timeout:
             time.sleep(wait_t)
