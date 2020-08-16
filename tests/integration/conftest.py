@@ -91,7 +91,7 @@ def pre_integration_setup(request):
     pre_integration_check()
 
     api_host = docker_host.split(":")[0] if docker_host else "localhost"
-    api_base = f"http://{api_host}:{Settings.PORT}{API_PREFIX}"
+    api_base = f"http://{api_host}:{Settings.BB_PORT}{API_PREFIX}"
     tests.integration.API_BASE = api_base
 
     compose_file = Path("tests", "integration", integration_sim, "docker-compose.yml",)

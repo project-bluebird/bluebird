@@ -2,22 +2,33 @@
 Entry point for the BlueBird app
 """
 import argparse
+import json
+from pathlib import Path
 from typing import Any
 from typing import Dict
 
 from dotenv import load_dotenv
 
 from bluebird import BlueBird
+from bluebird.settings import current_settings
+from bluebird.settings import load_settings
 from bluebird.settings import Settings
 from bluebird.utils.properties import SimType
 
 _ARG_BOOL_ACTION = "store_true"
+_DEFAULT_CONFIG_PATH = Path("settings.cfg")
 
 
 def _parse_args() -> Dict[str, Any]:
     """Parse CLI arguments and override any default settings"""
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=_DEFAULT_CONFIG_PATH,
+        help="The config file to use. Default: %(default)s",
+    )
     parser.add_argument(
         "--sim-type",
         type=SimType,
@@ -60,11 +71,30 @@ def _parse_args() -> Dict[str, Any]:
     return vars(args)
 
 
+def ensure_settings(config: Path) -> None:
+    # TODO(rkm 2020-08-16) Currently this will always override any env vars
+    if not config.is_file():
+        # If config is the default, and it does not exist, then create it
+        if config == _DEFAULT_CONFIG_PATH:
+            print(f"Creating initial {_DEFAULT_CONFIG_PATH}")
+            settings_str = (
+                json.dumps(current_settings(), indent=4, sort_keys=True) + "\n"
+            )
+            with open(config, "w") as f:
+                f.write(settings_str)
+        else:
+            raise FileNotFoundError(f"Could not find '{config}'")
+    with open(config) as f:
+        settings_str = json.load(f)
+    load_settings(settings_str)
+
+
 def main():
     """Main app entry point"""
 
     args = _parse_args()
     load_dotenv(verbose=True, override=True)
+    ensure_settings(args["config"])
 
     with BlueBird(args) as app:
         app.pre_connection_setup()

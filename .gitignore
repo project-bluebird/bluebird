@@ -284,3 +284,4 @@ pip-selfcheck.json
 .vscode/
 !tests/**/*.log
 data/
+settings.cfg

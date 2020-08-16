@@ -133,7 +133,7 @@ class BlueBird:
 
         self._logger.debug(
             f"Starting BlueBird API v{Settings.API_VERSION} on "
-            f"0.0.0.0:{Settings.PORT}"
+            f"0.0.0.0:{Settings.BB_PORT}"
         )
 
         # Register the BlueBird app with Flask so the API thread can use it
@@ -143,7 +143,7 @@ class BlueBird:
             target=FLASK_APP.run,
             kwargs={
                 "host": "0.0.0.0",
-                "port": Settings.PORT,
+                "port": Settings.BB_PORT,
                 "debug": Settings.FLASK_DEBUG,
                 "use_reloader": False,
             },
