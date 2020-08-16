@@ -5,6 +5,7 @@ Contains the BlueSky client class
 import json
 import logging
 import os
+import re
 import sys
 import time
 from copy import deepcopy
@@ -48,8 +49,15 @@ POLL_RATE = 50  # Hz
 # Events which should be ignored
 IGNORED_EVENTS = [b"DEFWPT", b"DISPLAYFLAG", b"PANZOOM", b"SHAPE"]
 
-# Tuple of strings which should not be considered error responses from BlueSky
-IGNORED_RESPONSES = ("TIME", "DEFWPT", "AREA", "BlueSky Console Window")
+# Tuple of regexes used to match responses from BlueSky that we can ignore
+IGNORED_RESPONSES_RE = (
+    re.compile("AREA"),
+    re.compile("BlueSky Console Window"),
+    re.compile("DEFWPT:.*added to navdb"),
+    re.compile("IC: Opened"),
+    re.compile("TIME"),
+    re.compile("Unknown command: METRICS"),
+)
 
 
 class BlueSkyClient(Client):
@@ -78,7 +86,6 @@ class BlueSkyClient(Client):
 
         self._have_connection = False
         self._reset_flag = False
-        self._step_flag = False
         self._echo_data = []
         self._scn_response = None
         self._awaiting_exit_resp = False
@@ -134,11 +141,10 @@ class BlueSkyClient(Client):
         time.sleep(25 / POLL_RATE)
 
         if response_expected and self._echo_data:
+            # NOTE(rkm 2020-08-14) Return a copy of the current list
             return list(self._echo_data)
 
         if self._echo_data:
-            if self._echo_data[0].startswith(IGNORED_RESPONSES):
-                return None
             self._logger.error(f"Command '{data}' resulted in error: {self._echo_data}")
             errs = "\n".join(str(x) for x in self._echo_data)
             return str(f"Error(s): {errs}")
@@ -186,18 +192,17 @@ class BlueSkyClient(Client):
                     if not self.act and nodes_myserver:
                         self.actnode(nodes_myserver[0])
 
-                # TODO Also check the pydata contains 'syntax error' etc.
                 elif eventname == b"ECHO":
                     text = pydata["text"]
-                    if text.startswith("Unknown command: METRICS"):
-                        self._logger.warning(
-                            'Ignored warning about invalid "METRICS" command'
-                        )
-                    elif not text.startswith("IC: Opened"):
+                    if not any(reg.match(text) for reg in IGNORED_RESPONSES_RE):
                         self._echo_data.append(text)
+                    else:
+                        self._logger.debug(f"Ignored echo text '{text}'")
 
                 elif eventname == b"STEP":
-                    self._step_flag = True
+                    # NOTE(rkm 2020-08-14) No longer need to handle this response since
+                    # we check for the actual sim time being stepped (via SIMINFO)
+                    pass
 
                 elif eventname == b"RESET":
                     self._reset_flag = True
@@ -302,23 +307,16 @@ class BlueSkyClient(Client):
 
         init_t = self._sim_info_data[2]
 
-        self._step_flag = False
         self.send_event(b"STEP")
 
         # Wait for the STEP response, and for the sim_t to have advanced
         wait_t = 1 / POLL_RATE
-        total_t = 0
-        while not self._step_flag:
-            new_t = self._sim_info_data[2]
-            if new_t > init_t:
-                return None
+        timeout = time.time() + Settings.BS_TIMEOUT
+        while time.time() < timeout:
             time.sleep(wait_t)
-            total_t += wait_t
-            if total_t >= 5:
-                return (
-                    f"Error: Step command failed (step_flag={self._step_flag} "
-                    f"init_t={init_t} new_t={new_t})"
-                )
+            if self._sim_info_data[2] > init_t:
+                return None
+        return "Error: Step command timed-out waiting for time to advance"
 
     def reset_sim(self) -> Optional[str]:
         """Resets the BlueSky sim and handles the response"""
