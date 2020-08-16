@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+-   Added support for loading the config settings from a file
+-   Tidy-up handling of echo messages from BlueSky
+-   Make the step command a bit more robust to timeouts for BlueSky. Uses the BS_TIMEOUT setting
 
 ## [2.0.2] - 2020-05-26
 
