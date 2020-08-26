@@ -70,7 +70,10 @@ def pre_integration_setup(request):
         command.insert(1, f"-H {docker_host}")
 
     docker_available = not subprocess.call(
-        command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True,
+        command,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        shell=True,
     )
 
     if not docker_available:
@@ -94,7 +97,12 @@ def pre_integration_setup(request):
     api_base = f"http://{api_host}:{Settings.BB_PORT}{API_PREFIX}"
     tests.integration.API_BASE = api_base
 
-    compose_file = Path("tests", "integration", integration_sim, "docker-compose.yml",)
+    compose_file = Path(
+        "tests",
+        "integration",
+        integration_sim,
+        "docker-compose.yml",
+    )
 
     if not compose_file.exists():
         pytest.exit(f"Couldn't find {compose_file}", 1)

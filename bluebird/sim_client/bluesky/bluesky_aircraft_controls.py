@@ -116,7 +116,8 @@ class BlueSkyAircraftControls(AbstractAircraftControls):
         )
 
     def _convert_to_ac_props(
-        self, data: dict,
+        self,
+        data: dict,
     ) -> Union[Dict[types.Callsign, props.AircraftProperties], str]:
         ac_props = {}
         try:

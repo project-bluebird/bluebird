@@ -51,7 +51,8 @@ def test_shutdown_post(test_flask_client):
         # Test valid response
 
         resp = test_flask_client.post(
-            _ENDPOINT_PATH, environ_base={"werkzeug.server.shutdown": lambda: None},
+            _ENDPOINT_PATH,
+            environ_base={"werkzeug.server.shutdown": lambda: None},
         )
         assert resp.status_code == HTTPStatus.OK
         assert resp.data.decode() == "BlueBird shutting down! (Sim shutdown ok = True)"

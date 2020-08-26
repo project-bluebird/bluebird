@@ -68,7 +68,9 @@ class SimClient(AbstractSimClient):
         self._aircraft_controls = MachCollAircraftControls(self)
         self._mc_metrics_provider = metrics_providers.get("MachColl")
         self._sim_controls = MachCollSimulatorControls(
-            self, self._aircraft_controls, self._mc_metrics_provider,
+            self,
+            self._aircraft_controls,
+            self._mc_metrics_provider,
         )
 
     def connect(self, timeout: int = 1) -> None:

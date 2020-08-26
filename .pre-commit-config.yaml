@@ -1,9 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+default_language_version:
+    python: python3.7
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
       - id: check-ast
       - id: check-added-large-files
@@ -21,7 +24,7 @@ repos:
         args: [--autofix]
       - id: trailing-whitespace
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.5.1
+    rev: v1.6.0
     hooks:
       - id: python-check-blanket-noqa
       - id: python-check-mock-methods
@@ -32,21 +35,21 @@ repos:
       - id: codespell
         args: [--ignore-words=.codespell-ignores]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.4.4
+    rev: v2.7.2
     hooks:
       - id: pyupgrade
-        args: [--py37-plus]
+        args: [--py36-plus]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.0
+    rev: v2.3.5
     hooks:
       - id: reorder-python-imports
   - repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 20.8b1
     hooks:
       - id: black
-        language_version: python3.7
+        language_version: python3.6
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.2
+    rev: 3.8.3
     hooks:
       - id: flake8
         args: [--config=.flake8]
