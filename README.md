@@ -11,11 +11,24 @@ BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API t
 
 The currently supported open-source simulator is [BlueSky](https://github.com/alan-turing-institute/bluesky).
 
+## Quickstart
+
+To run Bluebird with Bluesky as the simulator as a user, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/alan-turing-institute/simurgh). The repo also contains a Jupyter notebook with example usage.
+
 ## Usage
+
+### Pre-requisites
+
+- python 3.7
+- virtualenv
 
 ### Running locally
 
-To run locally, first start a supported simulation server, then:
+As a first step, clone this repository. 
+
+Before starting Bluebird, start a supported simulation server. In the description below, we assume you have cloned and started [BlueSky](https://github.com/alan-turing-institute/bluesky).
+
+Then:
 
 ```bash
 $ ./install.sh [--dev] [<venv_name>]
@@ -29,6 +42,42 @@ Notes:
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
 - If passed, `--reset-sim` will reset the simulation on connection
 - If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
+
+
+#### Full example with BlueSky simulator
+
+To run Bluebird with BlueSky from source, first clone both repos.
+
+```bash
+git clone https://github.com/alan-turing-institute/bluesky.git
+git clone https://github.com/alan-turing-institute/bluebird.git
+```
+
+Open two terminals. In the first one, install and run BlueSky:
+
+```bash
+# Install Bluesky
+cd bluesky
+./install.sh --headless
+
+# Run Bluesky
+source venv/bin/activate
+python BlueSky.py 
+```
+
+In your second terminal, install and run Bluebird:
+
+```bash
+# Install Bluebird
+cd ../bluebird
+./install.sh
+
+# Run Bluebird, connected to Bluesky
+source venv/bin/activate
+python ./run.py
+```
+You can now communicate with Bluebird on http://0.0.0.0:5001/.
+
 
 ### Running with Docker
 
