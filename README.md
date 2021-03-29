@@ -76,8 +76,9 @@ cd ../bluebird
 source venv/bin/activate
 python ./run.py
 ```
-You can now communicate with Bluebird on http://0.0.0.0:5001/.
+Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
 
+To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
 
 ### Running with Docker
 
@@ -97,7 +98,9 @@ $ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
 
 ### API Endpoints
 
-See [here](API.md).
+The complete list of API requests supported by BlueBird may be found [here](API.md). Requests can be submitted from the command line using [curl](https://curl.se/) or via a GUI with the [Postman app](https://www.postman.com/downloads/).
+
+To interact with Bluebird programmatically in R or Python, use the [Dodo package](https://github.com/alan-turing-institute/dodo).
 
 ### Logging
 
