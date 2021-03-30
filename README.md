@@ -24,7 +24,7 @@ To run Bluebird with Bluesky as the simulator as a user, the easiest method is t
 
 ### Running locally
 
-As a first step, clone this repository. 
+As a first step, clone this repository.
 
 Before starting Bluebird, start a supported simulation server. In the description below, we assume you have cloned and started [BlueSky](https://github.com/alan-turing-institute/bluesky).
 
@@ -62,14 +62,14 @@ cd bluesky
 
 # Run Bluesky
 source venv/bin/activate
-python BlueSky.py 
+python BlueSky.py
 ```
 
 In your second terminal, install and run Bluebird:
 
 ```bash
 # Install Bluebird
-cd ../bluebird
+cd bluebird
 ./install.sh
 
 # Run Bluebird, connected to Bluesky
