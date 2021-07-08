@@ -40,7 +40,7 @@ $ source <venv_name>/bin/activate
 (venv) python run.py
 ```
 
-To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples “Link to simurgh example Jupyter notebook”) open a third terminal window and navigate to the directory
+To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
 ```bash
 $ cd ~/simurgh/
 $ jupyter lab examples/Example-pipeline.ipynb
