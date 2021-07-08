@@ -21,24 +21,39 @@ The currently supported open-source simulator is [BlueSky](https://github.com/al
 * python 3.7
 * virtualenv
 
-Ensure the contents of the [bluesky](https://github.com/alan-turing-institute/bluesky/tree/035719883ad7f3cb2dff89de0da6eb103c80b947) directory have been cloned.
+To run Bluebird with BlueSky from source, first clone both repos.
 
-To install requirements; in the bluebird directory set up and activate a virtual environment
 ```bash
-$ ./install.sh [--dev] [<venv_name>]
-$ source <venv_name>/bin/activate
-```
-Before running bluebird, bluesky must be running (without the GUI in this instance)
-```bash
-(venv) $ cd bluesky
-(venv) $ python BlueSky.py --headless
+git clone https://github.com/alan-turing-institute/bluesky.git
+git clone https://github.com/alan-turing-institute/bluebird.git
 ```
 
-Open a second terminal window and navigate to the (original) bluebird directory. Activate the virtual environmentand set bluebird running.
+Open two terminals. In the first one, install and run BlueSky:
+
 ```bash
-$ source <venv_name>/bin/activate
-(venv) python run.py
+# Install Bluesky
+cd bluesky
+./install.sh --headless
+
+# Run Bluesky
+source venv/bin/activate
+python BlueSky.py --headless
 ```
+
+In your second terminal, install and run Bluebird:
+
+```bash
+# Install Bluebird
+cd bluebird
+./install.sh
+
+# Run Bluebird, connected to Bluesky
+source venv/bin/activate
+python ./run.py
+```
+Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
+
+To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
 
 To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
 ```bash
