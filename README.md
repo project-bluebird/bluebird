@@ -17,13 +17,51 @@ The currently supported open-source simulator is [BlueSky](https://github.com/al
 
 ### Running locally
 
-To run locally, first start a supported simulation server, then:
+### Pre-requisites
+* python 3.7
+* virtualenv
+
+To run Bluebird with BlueSky from source, first clone both repos.
 
 ```bash
-$ ./install.sh [--dev] [<venv_name>]
-$ source <venv_name>/bin/activate
-(venv) > python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
+git clone https://github.com/alan-turing-institute/bluesky.git
+git clone https://github.com/alan-turing-institute/bluebird.git
 ```
+
+Open two terminals. In the first one, install and run BlueSky:
+
+```bash
+# Install Bluesky
+cd bluesky
+./install.sh --headless
+
+# Run Bluesky
+source venv/bin/activate
+python BlueSky.py --headless
+```
+
+In your second terminal, install and run Bluebird:
+
+```bash
+# Install Bluebird
+cd bluebird
+./install.sh
+
+# Run Bluebird, connected to Bluesky
+source venv/bin/activate
+python ./run.py
+```
+Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
+
+To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
+
+To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
+```bash
+$ cd ~/simurgh/
+$ jupyter lab examples/Example-pipeline.ipynb
+```
+Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance. 
+
 
 Notes:
 
