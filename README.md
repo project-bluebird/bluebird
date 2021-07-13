@@ -5,6 +5,8 @@
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
+Active develoment moved under [Project BlueBird](https://github.com/project-bluebird).
+
 # BlueBird
 
 BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/alan-turing-institute/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
@@ -43,7 +45,6 @@ Notes:
 - If passed, `--reset-sim` will reset the simulation on connection
 - If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
 
-
 #### Full example with BlueSky simulator
 
 To run Bluebird with BlueSky from source, first clone both repos.
@@ -62,7 +63,7 @@ cd bluesky
 
 # Run Bluesky
 source venv/bin/activate
-python BlueSky.py
+python BlueSky.py --headless
 ```
 
 In your second terminal, install and run Bluebird:
@@ -79,6 +80,13 @@ python ./run.py
 Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
 
 To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
+
+To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
+```bash
+$ cd ~/simurgh/
+$ jupyter lab examples/Example-pipeline.ipynb
+```
+Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance. 
 
 ### Running with Docker
 
