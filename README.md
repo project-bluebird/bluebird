@@ -1,21 +1,19 @@
 
-[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/alan-turing-institute/bluebird)
+[![Build Status](https://travis-ci.com/project-bluebird/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
-![License](https://img.shields.io/github/license/alan-turing-institute/bluebird)
+![License](https://img.shields.io/github/license/project-bluebird/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-Active develoment moved under [Project BlueBird](https://github.com/project-bluebird).
-
 # BlueBird
 
-BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/alan-turing-institute/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
+BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/project-bluebird/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
 
-The currently supported open-source simulator is [BlueSky](https://github.com/alan-turing-institute/bluesky).
+The currently supported open-source simulator is [BlueSky](https://github.com/project-bluebird/bluesky).
 
 ## Quickstart
 
-To run Bluebird with Bluesky as the simulator as a user, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/alan-turing-institute/simurgh). The repo also contains a Jupyter notebook with example usage.
+To run Bluebird with Bluesky as the simulator as a user, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/project-bluebird/simurgh). The repo also contains a Jupyter notebook with example usage.
 
 ## Usage
 
@@ -28,7 +26,7 @@ To run Bluebird with Bluesky as the simulator as a user, the easiest method is t
 
 As a first step, clone this repository.
 
-Before starting Bluebird, start a supported simulation server. In the description below, we assume you have cloned and started [BlueSky](https://github.com/alan-turing-institute/bluesky).
+Before starting Bluebird, start a supported simulation server. In the description below, we assume you have cloned and started [BlueSky](https://github.com/project-bluebird/bluesky).
 
 Then:
 
@@ -50,8 +48,8 @@ Notes:
 To run Bluebird with BlueSky from source, first clone both repos.
 
 ```bash
-git clone https://github.com/alan-turing-institute/bluesky.git
-git clone https://github.com/alan-turing-institute/bluebird.git
+git clone https://github.com/project-bluebird/bluesky.git
+git clone https://github.com/project-bluebird/bluebird.git
 ```
 
 Open two terminals. In the first one, install and run BlueSky:
@@ -86,7 +84,7 @@ To run and example script such as that from the [simurgh examples directory](htt
 $ cd ~/simurgh/
 $ jupyter lab examples/Example-pipeline.ipynb
 ```
-Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance. 
+Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance.
 
 ### Running with Docker
 
