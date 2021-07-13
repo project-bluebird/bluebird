@@ -104,7 +104,7 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The episode file is only recorded for [Agent mode]().
+The episode file is only recorded for [Agent mode](https://github.com/project-bluebird/bluebird/blob/master/docs/SimulatorModes.md).
 
 The timestamps of the `logs/*` directories are the start times of the BlueBird app, whereas the timestamps in the episode file names are the start of each episode.
 
