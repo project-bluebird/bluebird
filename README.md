@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.com/project-bluebird/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
+[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
 ![License](https://img.shields.io/github/license/project-bluebird/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
@@ -13,7 +13,7 @@ The currently supported open-source simulator is [BlueSky](https://github.com/pr
 
 ## Quickstart
 
-To run Bluebird with Bluesky as the simulator as a user, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/project-bluebird/simurgh). The repo also contains a Jupyter notebook with example usage.
+To run Bluebird with Bluesky as the simulator, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/project-bluebird/simurgh). The repo also contains a Jupyter notebook with example usage.
 
 ## Usage
 
@@ -23,25 +23,6 @@ To run Bluebird with Bluesky as the simulator as a user, the easiest method is t
 - virtualenv
 
 ### Running locally
-
-As a first step, clone this repository.
-
-Before starting Bluebird, start a supported simulation server. In the description below, we assume you have cloned and started [BlueSky](https://github.com/project-bluebird/bluesky).
-
-Then:
-
-```bash
-$ ./install.sh [--dev] [<venv_name>]
-$ source <venv_name>/bin/activate
-(venv) > python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
-```
-
-Notes:
-
-- the `--dev` option will also install dependencies needed for developing BlueBird
-- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
-- If passed, `--reset-sim` will reset the simulation on connection
-- If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
 
 #### Full example with BlueSky simulator
 
@@ -75,16 +56,21 @@ cd bluebird
 source venv/bin/activate
 python ./run.py
 ```
+
 Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
 
 To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
 
-To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
+Note that BlueBird can be run with the following options:
+
 ```bash
-$ cd ~/simurgh/
-$ jupyter lab examples/Example-pipeline.ipynb
+python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
 ```
-Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance.
+
+- the `--dev` option will also install dependencies needed for developing BlueBird
+- If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
+- If passed, `--reset-sim` will reset the simulation on connection
+- If passed, `--sim-mode` will start the simulation in a specific [mode](docs/SimulatorModes.md).
 
 ### Running with Docker
 
@@ -94,9 +80,9 @@ BlueBird can also be run through Docker. Easiest way is to run with docker-compo
 $ docker-compose up -d
 ```
 
-This will also pull and start a BlueSky simulator container.
+This will build a docker image for BlueBird (using the code in this repository) as well as pull and start a BlueSky simulator container.
 
-You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host. This can be overridden with environment variable:
+You can also use the pre-built `turinginst/bluebird` image. This uses `localhost` for the BlueSky host. This can be overridden with environment variable:
 
 ```bash
 $ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
@@ -106,7 +92,7 @@ $ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
 
 The complete list of API requests supported by BlueBird may be found [here](API.md). Requests can be submitted from the command line using [curl](https://curl.se/) or via a GUI with the [Postman app](https://www.postman.com/downloads/).
 
-To interact with Bluebird programmatically in R or Python, use the [Dodo package](https://github.com/alan-turing-institute/dodo).
+To interact with Bluebird programmatically in R or Python, use the [Dodo package](https://github.com/project-bluebird/dodo). See the [the Simurgh repo](https://github.com/project-bluebird/simurgh) for a demo of example usage.
 
 ### Logging
 
@@ -118,7 +104,7 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The episode file is only recorded for Agent mode.
+The episode file is only recorded for [Agent mode]().
 
 The timestamps of the `logs/*` directories are the start times of the BlueBird app, whereas the timestamps in the episode file names are the start of each episode.
 
