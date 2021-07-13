@@ -1,31 +1,36 @@
 
-[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/alan-turing-institute/bluebird)
+[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
-![License](https://img.shields.io/github/license/alan-turing-institute/bluebird)
+![License](https://img.shields.io/github/license/project-bluebird/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-Active develoment moved under [Project BlueBird](https://github.com/project-bluebird).
-
 # BlueBird
 
-BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/alan-turing-institute/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
+BlueBird provides a common [Flask](https://github.com/pallets/flask)-based API to multiple air traffic simulators. In addition to basic communication, it also includes features such as state caching, performance metrics (via [Aviary](https://github.com/project-bluebird/aviary)), and logging of scenario data. The main purpose of BlueBird is to provide a common interface to ease the research & development of AI for air traffic control.
 
-The currently supported open-source simulator is [BlueSky](https://github.com/alan-turing-institute/bluesky).
+The currently supported open-source simulator is [BlueSky](https://github.com/project-bluebird/bluesky).
+
+## Quickstart
+
+To run Bluebird with Bluesky as the simulator, the easiest method is to run both in Docker using instructions from [the Simurgh repo](https://github.com/project-bluebird/simurgh). The repo also contains a Jupyter notebook with example usage.
 
 ## Usage
 
+### Pre-requisites
+
+- python 3.7
+- virtualenv
+
 ### Running locally
 
-### Pre-requisites
-* python 3.7
-* virtualenv
+#### Full example with BlueSky simulator
 
 To run Bluebird with BlueSky from source, first clone both repos.
 
 ```bash
-git clone https://github.com/alan-turing-institute/bluesky.git
-git clone https://github.com/alan-turing-institute/bluebird.git
+git clone https://github.com/project-bluebird/bluesky.git
+git clone https://github.com/project-bluebird/bluebird.git
 ```
 
 Open two terminals. In the first one, install and run BlueSky:
@@ -51,19 +56,16 @@ cd bluebird
 source venv/bin/activate
 python ./run.py
 ```
+
 Bluebird should now be up and running, and listening for API requests on http://0.0.0.0:5001/.
 
 To verify it's working, navigate to http://0.0.0.0:5001/api/v2/siminfo. This simple GET request returns a JSON Object containing information about the running simulator (BlueSky). You can then try out the other [API endpoints](#api-endpoints).
 
-To run and example script such as that from the [simurgh examples directory](https://github.com/project-bluebird/simurgh/tree/master/examples) open a third terminal window and navigate to the directory
+Note that BlueBird can be run with the following options:
+
 ```bash
-$ cd ~/simurgh/
-$ jupyter lab examples/Example-pipeline.ipynb
+python ./run.py [--sim-host=<address>] [--sim-mode=<mode>] [--reset-sim] [--log-rate=<rate>]
 ```
-Start at section 1.2 (import pydodo), and ignore section 2.3 (viewing the simulation) as twitcher has not been launched in this instance. 
-
-
-Notes:
 
 - the `--dev` option will also install dependencies needed for developing BlueBird
 - If you need to connect to BlueSky on another host (i.e. on a VM), you may pass the `--sim-host` option to run.py.
@@ -78,9 +80,9 @@ BlueBird can also be run through Docker. Easiest way is to run with docker-compo
 $ docker-compose up -d
 ```
 
-This will also pull and start a BlueSky simulator container.
+This will build a docker image for BlueBird (using the code in this repository) as well as pull and start a BlueSky simulator container.
 
-You can also use the pre-built `turinginst/bluebird` image, or build it yourself. This uses `localhost` for the BlueSky host. This can be overridden with environment variable:
+You can also use the pre-built `turinginst/bluebird` image. This uses `localhost` for the BlueSky host. This can be overridden with environment variable:
 
 ```bash
 $ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
@@ -88,7 +90,9 @@ $ docker run --rm -e BS_HOST="1.2.3.4" turinginst/bluebird:latest
 
 ### API Endpoints
 
-See [here](API.md).
+The complete list of API requests supported by BlueBird may be found [here](API.md). Requests can be submitted from the command line using [curl](https://curl.se/) or via a GUI with the [Postman app](https://www.postman.com/downloads/).
+
+To interact with Bluebird programmatically in R or Python, use the [Dodo package](https://github.com/project-bluebird/dodo). See the [the Simurgh repo](https://github.com/project-bluebird/simurgh) for a demo of example usage.
 
 ### Logging
 
@@ -100,7 +104,7 @@ By default, BlueBird creates two log files:
     - Entries prefixed with 'E' contain info on episode events (start/end, file loaded)
     - Entries prefixed with 'C' contain info on commands sent to the simulator
 
-The episode file is only recorded for Agent mode.
+The episode file is only recorded for [Agent mode](https://github.com/project-bluebird/bluebird/blob/master/docs/SimulatorModes.md).
 
 The timestamps of the `logs/*` directories are the start times of the BlueBird app, whereas the timestamps in the episode file names are the start of each episode.
 
