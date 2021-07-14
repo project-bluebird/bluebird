@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.com/alan-turing-institute/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
+[![Build Status](https://travis-ci.com/project-bluebird/bluebird.svg?branch=master)](https://travis-ci.com/project-bluebird/bluebird)
 ![Python Version](https://img.shields.io/badge/python-3.7-blue)
 ![License](https://img.shields.io/github/license/project-bluebird/bluebird)
 ![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)
