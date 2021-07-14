@@ -19,7 +19,7 @@ before_install:
 install:
   - pip install -r requirements.txt
   # TODO(rkm 2020-04-26) Always ensures we have the latest Aviary version. Remove this once it's available on PyPI
-  - pip install --force-reinstall --no-cache-dir git+https://github.com/alan-turing-institute/aviary.git@develop#egg=aviary
+  - pip install --force-reinstall --no-cache-dir git+https://github.com/project-bluebird/aviary.git@develop#egg=aviary
 
 script:
   - coverage run -m pytest -rs --ignore=./tests/integration ./tests
